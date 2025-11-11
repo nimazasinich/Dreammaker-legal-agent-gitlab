@@ -44,6 +44,10 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
       if (response && response.success && response.prices) {
         const formatted: MarketData[] = (response.prices || []).map((p) => ({
           symbol: p.symbol,
+          open: p.price,
+          high: p.price,
+          low: p.price,
+          close: p.price,
           price: p.price,
           change24h: p.change24h,
           changePercent24h: p.changePercent24h,

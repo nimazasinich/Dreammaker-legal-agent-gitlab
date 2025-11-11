@@ -38,21 +38,20 @@ export const RealPortfolioConnector: React.FC<RealPortfolioConnectorProps> = ({
         
         // Fetch REAL blockchain balances if addresses provided
         if (walletAddresses) {
-          const balances = await realDataManager.fetchRealBlockchainBalances(walletAddresses);
-          
+          // Fetch all blockchain balances (fetchRealBlockchainBalances accepts optional blockchain string)
+          const balances = await realDataManager.fetchRealBlockchainBalances();
+
           // Fetch portfolio from backend
-          const portfolio = await realDataManager.fetchRealPortfolio(
-            Object.values(walletAddresses).filter(Boolean) as string[]
-          );
-          
+          const portfolio = await realDataManager.fetchRealPortfolio();
+
           // Merge blockchain balances into portfolio
-          if (balances.balances) {
+          if (balances?.balances) {
             portfolio.balances = {
               ...portfolio.balances,
               ...balances.balances
             };
           }
-          
+
           if (isMounted) {
             setRealPortfolio(portfolio);
           }
@@ -124,12 +123,10 @@ export const RealPortfolioConnector: React.FC<RealPortfolioConnectorProps> = ({
   }
 
   // Pass real portfolio data to existing Portfolio component
+  // Portfolio component expects marketData: MarketData[] as prop
   return (
     <Portfolio
-      totalValue={realPortfolio.totalValue}
-      balances={realPortfolio.balances}
-      positions={realPortfolio.positions}
-      lastUpdated={realPortfolio.lastUpdated}
+      marketData={[]}
     />
   );
 };

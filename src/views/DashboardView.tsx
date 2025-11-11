@@ -103,6 +103,7 @@ export const DashboardView: React.FC = () => {
 
     // Local state for UI
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioSummary>({
         totalValue: 0,
         totalChangePercent: 0,
@@ -120,7 +121,6 @@ export const DashboardView: React.FC = () => {
     const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [aiSignalsForPanel, setAiSignalsForPanel] = useState<Signal[]>([]);
     const [currentSymbol, setCurrentSymbol] = useState<string>('BTCUSDT');
     const [currentTimeframe, setCurrentTimeframe] = useState<string>('1h');
@@ -377,12 +377,10 @@ export const DashboardView: React.FC = () => {
         return (
             <div className="w-full min-h-full animate-fade-in flex items-center justify-center">
                 <ErrorBoundary>
-                    <ResponseHandler loading={loading} error={error}>
-                        <div className="text-center">
-                            <LoadingSpinner size="lg" />
-                            <p className="text-slate-400 mt-4">Loading dashboard data...</p>
-                        </div>
-                    </ResponseHandler>
+                    <div className="text-center">
+                        <LoadingSpinner size="large" />
+                        <p className="text-slate-400 mt-4">Loading dashboard data...</p>
+                    </div>
                 </ErrorBoundary>
             </div>
         );
@@ -499,12 +497,7 @@ export const DashboardView: React.FC = () => {
                                     }}
                                 >
                                     <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent to-white/30" />
-                                    <Icon
-                                        className="w-6 h-6 text-white relative z-10"
-                                        style={{
-                                            filter: `drop-shadow(0 0 12px rgba(${stat.glowColor}, 0.8))`
-                                        }}
-                                    />
+                                    <Icon className="w-6 h-6 text-white relative z-10" />
                                 </div>
 
                                 {/* Content */}

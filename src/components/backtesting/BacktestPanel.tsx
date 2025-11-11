@@ -39,17 +39,11 @@ export const BacktestPanel: React.FC<BacktestPanelProps> = ({ symbol, timeframe 
 
   const loadHistoricalData = async () => {
     try {
-      const data = await dataManager.getHistoricalData(symbol, timeframe, 1000);
+      // Use marketDataService directly since dataManager.getHistoricalData may not be available
+      const data = await marketDataService.getHistoricalData(symbol, timeframe, 1000);
       setHistoricalData(data);
     } catch (error) {
       if (import.meta.env.DEV) logger.error('Error loading historical data:', {}, error);
-      // Fallback to marketDataService if dataManager fails
-      try {
-        const fallbackData = await marketDataService.getHistoricalData(symbol, timeframe, 1000);
-        setHistoricalData(fallbackData);
-      } catch (fallbackError) {
-        if (import.meta.env.DEV) logger.error('Fallback data loading also failed:', {}, fallbackError);
-      }
     }
   };
 
@@ -135,9 +129,15 @@ export const BacktestPanel: React.FC<BacktestPanelProps> = ({ symbol, timeframe 
 
     const csvContent = [
       'Trade ID,Symbol,Side,Entry Time,Exit Time,Entry Price,Exit Price,PnL,Confidence',
-      ...(backtestResult.trades || []).map(trade => 
-        `${trade.id || 'N/A'},${trade.symbol},${trade.side},${trade.entryTime.toISOString()},${trade.exitTime.toISOString()},${trade.entryPrice},${trade.exitPrice},${trade.pnl},${trade.confidence}`
-      )
+      ...(backtestResult.trades || []).map(trade => {
+        const entryTime = typeof trade.entryTime === 'number'
+          ? new Date(trade.entryTime).toISOString()
+          : trade.entryTime.toISOString();
+        const exitTime = typeof trade.exitTime === 'number'
+          ? new Date(trade.exitTime).toISOString()
+          : trade.exitTime.toISOString();
+        return `${trade.id || 'N/A'},${trade.symbol},${trade.side},${entryTime},${exitTime},${trade.entryPrice},${trade.exitPrice},${trade.pnl},${trade.confidence}`;
+      })
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });

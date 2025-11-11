@@ -19,7 +19,11 @@ interface ScannerRow {
   price: number;
   change24h: number;
   volume24h: number;
-  signal: Signal;
+  signal: {
+    type: 'BUY' | 'SELL' | 'HOLD';
+    reason: string;
+    score: number;
+  };
   score: number;
 }
 
@@ -58,7 +62,7 @@ const DEFAULT_SYMBOLS = [
   'SANDUSDT', 'AXSUSDT', 'THETAUSDT', 'ALGOUSDT', 'EOSUSDT', 'XMRUSDT'
 ];
 
-const parseSignalLabel = (signal: Signal['type']) => {
+const parseSignalLabel = (signal: 'BUY' | 'SELL' | 'HOLD') => {
   switch (signal) {
     case 'BUY':
       return t('scanner.signals.buy');
@@ -123,7 +127,7 @@ const ScannerView: React.FC = () => {
 
       const response = await dataManager.fetchData<{ prices?: MarketPrice[]; data?: MarketPrice[] }>(
         `/market/prices?${params.toString()}`,
-        signal
+        signal ? { signal } : undefined
       );
 
       if (signal?.aborted) return;
@@ -143,12 +147,12 @@ const ScannerView: React.FC = () => {
           if (change < filters.ch1hMin || change > filters.ch1hMax) return null;
 
           // Map signal from API or default to HOLD
-          const signal: Signal = market.signal ? {
+          const signal = market.signal ? {
             type: market.signal.type,
             reason: market.signal.reason || 'No analysis',
             score: market.signal.score ?? market.score ?? 0
           } : {
-            type: 'HOLD',
+            type: 'HOLD' as const,
             reason: 'No signal data',
             score: 0
           };
@@ -800,7 +804,7 @@ const ChangeCell: React.FC<{ value: number }> = ({ value }) => {
   return <span className="text-xs text-[color:var(--text-muted)]">0.00%</span>;
 };
 
-const SignalBadge: React.FC<{ signal: Signal['type'] }> = ({ signal }) => {
+const SignalBadge: React.FC<{ signal: 'BUY' | 'SELL' | 'HOLD' }> = ({ signal }) => {
   const label = parseSignalLabel(signal);
 
   if (signal === 'BUY') {
