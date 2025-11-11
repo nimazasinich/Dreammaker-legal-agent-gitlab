@@ -14,7 +14,11 @@ export type NavigationView =
   | 'backtest'
   | 'strategyBuilder'
   | 'health'
-  | 'settings';
+  | 'settings'
+  | 'enhanced-trading'
+  | 'positions'
+  | 'strategylab'
+  | 'exchange-settings';
 
 interface NavigationContextType {
   currentView: NavigationView;

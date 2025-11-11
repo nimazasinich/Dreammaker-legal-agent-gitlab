@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { API_BASE, APP_MODE, STRICT_REAL_DATA } from '../config/env';
 import { StrategyTemplateEditor } from '../components/strategy/StrategyTemplateEditor';
 import ScoreGauge from '../components/strategy/ScoreGauge';
