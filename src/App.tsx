@@ -24,22 +24,52 @@ const MarketView = lazyLoad(() => import('./views/MarketView'), 'MarketView');
 const ScannerView = lazyLoad(() => import('./views/ScannerView'), 'ScannerView');
 const TrainingView = lazyLoad(() => import('./views/TrainingView'), 'TrainingView');
 const RiskView = lazyLoad(() => import('./views/RiskView'), 'RiskView');
-const ProfessionalRiskView = lazyLoad(() => import('./views/ProfessionalRiskView').then(m => ({ default: m.ProfessionalRiskView }
-  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; }))), 'ProfessionalRiskView');
+const ProfessionalRiskView = lazyLoad(() =>
+  import('./views/ProfessionalRiskView')
+    .then(m => ({ default: m.ProfessionalRiskView }))
+    .catch(err => {
+      console.warn("API Error:", err);
+      return { default: () => <div>Component Error</div> };
+    }),
+  'ProfessionalRiskView');
 const BacktestView = lazyLoad(() => import('./views/BacktestView'), 'BacktestView');
 const HealthView = lazyLoad(() => import('./views/HealthView'), 'HealthView');
 const SettingsView = lazyLoad(() => import('./views/SettingsView'), 'SettingsView');
-const FuturesTradingView = lazyLoad(() => import('./views/FuturesTradingView').then(m => ({ default: m.FuturesTradingView }
-  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; }))), 'FuturesTradingView');
+const FuturesTradingView = lazyLoad(() =>
+  import('./views/FuturesTradingView')
+    .then(m => ({ default: m.FuturesTradingView }))
+    .catch(err => {
+      console.warn("API Error:", err);
+      return { default: () => <div>Component Error</div> };
+    }),
+  'FuturesTradingView');
 const TradingView = lazyLoad(() => import('./views/TradingView'), 'TradingView');
 const UnifiedTradingView = lazyLoad(() => import('./views/UnifiedTradingView'), 'UnifiedTradingView');
 const EnhancedTradingView = lazyLoad(() => import('./views/EnhancedTradingView'), 'EnhancedTradingView');
-const PositionsView = lazyLoad(() => import('./views/PositionsView').then(m => ({ default: m.PositionsView }
-  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; }))), 'PositionsView');
-const PortfolioPage = lazyLoad(() => import('./views/PortfolioPage').then(m => ({ default: m.PortfolioPage }
-  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; }))), 'PortfolioPage');
-const StrategyLabView = lazyLoad(() => import('./views/EnhancedStrategyLabView').then(m => ({ default: m.EnhancedStrategyLabView }
-  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; }))), 'EnhancedStrategyLabView');
+const PositionsView = lazyLoad(() =>
+  import('./views/PositionsView')
+    .then(m => ({ default: m.PositionsView }))
+    .catch(err => {
+      console.warn("API Error:", err);
+      return { default: () => <div>Component Error</div> };
+    }),
+  'PositionsView');
+const PortfolioPage = lazyLoad(() =>
+  import('./views/PortfolioPage')
+    .then(m => ({ default: m.PortfolioPage }))
+    .catch(err => {
+      console.warn("API Error:", err);
+      return { default: () => <div>Component Error</div> };
+    }),
+  'PortfolioPage');
+const StrategyLabView = lazyLoad(() =>
+  import('./views/EnhancedStrategyLabView')
+    .then(m => ({ default: m.EnhancedStrategyLabView }))
+    .catch(err => {
+      console.warn("API Error:", err);
+      return { default: () => <div>Component Error</div> };
+    }),
+  'EnhancedStrategyLabView');
 const StrategyBuilderView = lazyLoad(() => import('./views/StrategyBuilderView'), 'StrategyBuilderView');
 const ExchangeSettingsView = lazyLoad(() => import('./views/ExchangeSettingsView'), 'ExchangeSettingsView');
 
