@@ -50,3 +50,16 @@ export {
 
 // Telegram store secret for backend (server-side only, not accessible from frontend)
 export const TELEGRAM_STORE_SECRET = typeof process !== 'undefined' ? process.env.TELEGRAM_STORE_SECRET || '' : '';
+
+/**
+ * Build WebSocket URL with proper base and path handling
+ * Prevents /ws/ws duplication issues
+ */
+export function buildWebSocketUrl(path: string): string {
+  // Normalize path to start with /
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  // Remove any existing /ws prefix from the path
+  const cleanPath = normalizedPath.replace(/^\/ws/, '');
+  // Combine WS_BASE with clean path
+  return `${WS_BASE}${cleanPath}`;
+}

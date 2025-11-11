@@ -30,16 +30,19 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
         const data = await response.json();
         if (data.success && data.news) {
           // Convert API news format to NewsItem format
-          const formattedNews: NewsItem[] = (data.news || []).map((item: Record<string, unknown>, index: number) => ({
-            id: item.id || `news-${index}-${Date.now()}`,
-            title: item.title || item.headline || 'No title',
-            description: item.description || item.summary || item.content || '',
-            url: item.url || item.link || '#',
-            source: item.source || item.source_name || 'Unknown',
-            publishedAt: item.publishedAt || item.published_at || item.timestamp || new Date().toISOString(),
-            sentiment: item.sentiment || (item.sentiment_score > 0.1 ? 'positive' : item.sentiment_score < -0.1 ? 'negative' : 'neutral'),
-            impact: item.impact || (Math.abs(item.sentiment_score || 0) > 0.5 ? 'high' : Math.abs(item.sentiment_score || 0) > 0.2 ? 'medium' : 'low')
-          }));
+          const formattedNews: NewsItem[] = (data.news || []).map((item: Record<string, unknown>, index: number) => {
+            const sentimentScore = typeof item.sentiment_score === 'number' ? item.sentiment_score : 0;
+            return {
+              id: item.id || `news-${index}-${Date.now()}`,
+              title: item.title || item.headline || 'No title',
+              description: item.description || item.summary || item.content || '',
+              url: item.url || item.link || '#',
+              source: item.source || item.source_name || 'Unknown',
+              publishedAt: item.publishedAt || item.published_at || item.timestamp || new Date().toISOString(),
+              sentiment: item.sentiment || (sentimentScore > 0.1 ? 'positive' : sentimentScore < -0.1 ? 'negative' : 'neutral'),
+              impact: item.impact || (Math.abs(sentimentScore) > 0.5 ? 'high' : Math.abs(sentimentScore) > 0.2 ? 'medium' : 'low')
+            };
+          });
           setNews(formattedNews);
         }
       } else {

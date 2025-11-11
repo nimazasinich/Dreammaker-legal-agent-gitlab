@@ -66,9 +66,9 @@ export const RiskView: React.FC = () => {
     const fetchRiskData = async () => {
       try {
         setLoading(true);
-        const response = await dataManager.fetchData('/api/risk/metrics');
+        const response = await dataManager.fetchData('/api/risk/metrics') as any;
         if (response && response.success) {
-          setRiskMetrics(response.data);
+          setRiskMetrics(response.data as RiskMetrics);
           setError(null);
         } else {
           setError(new Error('No risk metrics data available'));

@@ -18,8 +18,6 @@ export const RealSignalFeedConnector: React.FC<RealSignalFeedConnectorProps> = (
   limit = 20,
   onSignalClick
 }) => {
-    const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [realSignals, setRealSignals] = useState<RealSignalData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -2,6 +2,8 @@
 import { Logger } from '../core/Logger.js';
 import { MarketData } from '../types/index.js';
 
+const logger = Logger.getInstance();
+
 // TensorFlow.js imports with conditional loading
 let tf: any = null;
 

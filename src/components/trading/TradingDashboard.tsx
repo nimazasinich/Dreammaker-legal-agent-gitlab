@@ -61,7 +61,7 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
   const [isLive, setIsLive] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected'>('disconnected');
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
-  const [modelPerformance, setModelPerformance] = useState<Record<string, unknown> | null>(null);
+  const [modelPerformance, setModelPerformance] = useState<any>(null);
 
   const symbols = marketDataService.getSupportedSymbols();
   const timeframes = marketDataService.getSupportedTimeframes();
@@ -154,7 +154,7 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
             price: priceData.close,
             change24h,
             changePercent24h,
-            volume24h: priceData.volume || priceData.volume24h || 0,
+            volume24h: (priceData as any).volume || (priceData as any).volume24h || 0,
             isConnected: true
           });
           
@@ -638,7 +638,7 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
                   <div>
                     <div className="text-sm font-medium text-gray-600">R²</div>
                     <div className="text-xl font-bold text-green-600">
-                      {latestMetrics.rSquared.toFixed(3)}
+                      {(latestMetrics as any).rSquared?.toFixed(3) || 'N/A'}
                     </div>
                   </div>
                   <div>
@@ -661,7 +661,7 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Exploration Rate:</span>
-                        <span className="font-medium">{(modelPerformance.explorationRate * 100).toFixed(1)}%</span>
+                        <span className="font-medium">{((modelPerformance?.explorationRate || 0) * 100).toFixed(1)}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Buffer Size:</span>

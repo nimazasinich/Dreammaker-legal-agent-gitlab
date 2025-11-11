@@ -3,7 +3,7 @@ import { Logger } from '../core/Logger.js';
 import {
   TrendingUp, TrendingDown, Activity, BarChart3, Layers,
   Maximize2, Settings, Download, Share2, Clock, RefreshCw,
-  ChevronDown, Eye, EyeOff, Grid, Zap, Target, TrendingFlat,
+  ChevronDown, Eye, EyeOff, Grid, Zap, Target, Minus,
   Search, Plus, X
 } from 'lucide-react';
 import { dataManager } from '../services/dataManager';
