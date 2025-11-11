@@ -1,0 +1,529 @@
+/**
+ * Real Data Manager - Centralized real data flow management
+ * Connects all frontend components to real backend APIs
+ */
+
+import { Logger } from '../core/Logger.js';
+
+interface ComponentUpdate {
+  component: string;
+  data: any;
+  timestamp: number;
+}
+
+export interface RealSignalData {
+  id: string | number;
+  symbol: string;
+  action: 'BUY' | 'SELL' | 'HOLD';
+  confidence: number;
+  confluence?: number;
+  timeframe: string;
+  timestamp: number;
+  entry?: number;
+  stopLoss?: number;
+  takeProfit?: number;
+  reasoning?: string[];
+}
+
+export interface RealPriceData {
+  symbol: string;
+  price: number;
+  change24h: number;
+  changePercent24h: number;
+  volume: number;
+  timestamp: number;
+}
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+export class RealDataManager {
+  private static instance: RealDataManager;
+  private logger = Logger.getInstance();
+  private apiBase = 'http://localhost:3001/api';
+  private subscribers: Map<string, Array<(data: any) => void>> = new Map();
+  private intervals: Map<string, NodeJS.Timeout> = new Map();
+  private isInitialized = false;
+  
+  // Cache and request deduplication
+  private cache: Map<string, CacheEntry<any>> = new Map();
+  private pendingRequests: Map<string, Promise<any>> = new Map();
+  private readonly CACHE_TTL = 5000; // 5 seconds cache
+
+  private constructor() {}
+
+  static getInstance(): RealDataManager {
+    if (!RealDataManager.instance) {
+      RealDataManager.instance = new RealDataManager();
+    }
+    return RealDataManager.instance;
+  }
+
+  /**
+   * Initialize all real data flows
+   */
+  async initializeRealDataFlow(): Promise<void> {
+    // Prevent multiple initializations
+    if (this.isInitialized) {
+      this.logger.warn('RealDataManager already initialized, skipping');
+      return;
+    }
+    
+    this.logger.info('Initializing 100% real data flow');
+
+    // Start all real-time data streams
+    this.startPriceUpdates();
+    this.startPortfolioUpdates();
+    this.startSentimentUpdates();
+    this.startNewsUpdates();
+    this.startWhaleUpdates();
+    this.startSignalUpdates();
+
+    this.isInitialized = true;
+    this.logger.info('All real data streams active');
+  }
+
+  /**
+   * Cleanup and stop all streams
+   */
+  cleanup(): void {
+    this.stopAllStreams();
+    this.subscribers.clear();
+    this.isInitialized = false;
+    this.logger.info('RealDataManager cleaned up');
+  }
+
+  /**
+   * Subscribe to component updates
+   */
+  subscribe(component: string, callback: (data: any) => void): () => void {
+    if (!this.subscribers.has(component)) {
+      this.subscribers.set(component, []);
+    }
+    const callbacks = this.subscribers.get(component)!;
+    callbacks.push(callback);
+
+    // Limit subscribers per component to prevent memory leak
+    const MAX_SUBSCRIBERS = 100;
+    if ((callbacks?.length || 0) > MAX_SUBSCRIBERS) {
+      this.logger.warn(`Too many subscribers for ${component}, removing oldest`, {
+        count: callbacks.length,
+        max: MAX_SUBSCRIBERS
+      });
+      callbacks.shift(); // Remove oldest
+    }
+
+    // Return unsubscribe function
+    return () => {
+      const callbacks = this.subscribers.get(component);
+      if (callbacks) {
+        const index = callbacks.indexOf(callback);
+        if (index > -1) {
+          callbacks.splice(index, 1);
+        }
+        // Clean up empty arrays
+        if (callbacks.length === 0) {
+          this.subscribers.delete(component);
+        }
+      }
+    };
+  }
+
+  /**
+   * Update component with new data
+   */
+  private updateComponent(component: string, data: any): void {
+    const callbacks = this.subscribers.get(component);
+    if (callbacks && (callbacks?.length || 0) > 0) {
+      // Only update if there are active subscribers
+      callbacks.forEach(callback => {
+        try {
+          callback(data);
+        } catch (error) {
+          this.logger.error(`Error updating ${component}`, {}, error as Error);
+        }
+      });
+    }
+  }
+
+  /**
+   * Start real-time price updates (every 5 seconds)
+   */
+  private startPriceUpdates(): void {
+    // Clear existing interval if any
+    if (this.intervals.has('prices')) {
+      clearInterval(this.intervals.get('prices')!);
+    }
+
+    const updatePrices = async () => {
+      // Check if there are any subscribers before fetching
+      const hasSubscribers = 
+        this.subscribers.has('PriceChart') ||
+        this.subscribers.has('MarketOverview') ||
+        this.subscribers.has('TradingView');
+      
+      if (!hasSubscribers) {
+        // No subscribers, skip update to save resources
+        return;
+      }
+
+      try {
+        const prices = await this.fetchRealPrices(['bitcoin', 'ethereum', 'solana', 'tron']);
+        prices.forEach((price: RealPriceData) => {
+          this.updateComponent(`PriceChart:${price.symbol}`, { data: price, timestamp: Date.now() });
+        });
+        this.updateComponent('PriceChart', { data: prices, timestamp: Date.now() });
+        this.updateComponent('MarketOverview', { data: prices, timestamp: Date.now() });
+        this.updateComponent('TradingView', { data: prices, timestamp: Date.now() });
+      } catch (error) {
+        this.logger.error('Failed to update prices', {}, error as Error);
+      }
+    };
+
+    updatePrices(); // Initial update
+    const interval = setInterval(updatePrices, 5000);
+    this.intervals.set('prices', interval);
+  }
+
+  /**
+   * Start portfolio updates (every 30 seconds)
+   */
+  private startPortfolioUpdates(): void {
+    // Clear existing interval if any
+    if (this.intervals.has('portfolio')) {
+      clearInterval(this.intervals.get('portfolio')!);
+    }
+
+    const updatePortfolio = async () => {
+      if (!this.subscribers.has('PortfolioCard') && !this.subscribers.has('PortfolioView')) {
+        return; // No subscribers
+      }
+
+      try {
+        const portfolio = await this.fetchRealPortfolio(undefined, {});
+        this.updateComponent('PortfolioCard', { data: portfolio, timestamp: Date.now() });
+        this.updateComponent('PortfolioView', { data: portfolio, timestamp: Date.now() });
+      } catch (error) {
+        this.logger.error('Failed to update portfolio', {}, error as Error);
+      }
+    };
+
+    updatePortfolio(); // Initial update
+    const interval = setInterval(updatePortfolio, 30000);
+    this.intervals.set('portfolio', interval);
+  }
+
+  /**
+   * Start sentiment updates (every minute)
+   */
+  private startSentimentUpdates(): void {
+    // Clear existing interval if any
+    if (this.intervals.has('sentiment')) {
+      clearInterval(this.intervals.get('sentiment')!);
+    }
+
+    const updateSentiment = async () => {
+      if (!this.subscribers.has('SentimentIndicator') && !this.subscribers.has('MarketSentiment')) {
+        return; // No subscribers
+      }
+
+      try {
+        const sentiment = await this.fetchRealSentiment({});
+        this.updateComponent('SentimentIndicator', { data: sentiment, timestamp: Date.now() });
+        this.updateComponent('MarketSentiment', { data: sentiment, timestamp: Date.now() });
+      } catch (error) {
+        this.logger.error('Failed to update sentiment', {}, error as Error);
+      }
+    };
+
+    updateSentiment(); // Initial update
+    const interval = setInterval(updateSentiment, 60000);
+    this.intervals.set('sentiment', interval);
+  }
+
+  /**
+   * Start news updates (every 2 minutes)
+   */
+  private startNewsUpdates(): void {
+    // Clear existing interval if any
+    if (this.intervals.has('news')) {
+      clearInterval(this.intervals.get('news')!);
+    }
+
+    const updateNews = async () => {
+      if (!this.subscribers.has('NewsFeed') && !this.subscribers.has('NewsPanel')) {
+        return; // No subscribers
+      }
+
+      try {
+        const news = await this.fetchRealNews({});
+        this.updateComponent('NewsFeed', { data: news, timestamp: Date.now() });
+        this.updateComponent('NewsPanel', { data: news, timestamp: Date.now() });
+      } catch (error) {
+        this.logger.error('Failed to update news', {}, error as Error);
+      }
+    };
+
+    updateNews(); // Initial update
+    const interval = setInterval(updateNews, 120000);
+    this.intervals.set('news', interval);
+  }
+
+  /**
+   * Start whale transaction updates (every minute)
+   */
+  private startWhaleUpdates(): void {
+    // Clear existing interval if any
+    if (this.intervals.has('whales')) {
+      clearInterval(this.intervals.get('whales')!);
+    }
+
+    const updateWhales = async () => {
+      if (!this.subscribers.has('WhaleTracker') && !this.subscribers.has('WhaleAlerts')) {
+        return; // No subscribers
+      }
+
+      try {
+        const whales = await this.fetchRealWhaleTransactions({});
+        this.updateComponent('WhaleTracker', { data: whales, timestamp: Date.now() });
+        this.updateComponent('WhaleAlerts', { data: whales, timestamp: Date.now() });
+      } catch (error) {
+        this.logger.error('Failed to update whale data', {}, error as Error);
+      }
+    };
+
+    updateWhales(); // Initial update
+    const interval = setInterval(updateWhales, 60000);
+    this.intervals.set('whales', interval);
+  }
+
+  /**
+   * Start signal updates (every 30 seconds)
+   */
+  private startSignalUpdates(): void {
+    // Clear existing interval if any
+    if (this.intervals.has('signals')) {
+      clearInterval(this.intervals.get('signals')!);
+    }
+
+    const updateSignals = async () => {
+      if (!this.subscribers.has('SignalGenerator') && !this.subscribers.has('TradingSignals')) {
+        return; // No subscribers
+      }
+
+      try {
+        const signals = await this.fetchRealSignals(20, {});
+        this.updateComponent('SignalGenerator', { data: signals, timestamp: Date.now() });
+        this.updateComponent('TradingSignals', { data: signals, timestamp: Date.now() });
+      } catch (error) {
+        this.logger.error('Failed to update signals', {}, error as Error);
+      }
+    };
+
+    updateSignals(); // Initial update
+    const interval = setInterval(updateSignals, 30000);
+    this.intervals.set('signals', interval);
+  }
+
+  /**
+   * Fetch real prices from backend
+   */
+  async fetchRealPrices(symbols: string[], options?: { signal?: AbortSignal }): Promise<RealPriceData[]> {
+    // Convert symbols to API format (BTCUSDT -> BTCUSDT, bitcoin -> BTCUSDT)
+    const apiSymbols = (symbols || []).map(s => {
+      // If already in USDT format, use as-is
+      if (s.includes('USDT')) return s;
+      // Convert lowercase names to USDT pairs
+      const symbolMap: Record<string, string> = {
+        'bitcoin': 'BTCUSDT',
+        'ethereum': 'ETHUSDT',
+        'solana': 'SOLUSDT',
+        'tron': 'TRXUSDT',
+        'btc': 'BTCUSDT',
+        'eth': 'ETHUSDT',
+        'sol': 'SOLUSDT',
+        'trx': 'TRXUSDT'
+      };
+      return symbolMap[s.toLowerCase()] || `${s.toUpperCase()}USDT`;
+    });
+    
+    const cacheKey = `prices:${apiSymbols.join(',')}`;
+    const endpoint = `/market/prices?symbols=${apiSymbols.join(',')}`;
+    
+    const result = await this.fetchWithCache<{ prices: any[]; data: any[] }>(
+      cacheKey,
+      endpoint,
+      options
+    );
+    
+    const prices = result.prices || result.data || [];
+    
+    // Map prices back to original symbol format for consistency
+    return (prices || []).map((price: any) => ({
+      symbol: price.symbol || symbols[0],
+      price: price.price,
+      change24h: price.change24h,
+      changePercent24h: price.changePercent24h,
+      volume: price.volume,
+      timestamp: price.timestamp || Date.now()
+    }));
+  }
+
+  /**
+   * Generic fetch method with cache and deduplication
+   */
+  private async fetchWithCache<T>(
+    cacheKey: string,
+    endpoint: string,
+    options?: { signal?: AbortSignal }
+  ): Promise<T> {
+    // Check pending requests first
+    if (this.pendingRequests.has(cacheKey)) {
+      this.logger.debug(`Returning pending request for ${cacheKey}`);
+      return this.pendingRequests.get(cacheKey)!;
+    }
+
+    // Check cache
+    const cached = this.cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+      this.logger.debug(`Returning cached data for ${cacheKey}`);
+      return cached.data;
+    }
+
+    // Create new request
+    const promise = this.fetchData<T>(endpoint, options?.signal)
+      .then(data => {
+        // Store in cache
+        this.cache.set(cacheKey, {
+          data,
+          timestamp: Date.now()
+        }
+  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; }));
+        // Remove from pending
+        this.pendingRequests.delete(cacheKey);
+        return data;
+      })
+      .catch(error => {
+        this.pendingRequests.delete(cacheKey);
+        throw error;
+      });
+
+    this.pendingRequests.set(cacheKey, promise);
+    return promise;
+  }
+
+  /**
+   * Fetch data from API
+   */
+  private async fetchData<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
+    this.logger.debug(`Fetching: ${endpoint}`);
+    
+    const url = `${this.apiBase}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    
+    const response = await fetch(url, {
+      signal
+    });
+
+    if (!response.ok) {
+      console.error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    this.logger.debug(`Received from ${endpoint}:`, Array.isArray(data) ? `${data.length} items` : 'object');
+    
+    return data.success ? data.data || data : data;
+  }
+
+  /**
+   * Fetch real portfolio data
+   */
+  async fetchRealPortfolio(walletAddresses?: string[], options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = '/portfolio';
+    return this.fetchData<any>(endpoint, options?.signal);
+  }
+
+  /**
+   * Fetch real sentiment data
+   */
+  async fetchRealSentiment(options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = '/sentiment/fear-greed';
+    return this.fetchData<any>(endpoint, options?.signal);
+  }
+
+  /**
+   * Fetch real news data
+   */
+  async fetchRealNews(options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = '/news/latest';
+    return this.fetchData<any>(endpoint, options?.signal);
+  }
+
+  /**
+   * Fetch real whale transactions
+   */
+  async fetchRealWhaleTransactions(options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = '/whale/transactions';
+    return this.fetchData<any>(endpoint, options?.signal);
+  }
+
+  /**
+   * Fetch real trading signals
+   */
+  async fetchRealSignals(limit: number = 20, options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = `/signals/history?limit=${limit}`;
+    const result = await this.fetchData<{ data: any[]; history: any[] }>(endpoint, options?.signal);
+    return result.data || result.history || [];
+  }
+
+  /**
+   * Fetch real positions
+   */
+  async fetchRealPositions(options?: { signal?: AbortSignal }): Promise<any[]> {
+    const endpoint = '/positions';
+    const result = await this.fetchData<{ positions: any[]; data: any[] }>(endpoint, options?.signal);
+    return result.positions || result.data || [];
+  }
+
+  /**
+   * Fetch signal statistics
+   */
+  async fetchRealSignalStatistics(options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = '/signals/statistics';
+    return this.fetchData<any>(endpoint, options?.signal);
+  }
+
+  /**
+   * Fetch training metrics
+   */
+  async fetchRealTrainingMetrics(limit: number = 100, options?: { signal?: AbortSignal }): Promise<any[]> {
+    const endpoint = `/training-metrics?limit=${limit}`;
+    const result = await this.fetchData<any[]>(endpoint, options?.signal);
+    return Array.isArray(result) ? result : [];
+  }
+
+  /**
+   * Subscribe to signal updates
+   */
+  subscribeToSignals(callback: (signal: any) => void): () => void {
+    return this.subscribe('SignalGenerator', callback);
+  }
+
+  /**
+   * Subscribe to price updates for a specific symbol
+   */
+  subscribeToPrice(symbol: string, callback: (price: RealPriceData) => void): () => void {
+    return this.subscribe(`PriceChart:${symbol}`, callback);
+  }
+
+  /**
+   * Subscribe to portfolio updates
+   */
+  subscribeToPortfolio(callback: (portfolio: any) => void): () => void {
+    return this.subscribe('PortfolioCard', callback);
+  }
+}
+
+// Export singleton instance
+export const realDataManager = RealDataManager.getInstance();
