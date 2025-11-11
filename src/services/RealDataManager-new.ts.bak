@@ -1,0 +1,363 @@
+/**
+ * Real Data Manager - Centralized real data flow management with caching and request deduplication
+ * Prevents memory leaks by caching requests and avoiding duplicate API calls
+ */
+
+import { Logger } from '../core/Logger.js';
+
+interface ComponentUpdate {
+  component: string;
+  data: any;
+  timestamp: number;
+}
+
+export interface RealSignalData {
+  id: string | number;
+  symbol: string;
+  action: 'BUY' | 'SELL' | 'HOLD';
+  confidence: number;
+  confluence?: number;
+  timeframe: string;
+  timestamp: number;
+  entry?: number;
+  stopLoss?: number;
+  takeProfit?: number;
+  reasoning?: string[];
+}
+
+export interface RealPriceData {
+  symbol: string;
+  price: number;
+  change24h: number;
+  volume24h: number;
+  lastUpdate: number;
+}
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+export class RealDataManager {
+  private static instance: RealDataManager;
+  private subscribers: Map<string, Set<(data: any) => void>> = new Map();
+  private priceSubscribers: Map<string, Set<(price: RealPriceData) => void>> = new Map();
+  private isInitialized = false;
+  
+  private apiBase = 'http://localhost:3001';
+  private cache: Map<string, CacheEntry<any>> = new Map();
+  private pendingRequests: Map<string, Promise<any>> = new Map();
+  private readonly CACHE_TTL = 3000; // 3 seconds cache for better performance
+
+  private logger = {
+    debug: (message: string, ...args: any[]) => {
+      logger.info(`[RealDataManager] ${message}`, { data: args });
+    },
+    error: (message: string, ...args: any[]) => {
+      logger.error(`[RealDataManager] ${message}`, {}, ...args);
+    }
+  };
+
+  private constructor() {}
+
+  static getInstance(): RealDataManager {
+    if (!RealDataManager.instance) {
+      RealDataManager.instance = new RealDataManager();
+    }
+    return RealDataManager.instance;
+  }
+
+  /**
+   * Generic fetch method with caching and request deduplication
+   */
+  private async fetchData<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
+    const cacheKey = endpoint;
+
+    // 1. Check if there's already a pending request for this endpoint
+    if (this.pendingRequests.has(cacheKey)) {
+      this.logger.debug(`⏳ Reusing pending request: ${endpoint}`);
+      return this.pendingRequests.get(cacheKey)!;
+    }
+
+    // 2. Check cache - if data is fresh, return it
+    const cached = this.cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+      this.logger.debug(`💾 Cache hit: ${endpoint}`);
+      return cached.data;
+    }
+
+    // 3. Make new request
+    this.logger.debug(`📡 Fetching: ${endpoint}`);
+    
+    const url = `${this.apiBase}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    
+    const promise = fetch(url, { signal })
+      .then(async (response) => {
+        if (!response.ok) {
+          console.error(`HTTP ${response.status}
+  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; }): ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const processedData = data.success ? data.data || data : data;
+        
+        // Store in cache
+        this.cache.set(cacheKey, {
+          data: processedData,
+          timestamp: Date.now()
+        }
+  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; }));
+        
+        // Remove from pending requests
+        this.pendingRequests.delete(cacheKey);
+        
+        this.logger.debug(`✅ Cached: ${endpoint}`, Array.isArray(processedData) ? `${processedData.length} items` : 'object');
+        return processedData;
+      })
+      .catch((error) => {
+        // Remove from pending requests on error
+        this.pendingRequests.delete(cacheKey);
+        this.logger.error(`❌ Error fetching ${endpoint}:`, error.message);
+        throw error;
+      });
+
+    // Store the promise to prevent duplicate requests
+    this.pendingRequests.set(cacheKey, promise);
+    return promise;
+  }
+
+  /**
+   * Clear cache - useful for forced refresh
+   */
+  public clearCache(): void {
+    this.cache.clear();
+    this.pendingRequests.clear();
+    this.logger.debug('🗑️ Cache cleared');
+  }
+
+  /**
+   * Get cache statistics for debugging
+   */
+  public getCacheStats(): { size: number; pending: number } {
+    return {
+      size: this.cache.size,
+      pending: this.pendingRequests.size
+    };
+  }
+
+  /**
+   * Fetch real market prices
+   */
+  async fetchRealPrices(symbols: string[], options?: { signal?: AbortSignal }): Promise<RealPriceData[]> {
+    // Map display symbols to API symbols
+    const symbolMap: { [key: string]: string } = {
+      'BTC': 'BTCUSDT',
+      'ETH': 'ETHUSDT', 
+      'SOL': 'SOLUSDT',
+      'ADA': 'ADAUSDT',
+      'DOT': 'DOTUSDT',
+      'LINK': 'LINKUSDT',
+      'MATIC': 'MATICUSDT',
+      'AVAX': 'AVAXUSDT',
+      'UNI': 'UNIUSDT',
+      'AAVE': 'AAVEUSDT'
+    };
+
+    const apiSymbols = (symbols || []).map(s => symbolMap[s] || s);
+    const endpoint = `/api/market/prices?symbols=${apiSymbols.join(',')}`;
+    
+    const result = await this.fetchData<{ prices: any[]; data: any[] }>(endpoint, options?.signal);
+    const prices = result.prices || result.data || [];
+    
+    // Map back to original format
+    return (prices || []).map((price: any) => ({
+      symbol: price.symbol || 'UNKNOWN',
+      price: parseFloat(price.price) || 0,
+      change24h: parseFloat(price.changePercent24h || price.change24h) || 0,
+      volume24h: parseFloat(price.volume) || 0,
+      lastUpdate: Date.now()
+    }));
+  }
+
+  /**
+   * Fetch real portfolio data
+   */
+  async fetchRealPortfolio(walletAddresses?: string[], options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = '/api/portfolio';
+    return this.fetchData<any>(endpoint, options?.signal);
+  }
+
+  /**
+   * Fetch real sentiment data
+   */
+  async fetchRealSentiment(options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = '/api/sentiment/fear-greed';
+    return this.fetchData<any>(endpoint, options?.signal);
+  }
+
+  /**
+   * Fetch real news data
+   */
+  async fetchRealNews(options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = '/api/news/latest';
+    return this.fetchData<any>(endpoint, options?.signal);
+  }
+
+  /**
+   * Fetch real whale transactions
+   */
+  async fetchRealWhaleTransactions(options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = '/api/whale/transactions';
+    return this.fetchData<any>(endpoint, options?.signal);
+  }
+
+  /**
+   * Fetch real trading signals
+   */
+  async fetchRealSignals(limit: number = 20, options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = `/api/signals/history?limit=${limit}`;
+    const result = await this.fetchData<{ data: any[]; history: any[] }>(endpoint, options?.signal);
+    return result.data || result.history || [];
+  }
+
+  /**
+   * Fetch real positions
+   */
+  async fetchRealPositions(options?: { signal?: AbortSignal }): Promise<any[]> {
+    const endpoint = '/api/positions';
+    const result = await this.fetchData<{ positions: any[]; data: any[] }>(endpoint, options?.signal);
+    return result.positions || result.data || [];
+  }
+
+  /**
+   * Fetch signal statistics
+   */
+  async fetchRealSignalStatistics(options?: { signal?: AbortSignal }): Promise<any> {
+    const endpoint = '/api/signals/statistics';
+    return this.fetchData<any>(endpoint, options?.signal);
+  }
+
+  /**
+   * Fetch training metrics
+   */
+  async fetchRealTrainingMetrics(limit: number = 100, options?: { signal?: AbortSignal }): Promise<any[]> {
+    const endpoint = `/api/training-metrics?limit=${limit}`;
+    const result = await this.fetchData<any[]>(endpoint, options?.signal);
+    return Array.isArray(result) ? result : [];
+  }
+
+  /**
+   * Subscribe to signal updates
+   */
+  subscribeToSignals(callback: (signal: any) => void): () => void {
+    if (!this.subscribers.has('signals')) {
+      this.subscribers.set('signals', new Set());
+    }
+    
+    this.subscribers.get('signals')!.add(callback);
+    
+    // Start signal updates if this is the first subscriber
+    this.startSignalUpdates();
+    
+    // Return unsubscribe function
+    return () => {
+      const subscribers = this.subscribers.get('signals');
+      if (subscribers) {
+        subscribers.delete(callback);
+        if (subscribers.size === 0) {
+          this.subscribers.delete('signals');
+        }
+      }
+    };
+  }
+
+  /**
+   * Subscribe to price updates for a specific symbol
+   */
+  subscribeToPrice(symbol: string, callback: (price: RealPriceData) => void): () => void {
+    if (!this.priceSubscribers.has(symbol)) {
+      this.priceSubscribers.set(symbol, new Set());
+    }
+    
+    this.priceSubscribers.get(symbol)!.add(callback);
+    
+    // Start updates if this is the first subscriber for this symbol
+    this.startPriceUpdates();
+    
+    // Return unsubscribe function
+    return () => {
+      const subscribers = this.priceSubscribers.get(symbol);
+      if (subscribers) {
+        subscribers.delete(callback);
+        if (subscribers.size === 0) {
+          this.priceSubscribers.delete(symbol);
+        }
+      }
+    };
+  }
+
+  /**
+   * Public methods for easy access (aliases)
+   */
+  async getPortfolio(): Promise<any> {
+    return this.fetchRealPortfolio();
+  }
+
+  async getPositions(): Promise<any[]> {
+    return this.fetchRealPositions();
+  }
+
+  async getPrices(symbols?: string[]): Promise<RealPriceData[]> {
+    const defaultSymbols = ['BTC', 'ETH', 'SOL', 'ADA', 'DOT', 'LINK', 'MATIC', 'AVAX'];
+    return this.fetchRealPrices(symbols || defaultSymbols);
+  }
+
+  async getSignalStatistics(): Promise<any> {
+    return this.fetchRealSignalStatistics();
+  }
+
+  async getTrainingMetrics(): Promise<any[]> {
+    return this.fetchRealTrainingMetrics();
+  }
+
+  /**
+   * Start real-time updates (only if there are subscribers)
+   */
+  private startPriceUpdates(): void {
+    // Implementation for price streaming
+    this.logger.debug('Price updates started');
+  }
+
+  private startSignalUpdates(): void {
+    // Implementation for signal streaming
+    this.logger.debug('Signal updates started');
+  }
+
+  /**
+   * Initialize data manager
+   */
+  async initializeRealDataFlow(): Promise<void> {
+    if (this.isInitialized) {
+      this.logger.debug('Already initialized, skipping');
+      return;
+    }
+    
+    this.logger.debug('Initializing RealDataManager with caching');
+    this.isInitialized = true;
+  }
+
+  /**
+   * Cleanup method
+   */
+  cleanup(): void {
+    this.clearCache();
+    this.subscribers.clear();
+    this.priceSubscribers.clear();
+    this.isInitialized = false;
+    this.logger.debug('RealDataManager cleaned up');
+  }
+}
+
+// Export singleton instance
+export const realDataManager = RealDataManager.getInstance();
