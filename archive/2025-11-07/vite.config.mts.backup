@@ -1,0 +1,41 @@
+import path from "path";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  server: { 
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/ws': {
+        target: 'ws://localhost:8000',
+        ws: true,
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+  optimizeDeps: {
+    exclude: ["better-sqlite3", "sqlite3"],
+  },
+  build: {
+    rollupOptions: {
+      external: (id) =>
+        id === "better-sqlite3" ||
+        id === "sqlite3" ||
+        id.startsWith("node:"),
+    },
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      "better-sqlite3": false as unknown as string,
+      sqlite3: false as unknown as string,
+    },
+  },
+});
