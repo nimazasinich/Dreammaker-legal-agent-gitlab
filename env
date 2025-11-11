@@ -1,0 +1,57 @@
+VITE_API_BASE=http://localhost:3001/api
+VITE_WS_BASE=http://localhost:3001
+
+# Data Policy - Real Data Only (داده‌های واقعی فقط)
+VITE_APP_MODE=online
+VITE_STRICT_REAL_DATA=true
+VITE_USE_MOCK_DATA=false
+VITE_ALLOW_FAKE_DATA=false
+
+# Hugging Face API Key (توکن جدید)
+HF_TOKEN=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
+HUGGINGFACE_API_KEY=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
+
+# Server Configuration
+PORT=3001
+NODE_ENV=development
+
+# Proxy Configuration - Only for Binance (فقط برای Binance)
+# اگر نیاز به پروکسی برای دسترسی به Binance دارید، این متغیرها را تنظیم کنید
+# در غیر این صورت، از backend proxy routes استفاده می‌شود
+# HTTP_PROXY=http://proxy.example.com:8080
+# HTTPS_PROXY=http://proxy.example.com:8080
+# USE_GLOBAL_PROXY_FOR_BINANCE=false  # true = استفاده از global proxy، false = استفاده از backend proxy routes
+
+# NO_PROXY - دامنه‌هایی که نباید از پروکسی استفاده کنند (به صورت خودکار تنظیم می‌شود)
+# NO_PROXY=api.coingecko.com,huggingface.co,datasets-server.huggingface.co,fonts.googleapis.com,fonts.gstatic.com,localhost,127.0.0.1
+
+# API Provider Priority (اولویت سرویس‌دهنده‌ها)
+# CoinMarketCap disabled - ظرفیت محدود دارد (CoinMarketCap غیرفعال - ظرفیت محدود)
+ENABLE_CMC=false
+CMC_API_KEY=
+
+# ============================================
+# Backend – throttle at boot (کاهش درخواست‌ها در بوت)
+# ============================================
+START_INGEST_ON_BOOT=false
+ENABLE_INGEST_CRON=false
+WATCHED_SYMBOLS=BTC,ETH
+STARTUP_INTERVALS=15m
+STARTUP_HIST_LIMIT=200
+DISABLE_NEWS=true
+DISABLE_SENTIMENT=true
+
+# ============================================
+# Frontend – no auto-connect, no initial mega-prefetch
+# ============================================
+VITE_WS_CONNECT_ON_START=false
+VITE_DISABLE_INITIAL_LOAD=true
+VITE_REFRESH_MS=120000
+
+# ============================================
+# Resilience/Fallback – بهینه‌سازی شده برای پایداری
+# ============================================
+AXIOS_MAX_RETRIES=3
+BOOT_NO_RETRY=false
+BOOT_PRIMARY_ONLY=false
+BOOT_WINDOW_MS=120000
