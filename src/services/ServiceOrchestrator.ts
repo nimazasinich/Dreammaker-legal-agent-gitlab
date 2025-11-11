@@ -30,27 +30,27 @@ interface OrchestratorConfig {
 
 export class ServiceOrchestrator {
   private static instance: ServiceOrchestrator;
-  private logger = Logger.getInstance();
-  
+  private logger: Logger;
+
   // Core Services
-  private signalGenerator = SignalGeneratorService.getInstance();
-  private orderManagement = OrderManagementService.getInstance();
-  private continuousLearning = ContinuousLearningService.getInstance();
-  private alertService = AlertService.getInstance();
-  private notificationService = NotificationService.getInstance();
-  private marketDataIngestion = MarketDataIngestionService.getInstance();
-  
+  private signalGenerator: SignalGeneratorService;
+  private orderManagement: OrderManagementService;
+  private continuousLearning: ContinuousLearningService;
+  private alertService: AlertService;
+  private notificationService: NotificationService;
+  private marketDataIngestion: MarketDataIngestionService;
+
   // AI Services
-  private trainingEngine = TrainingEngine.getInstance();
-  private bullBearAgent = BullBearAgent.getInstance();
-  private featureEngineering = FeatureEngineering.getInstance();
-  
+  private trainingEngine: TrainingEngine;
+  private bullBearAgent: BullBearAgent;
+  private featureEngineering: FeatureEngineering;
+
   // Analysis Services
-  private smcAnalyzer = SMCAnalyzer.getInstance();
-  private elliottWaveAnalyzer = ElliottWaveAnalyzer.getInstance();
-  private harmonicDetector = HarmonicPatternDetector.getInstance();
-  private sentimentAnalysis = SentimentAnalysisService.getInstance();
-  private whaleTracker = WhaleTrackerService.getInstance();
+  private smcAnalyzer: SMCAnalyzer;
+  private elliottWaveAnalyzer: ElliottWaveAnalyzer;
+  private harmonicDetector: HarmonicPatternDetector;
+  private sentimentAnalysis: SentimentAnalysisService;
+  private whaleTracker: WhaleTrackerService;
 
   private config: OrchestratorConfig = {
     autoExecuteSignals: false, // Paper trading only - set to false for safety
@@ -64,7 +64,23 @@ export class ServiceOrchestrator {
   private signalSubscriptionCleanup?: () => void;
   private learningSubscriptionCleanup?: () => void;
 
-  private constructor() {}
+  private constructor() {
+    this.logger = Logger.getInstance();
+    this.signalGenerator = SignalGeneratorService.getInstance();
+    this.orderManagement = OrderManagementService.getInstance();
+    this.continuousLearning = ContinuousLearningService.getInstance();
+    this.alertService = AlertService.getInstance();
+    this.notificationService = NotificationService.getInstance();
+    this.marketDataIngestion = MarketDataIngestionService.getInstance();
+    this.trainingEngine = TrainingEngine.getInstance();
+    this.bullBearAgent = BullBearAgent.getInstance();
+    this.featureEngineering = FeatureEngineering.getInstance();
+    this.smcAnalyzer = SMCAnalyzer.getInstance();
+    this.elliottWaveAnalyzer = ElliottWaveAnalyzer.getInstance();
+    this.harmonicDetector = HarmonicPatternDetector.getInstance();
+    this.sentimentAnalysis = SentimentAnalysisService.getInstance();
+    this.whaleTracker = WhaleTrackerService.getInstance();
+  }
 
   static getInstance(): ServiceOrchestrator {
     if (!ServiceOrchestrator.instance) {
@@ -221,15 +237,16 @@ export class ServiceOrchestrator {
 
       // Create alert for order execution
       await this.alertService.createAlert({
-        type: 'SIGNAL_EXECUTED',
+        type: 'AI_SIGNAL',
         symbol: signal.symbol,
         message: `Signal ${signal.id} executed as ${orderSide} order ${order.id}`,
-        severity: 'INFO',
-        metadata: {
-          signalId: signal.id,
-          orderId: order.id,
-          confidence: signal.confidence
-        }
+        condition: 'Signal Execution',
+        threshold: this.config.signalExecutionThreshold,
+        currentValue: signal.confidence,
+        triggered: true,
+        priority: 'MEDIUM',
+        actions: ['NOTIFICATION', 'TRADE_SIGNAL'],
+        cooldownPeriod: 5
       });
     } catch (error) {
       this.logger.error('Failed to execute signal as order', {
@@ -255,30 +272,32 @@ export class ServiceOrchestrator {
           // Alert on rollback
           if (lastCycle.modelRolledBack) {
             await this.alertService.createAlert({
-              type: 'MODEL_ROLLBACK',
+              type: 'AI_SIGNAL',
               symbol: 'ALL',
               message: `Model rolled back in learning cycle ${lastCycle.cycle}. Accuracy dropped from ${lastCycle.accuracyBefore.toFixed(3)} to ${lastCycle.accuracyAfter.toFixed(3)}`,
-              severity: 'WARNING',
-              metadata: {
-                cycle: lastCycle.cycle,
-                accuracyBefore: lastCycle.accuracyBefore,
-                accuracyAfter: lastCycle.accuracyAfter
-              }
+              condition: 'Model Rollback',
+              threshold: lastCycle.accuracyBefore,
+              currentValue: lastCycle.accuracyAfter,
+              triggered: true,
+              priority: 'HIGH',
+              actions: ['NOTIFICATION'],
+              cooldownPeriod: 60
             });
           }
 
           // Alert on significant accuracy improvement
           if (lastCycle.accuracyAfter > lastCycle.accuracyBefore + 0.1) {
             await this.alertService.createAlert({
-              type: 'MODEL_IMPROVEMENT',
+              type: 'AI_SIGNAL',
               symbol: 'ALL',
               message: `Model improved significantly in cycle ${lastCycle.cycle}. Accuracy increased from ${lastCycle.accuracyBefore.toFixed(3)} to ${lastCycle.accuracyAfter.toFixed(3)}`,
-              severity: 'INFO',
-              metadata: {
-                cycle: lastCycle.cycle,
-                accuracyBefore: lastCycle.accuracyBefore,
-                accuracyAfter: lastCycle.accuracyAfter
-              }
+              condition: 'Model Improvement',
+              threshold: lastCycle.accuracyBefore + 0.1,
+              currentValue: lastCycle.accuracyAfter,
+              triggered: true,
+              priority: 'LOW',
+              actions: ['NOTIFICATION'],
+              cooldownPeriod: 60
             });
           }
         }

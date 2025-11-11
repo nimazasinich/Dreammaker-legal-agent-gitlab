@@ -12,7 +12,7 @@ interface AnimationStage {
 
 export const StrategyLabView: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
   const [currentTemplate, setCurrentTemplate] = useState<string>('live');
   const [isSimulating, setIsSimulating] = useState(false);
@@ -169,7 +169,7 @@ export const StrategyLabView: React.FC = () => {
 
   const handleSaveTemplate = async () => {
     const name = prompt('Enter template name:');
-    if (!name) { console.warn("Missing data"); }
+    if (!name) { console.warn("Missing data"); return; }
 
     try {
       const response = await fetch(`http://localhost:${import.meta.env.VITE_BACKEND_PORT || '3001'}/api/strategy/templates`, {
@@ -177,7 +177,7 @@ export const StrategyLabView: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
-          payload: {
+          config: {
             scoringWeights: weights,
             strategyConfig: strategyParams
           }
@@ -197,12 +197,12 @@ export const StrategyLabView: React.FC = () => {
   };
 
   const handleLoadTemplate = (template: any) => {
-    if (template.payload) {
-      if (template.payload.scoringWeights) {
-        setWeights({ ...weights, ...template.payload.scoringWeights });
+    if (template.config) {
+      if (template.config.scoringWeights) {
+        setWeights({ ...weights, ...template.config.scoringWeights });
       }
-      if (template.payload.strategyConfig) {
-        setStrategyParams({ ...strategyParams, ...template.payload.strategyConfig });
+      if (template.config.strategyConfig) {
+        setStrategyParams({ ...strategyParams, ...template.config.strategyConfig });
       }
       setCurrentTemplate(template.name);
       alert(`Template "${template.name}" loaded successfully`);
@@ -262,7 +262,7 @@ export const StrategyLabView: React.FC = () => {
                   style={{ borderRadius: '12px' }}
                 >
                   <div className="text-sm font-semibold">{template.name}</div>
-                  {template.payload?.description && <div className="text-xs opacity-75">{template.payload.description}</div>}
+                  {template.description && <div className="text-xs opacity-75">{template.description}</div>}
                 </button>
               ))}
 

@@ -5,7 +5,7 @@
 const API_BASE = import.meta.env?.VITE_API_BASE ?? '/api';
 
 export async function apiMarket(q = 'bitcoin') {
-  const r = await fetch(`${API_BASE}/crypto/market?q=${encodeURIComponent(q, { mode: "cors", headers: { "Content-Type": "application/json" } })}`);
+  const r = await fetch(`${API_BASE}/crypto/market?q=${encodeURIComponent(q)}`, { mode: "cors", headers: { "Content-Type": "application/json" } });
   if (!r.ok) console.error(`market ${r.status}`);
   return r.json();
 }

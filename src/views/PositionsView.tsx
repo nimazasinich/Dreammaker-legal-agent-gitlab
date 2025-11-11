@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import WebSocket from 'isomorphic-ws';
 import { Logger } from '../core/Logger';
-import { API_BASE, buildWebSocketUrl } from '../config/env';
+import { API_BASE, WS_BASE } from '../config/env';
 
 interface Position {
   id: string;
@@ -43,8 +43,7 @@ export const PositionsView: React.FC = () => {
     loadData();
 
     // Connect to WebSocket for real-time updates
-    // Use unified buildWebSocketUrl function to prevent /ws/ws duplication
-    const wsUrl = buildWebSocketUrl('/ws');
+    const wsUrl = WS_BASE;
     const websocket = new WebSocket(wsUrl);
 
     websocket.onmessage = (event) => {
@@ -59,7 +58,7 @@ export const PositionsView: React.FC = () => {
     };
 
     websocket.onerror = (error) => {
-      logger.error('WebSocket error', {}, error as Error);
+      logger.error('WebSocket error', {}, error as unknown as Error);
     };
 
     setWs(websocket);

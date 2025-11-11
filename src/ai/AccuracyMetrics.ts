@@ -108,7 +108,7 @@ export class AccuracyMetrics {
           actual: actualDirection,
           predicted: predictedDirection,
           confidence: prediction.confidence,
-          timestamp: nextBar.timestamp
+          timestamp: nextBar.timestamp instanceof Date ? nextBar.timestamp.getTime() : nextBar.timestamp
         });
       } catch (error) {
         this.logger.warn('Failed to get prediction for accuracy measurement', {

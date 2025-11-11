@@ -3,7 +3,7 @@ import { XavierInitializer } from './XavierInitializer.js';
 import { StableActivations } from './StableActivations.js';
 
 export interface LayerConfig {
-  type: 'dense' | 'lstm' | 'cnn' | 'attention';
+  type: 'dense' | 'lstm' | 'conv' | 'attention';
   inputSize: number;
   outputSize: number;
   activation: 'leakyRelu' | 'sigmoid' | 'tanh' | 'relu' | 'softmax';
@@ -94,7 +94,7 @@ export class NetworkArchitectures {
     let currentSize = inputHeight * inputWidth * channels;
     for (const conv of convLayers) {
       layers.push({
-        type: 'cnn',
+        type: 'conv',
         inputSize: currentSize,
         outputSize: conv.filters,
         activation: 'leakyRelu',
@@ -201,7 +201,7 @@ export class NetworkArchitectures {
 
     // CNN branch for local patterns
     layers.push({
-      type: 'cnn',
+      type: 'conv',
       inputSize: inputFeatures,
       outputSize: 64,
       activation: 'leakyRelu',
@@ -259,10 +259,11 @@ export class NetworkArchitectures {
 
     for (let i = 0; i < config.layers.length; i++) {
       const layer = config.layers[i];
-      
-      // Initialize weights with Xavier
+
+      // Initialize weights with Xavier (map attention to dense for initialization)
+      const layerType = layer.type === 'attention' ? 'dense' : layer.type;
       const layerWeights = this.initializer.initializeLayer(
-        layer.type,
+        layerType,
         layer.inputSize,
         layer.outputSize,
         this.getGainForActivation(layer.activation)

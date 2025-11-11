@@ -19,6 +19,12 @@ export class TradingController {
   async analyzeMarket(req: Request, res: Response): Promise<void> {
     try {
       const { symbol } = req.params;
+      if (!symbol) {
+        res.status(400).json({
+          error: 'Symbol parameter is required'
+        });
+        return;
+      }
       const cleanSymbol = symbol.replace('USDT', '').toUpperCase();
 
       if (!this.config.isRealDataMode()) {
@@ -74,12 +80,11 @@ export class TradingController {
         return;
       }
 
-      const order = await this.orderManagement.createOrder({
-        symbol: symbol.toUpperCase(),
-        side: side.toUpperCase(),
-        quantity: parseFloat(quantity),
-        price: price ? parseFloat(price) : undefined,
-        type: orderType
+      const order = await this.orderManagement.createLimitOrder({
+        symbol: String(symbol).toUpperCase(),
+        side: String(side).toUpperCase() as 'BUY' | 'SELL',
+        quantity: Number(quantity),
+        price: price ? Number(price) : 0
       });
 
       res.json({
@@ -98,11 +103,7 @@ export class TradingController {
 
   async getOrders(req: Request, res: Response): Promise<void> {
     try {
-      const { status, symbol } = req.query;
-      const orders = await this.orderManagement.getOrders({
-        status: status as string,
-        symbol: symbol as string
-      });
+      const orders = this.orderManagement.getAllOrders();
 
       res.json({
         success: true,
@@ -121,12 +122,12 @@ export class TradingController {
 
   async getPositions(req: Request, res: Response): Promise<void> {
     try {
-      const positions = await this.orderManagement.getPositions();
+      const summary = await this.orderManagement.getPortfolioSummary();
 
       res.json({
         success: true,
-        positions,
-        count: positions.length,
+        positions: summary.positions || [],
+        count: summary.positions?.length || 0,
         timestamp: Date.now()
       });
     } catch (error) {
@@ -141,6 +142,12 @@ export class TradingController {
   async cancelOrder(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+      if (!id) {
+        res.status(400).json({
+          error: 'Order ID is required'
+        });
+        return;
+      }
       await this.orderManagement.cancelOrder(id);
 
       res.json({

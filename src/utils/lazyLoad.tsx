@@ -17,15 +17,16 @@ export function lazyLoad<T extends ComponentType<any>>(
 ) {
   const LazyComponent = lazy(() => {
     return importFunc().catch((error) => {
-      logger.error('Failed to lazy load component:', {}, error);
-      logger.error('Import function:', {}, importFunc.toString());
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to lazy load component:', {}, errorObj);
+      logger.error('Import function:', { fn: importFunc.toString() });
       // Return a fallback component that displays an error
       return {
         default: ((() => {
           const FallbackComponent: ComponentType<any> = () => (
             <div className="p-8 text-center">
               <div className="text-red-400 mb-4">Failed to load component</div>
-              <div className="text-slate-400 text-sm">{error.message || String(error)}</div>
+              <div className="text-slate-400 text-sm">{errorObj.message || String(errorObj)}</div>
               <button
                 onClick={() => window.location.reload()}
                 className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
@@ -119,9 +120,7 @@ export function lazyLoadOnVisible<T extends ComponentType<any>>(
   options: IntersectionObserverInit = { rootMargin: '200px' }
 ) {
   return function LazyOnVisible(props: React.ComponentProps<T>) {
-      const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [isVisible, setIsVisible] = React.useState(false);
+    const [isVisible, setIsVisible] = React.useState(false);
     const ref = React.useRef<HTMLDivElement>(null);
     
     React.useEffect(() => {

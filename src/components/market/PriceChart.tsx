@@ -75,7 +75,7 @@ export const PriceChart: React.FC<PriceChartProps> = ({
       const data = await marketDataService.getHistoricalData(`${cleanSymbol}USDT`, timeframe, 100);
 
       if (Array.isArray(data) && (data?.length || 0) > 0) {
-        const candles: CandlestickData[] = (data || []).map((d: Record<string, unknown>) => ({
+        const candles: CandlestickData[] = (data as unknown as Array<Record<string, unknown>>).map((d: Record<string, unknown>) => ({
           timestamp: typeof d.timestamp === 'number' ? d.timestamp : new Date(d.timestamp as string).getTime(),
           open: (d.open as number) || (d.price as number),
           high: (d.high as number) || (d.price as number),

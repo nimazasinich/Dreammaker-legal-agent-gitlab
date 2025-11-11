@@ -67,6 +67,7 @@ interface DataFeedHealth {
 }
 
 class BinanceAPI {
+  private readonly logger = Logger.getInstance();
   private baseUrl = 'https://api.binance.com/api/v3';
   private proxyUrl = 'binance'; // Use backend proxy
   private useProxy = true; // Enable proxy by default
@@ -94,7 +95,7 @@ class BinanceAPI {
       if (!response.ok) {
         // Handle 451 (Geo-blocked)
         if (response.status === 451) {
-          logger.warn('⚠️ Binance API blocked (451); - Geo restriction. Using mock data fallback.');
+          this.logger.warn('⚠️ Binance API blocked (451); - Geo restriction. Using mock data fallback.');
           console.error('Binance API unavailable in your region');
         }
         
@@ -106,7 +107,7 @@ class BinanceAPI {
       
       return data;
     } catch (error) {
-      logger.error('Binance API error:', {}, error);
+      this.logger.error('Binance API error:', {}, error);
       throw error;
     }
   }
@@ -126,7 +127,7 @@ class BinanceAPI {
       
       return data;
     } catch (error) {
-      logger.error('Binance ticker error:', {}, error);
+      this.logger.error('Binance ticker error:', {}, error);
       throw error;
     }
   }
@@ -140,26 +141,26 @@ class BinanceAPI {
     }
     
     this.websocket = new WebSocket(wsUrl);
-    
+
     this.websocket.onopen = () => {
-      logger.info('Binance WebSocket connected');
+      this.logger.info('Binance WebSocket connected');
     };
-    
+
     this.websocket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         callback(data);
       } catch (error) {
-        logger.error('WebSocket message parsing error:', {}, error);
+        this.logger.error('WebSocket message parsing error:', {}, error);
       }
     };
-    
+
     this.websocket.onerror = (error) => {
-      logger.error('Binance WebSocket error:', {}, error);
+      this.logger.error('Binance WebSocket error:', {}, new Error('WebSocket error'));
     };
-    
+
     this.websocket.onclose = () => {
-      logger.info('Binance WebSocket disconnected');
+      this.logger.info('Binance WebSocket disconnected');
       setTimeout(() => {
         if ((symbols?.length || 0) > 0) {
           this.subscribeToRealTime(symbols, callback);
@@ -174,7 +175,7 @@ class BinanceAPI {
     
     if (this.rateLimitRemaining <= 10 && timeSinceLastRequest < 60000) {
       const waitTime = 60000 - timeSinceLastRequest;
-      logger.info(`Rate limit approaching, waiting ${waitTime}ms`, { data: waitTime });
+      this.logger.info(`Rate limit approaching, waiting ${waitTime}ms`, { data: waitTime });
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
     
@@ -197,6 +198,7 @@ class BinanceAPI {
 }
 
 class CoinGeckoAPI {
+  private readonly logger = Logger.getInstance();
   private baseUrl = 'https://api.coingecko.com/api/v3';
   private proxyUrl = 'coingecko'; // Use backend proxy
   private useProxy = true; // Enable proxy by default
@@ -220,21 +222,21 @@ class CoinGeckoAPI {
       
       if (!response.ok) {
         if (response.status === 401) {
-          logger.warn('⚠️ CoinGecko API key missing or invalid (401);. Using mock data fallback.');
+          this.logger.warn('⚠️ CoinGecko API key missing or invalid (401);. Using mock data fallback.');
           console.error('CoinGecko API key required');
         }
-        
+
         if (response.status === 429) {
-          logger.warn('⚠️ CoinGecko rate limit exceeded (429);. Using mock data fallback.');
+          this.logger.warn('⚠️ CoinGecko rate limit exceeded (429);. Using mock data fallback.');
           console.error('CoinGecko rate limit exceeded');
         }
-        
+
         console.error(`CoinGecko API error: ${response.status}`);
       }
-      
+
       return await response.json();
     } catch (error) {
-      logger.error('CoinGecko API error:', {}, error);
+      this.logger.error('CoinGecko API error:', {}, error);
       throw error;
     }
   }
@@ -264,7 +266,7 @@ class CoinGeckoAPI {
       
       return await response.json();
     } catch (error) {
-      logger.error('CoinGecko price error:', {}, error);
+      this.logger.error('CoinGecko price error:', {}, error);
       throw error;
     }
   }
@@ -272,10 +274,10 @@ class CoinGeckoAPI {
   private async checkRateLimit(): Promise<void> {
     const now = Date.now();
     const timeSinceLastRequest = now - this.lastRequestTime;
-    
+
     if (this.rateLimitRemaining <= 5 && timeSinceLastRequest < 60000) {
       const waitTime = 60000 - timeSinceLastRequest;
-      logger.info(`CoinGecko rate limit approaching, waiting ${waitTime}ms`, { data: waitTime });
+      this.logger.info(`CoinGecko rate limit approaching, waiting ${waitTime}ms`, { data: waitTime });
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
     
@@ -326,25 +328,25 @@ export class MarketDataService {
       
       this.setCache(cacheKey, marketData, 300000);
       return marketData;
-      
+
     } catch (error) {
-      logger.warn('⚠️ Binance failed (CORS or API error);, trying CoinGecko fallback...');
-      
+      this.logger.warn('⚠️ Binance failed (CORS or API error);, trying CoinGecko fallback...');
+
       try {
         const coinGeckoId = this.symbolMappings[symbol as keyof typeof this.symbolMappings]?.coingecko;
         if (!coinGeckoId) {
           console.error(`No CoinGecko mapping for ${symbol}`);
         }
-        
+
         const days = this.convertLimitToDays(limit, timeframe);
         const data = await this.coinGeckoAPI.getHistoricalData(coinGeckoId, days);
         const marketData = this.convertCoinGeckoToMarketData(data, symbol, timeframe);
-        
+
         this.setCache(cacheKey, marketData, 300000);
         return marketData;
-        
+
       } catch (fallbackError) {
-        logger.warn('⚠️ Both APIs failed, returning empty array (frontend will use mock data);');
+        this.logger.warn('⚠️ Both APIs failed, returning empty array (frontend will use mock data);');
         // Return empty array instead of throwing - frontend will handle with mock data
         return [];
       }
@@ -368,7 +370,7 @@ export class MarketDataService {
         trades: parseInt(ticker.count)
       };
     } catch (error) {
-      logger.error('Real-time price fetch failed:', {}, error);
+      this.logger.error('Real-time price fetch failed:', {}, error);
       throw error;
     }
   }
@@ -391,10 +393,10 @@ export class MarketDataService {
           volume: parseFloat(wsData.v),
           trades: parseInt(wsData.n)
         };
-        
+
         callback(marketData);
       } catch (error) {
-        logger.error('WebSocket data processing error:', {}, error);
+        this.logger.error('WebSocket data processing error:', {}, error);
       }
     });
 
@@ -685,23 +687,23 @@ export class MarketDataService {
       const current = data[i];
       const prev = data[i - 1];
       
-      if (current.close > current.open && 
+      if (current.close > current.open &&
           current.volume > data.slice(Math.max(0, i - 10), i).reduce((sum, d) => sum + d.volume, 0) / 10 * 1.5 &&
           prev.close < prev.open) {
         orderBlocks.push({
           price: current.low,
-          timestamp: current.timestamp,
+          timestamp: new Date(current.timestamp),
           type: 'bullish',
           strength: (current.close - current.open) / current.open
         });
       }
-      
-      if (current.close < current.open && 
+
+      if (current.close < current.open &&
           current.volume > data.slice(Math.max(0, i - 10), i).reduce((sum, d) => sum + d.volume, 0) / 10 * 1.5 &&
           prev.close > prev.open) {
         orderBlocks.push({
           price: current.high,
-          timestamp: current.timestamp,
+          timestamp: new Date(current.timestamp),
           type: 'bearish',
           strength: (current.open - current.close) / current.open
         });
@@ -722,16 +724,16 @@ export class MarketDataService {
         gaps.push({
           high: current.low,
           low: prev.high,
-          timestamp: current.timestamp,
+          timestamp: new Date(current.timestamp),
           filled: false
         });
       }
-      
+
       if (current.high < prev.low) {
         gaps.push({
           high: prev.low,
           low: current.high,
-          timestamp: current.timestamp,
+          timestamp: new Date(current.timestamp),
           filled: false
         });
       }
@@ -775,17 +777,17 @@ export class MarketDataService {
       if (lastSwingHigh && current.close > lastSwingHigh.price) {
         breaks.push({
           price: lastSwingHigh.price,
-          timestamp: current.timestamp,
+          timestamp: new Date(current.timestamp),
           direction: 'up',
           significance: (current.close - lastSwingHigh.price) / lastSwingHigh.price
         });
       }
-      
+
       const lastSwingLow = swingLows.filter(sl => sl.index < i).pop();
       if (lastSwingLow && current.close < lastSwingLow.price) {
         breaks.push({
           price: lastSwingLow.price,
-          timestamp: current.timestamp,
+          timestamp: new Date(current.timestamp),
           direction: 'down',
           significance: (lastSwingLow.price - current.close) / lastSwingLow.price
         });

@@ -21,7 +21,6 @@ const logger = Logger.getInstance();
 export const RealPortfolioConnector: React.FC<RealPortfolioConnectorProps> = ({
   walletAddresses
 }) => {
-    const [isLoading, setIsLoading] = useState(false);
   const [realPortfolio, setRealPortfolio] = useState<RealPortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -124,13 +123,39 @@ export const RealPortfolioConnector: React.FC<RealPortfolioConnectorProps> = ({
   }
 
   // Pass real portfolio data to existing Portfolio component
+  // Convert portfolio data to MarketData format for Portfolio component
+  const marketData: any[] = [];
+
   return (
-    <Portfolio
-      totalValue={realPortfolio.totalValue}
-      balances={realPortfolio.balances}
-      positions={realPortfolio.positions}
-      lastUpdated={realPortfolio.lastUpdated}
-    />
+    <div className="space-y-4">
+      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-semibold mb-4">Portfolio Summary</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="text-sm text-gray-600">Total Value</div>
+            <div className="text-2xl font-bold">${realPortfolio.totalValue.toFixed(2)}</div>
+          </div>
+          <div>
+            <div className="text-sm text-gray-600">Last Updated</div>
+            <div className="text-sm">{realPortfolio.lastUpdated.toLocaleString()}</div>
+          </div>
+        </div>
+        {Object.keys(realPortfolio.balances).length > 0 && (
+          <div className="mt-4">
+            <div className="text-sm font-medium text-gray-700 mb-2">Balances</div>
+            <div className="space-y-1">
+              {Object.entries(realPortfolio.balances).map(([asset, balance]) => (
+                <div key={asset} className="flex justify-between text-sm">
+                  <span className="text-gray-600">{asset}</span>
+                  <span className="font-medium">{balance}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <Portfolio marketData={marketData} />
+    </div>
   );
 };
 

@@ -1,11 +1,15 @@
 /**
  * Validation utility for form inputs and data validation
  */
-import { ValidationError } from '../types';
+export interface ValidationError {
+  field: string;
+  message: string;
+  value?: any;
+}
 
 // Validation rules
 export type ValidationRule = {
-  test: (value: any) => boolean;
+  test: (value: any, formValues?: Record<string, any>) => boolean;
   message: string;
 };
 
@@ -15,7 +19,7 @@ export const rules = {
     test: (value) => {
       if (value === undefined || value === null) return false;
       if (typeof value === 'string') return value.trim().length > 0;
-      if (Array.isArray(value)) return (value?.length || 0) > 0;
+      if (Array.isArray(value)) return value.length > 0;
       return true;
     },
     message,
@@ -66,7 +70,7 @@ export const rules = {
   }),
   
   match: (field: string, message = `Must match ${field}`): ValidationRule => ({
-    test: (value, formValues) => value === formValues?.[field],
+    test: (value, formValues) => formValues ? value === formValues[field] : false,
     message,
   }),
 };

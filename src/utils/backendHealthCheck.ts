@@ -3,6 +3,7 @@
  * Monitors backend server availability and provides health status
  */
 
+import React, { useState } from 'react';
 import { Logger } from '../core/Logger.js';
 import { API_BASE } from '../config/env.js';
 
@@ -214,7 +215,7 @@ class BackendHealthMonitor {
       try {
         callback(isHealthy);
       } catch (error) {
-        logger.error('Error in health change listener:', error);
+        logger.error('Error in health change listener:', {}, error as Error);
       }
     });
   }
@@ -235,8 +236,6 @@ export const backendHealth = BackendHealthMonitor.getInstance();
  * React hook for backend health status
  */
 export function useBackendHealth() {
-    const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [status, setStatus] = React.useState<BackendHealthStatus>(
     backendHealth.getHealthStatus()
   );
@@ -263,6 +262,3 @@ export function useBackendHealth() {
     refresh: () => backendHealth.forceCheck(),
   };
 }
-
-// Import React for hook
-import React from 'react';

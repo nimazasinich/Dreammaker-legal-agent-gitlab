@@ -8,7 +8,7 @@ import { SmartMoneyFeatures } from '../types/index.js';
  */
 export class SMCAnalyzer {
   private static instance: SMCAnalyzer;
-  private logger = Logger.getInstance();
+  private logger: Logger;
 
   // Configuration parameters
   private readonly LIQUIDITY_THRESHOLD = 2.0; // Volume threshold multiplier
@@ -16,7 +16,9 @@ export class SMCAnalyzer {
   private readonly FVG_MIN_SIZE = 0.001; // Minimum gap size (0.1%)
   private readonly BOS_CONFIRMATION_PCT = 0.01; // 1% price break confirmation
 
-  private constructor() {}
+  private constructor() {
+    this.logger = Logger.getInstance();
+  }
 
   static getInstance(): SMCAnalyzer {
     if (!SMCAnalyzer.instance) {
@@ -120,7 +122,7 @@ export class SMCAnalyzer {
         blocks.push({
           high: current.high,
           low: current.low,
-          timestamp: current.timestamp,
+          timestamp: typeof current.timestamp === 'number' ? current.timestamp : current.timestamp.getTime(),
           type: current.close > current.open ? 'BULLISH' : 'BEARISH'
         });
       }
@@ -156,11 +158,11 @@ export class SMCAnalyzer {
           // Check if already filled
           const filled = next.low <= prev.high;
           const fillProbability = this.calculateFillProbability(gapSize, gaps.length);
-          
+
           gaps.push({
             upper: current.low,
             lower: prev.high,
-            timestamp: current.timestamp,
+            timestamp: typeof current.timestamp === 'number' ? current.timestamp : current.timestamp.getTime(),
             filled,
             fillProbability
           });
@@ -178,11 +180,11 @@ export class SMCAnalyzer {
           // Check if already filled
           const filled = next.high >= prev.low;
           const fillProbability = this.calculateFillProbability(gapSize, gaps.length);
-          
+
           gaps.push({
             upper: prev.low,
             lower: current.high,
-            timestamp: current.timestamp,
+            timestamp: typeof current.timestamp === 'number' ? current.timestamp : current.timestamp.getTime(),
             filled,
             fillProbability
           });

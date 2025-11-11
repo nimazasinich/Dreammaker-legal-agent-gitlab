@@ -17,7 +17,7 @@ import { NewsFeed } from '../components/news';
 import { AIPredictor } from '../components/ai';
 import { dataManager } from '../services/dataManager';
 import { LiveDataContext } from '../components/LiveDataContext';
-import { ErrorBoundary } from '../components/ui/ErrorBoundary';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
 import ResponseHandler from '../components/ui/ResponseHandler';
 import { APP_MODE, USE_MOCK_DATA } from '../config/env.js';
 import { getTopPairs, searchPairs, PairItem, toBinanceSymbol, getChangePct } from '../services/marketUniverse';
@@ -67,8 +67,10 @@ export const MarketView: React.FC = () => {
     useEffect(() => {
         getTopPairs('USDT', 300)
             .then(setPairs)
-            .catch(err => logger.error('Failed to load top pairs:', {}
-  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; }), err));
+            .catch(err => {
+                logger.error('Failed to load top pairs:', {}, err);
+                setPairs([]);
+            });
     }, []);
 
     // Define fetchAnalysisData first so it can be used in callbacks
@@ -92,35 +94,25 @@ export const MarketView: React.FC = () => {
 
             const analysis: AnalysisData = {};
 
-            if (smcResult.status === 'fulfilled' && smcResult.value?.success) {
-                analysis.smc = smcResult.value.data;
+            if (smcResult.status === 'fulfilled' && (smcResult.value as any)?.success) {
+                analysis.smc = (smcResult.value as any).data;
             }
-            if (elliottResult.status === 'fulfilled' && elliottResult.value?.success) {
-                analysis.elliott = elliottResult.value.data;
+            if (elliottResult.status === 'fulfilled' && (elliottResult.value as any)?.success) {
+                analysis.elliott = (elliottResult.value as any).data;
             }
-            if (harmonicResult.status === 'fulfilled' && harmonicResult.value?.success) {
-                analysis.harmonic = harmonicResult.value.data;
+            if (harmonicResult.status === 'fulfilled' && (harmonicResult.value as any)?.success) {
+                analysis.harmonic = (harmonicResult.value as any).data;
             }
 
             if (Object.keys(analysis).length > 0) {
                 setAnalysisData(analysis);
             } else {
-                // Only use sample data when explicitly in demo mode
-                if (APP_MODE === 'demo') {
-                    setAnalysisData(generateSampleAnalysisData(symbol));
-                } else {
-                    logger.warn('No analysis data available for symbol:', { symbol });
-                    setAnalysisData({});
-                }
+                logger.warn('No analysis data available for symbol:', { symbol });
+                setAnalysisData({});
             }
         } catch (err) {
             logger.error('Failed to fetch analysis data:', {}, err);
-            // Only use sample data when explicitly in demo mode
-            if (APP_MODE === 'demo') {
-                setAnalysisData(generateSampleAnalysisData(symbol));
-            } else {
-                setAnalysisData({});
-            }
+            setAnalysisData({});
         }
     }, []);
 
@@ -168,10 +160,10 @@ export const MarketView: React.FC = () => {
 
             // Fetch prices for top 20 pairs for the overview
             const symbolsToFetch = pairs.slice(0, 20).map(p => p.symbolBinance).join(',');
-            const result = await dataManager.fetchData(`/api/market/prices?symbols=${symbolsToFetch}`);
+            const result = await dataManager.fetchData(`/api/market/prices?symbols=${symbolsToFetch}`) as any;
 
             if (result && result.success && result.data) {
-                const formatted = (result.data || []).map((p: any) => ({
+                const formatted = ((result.data as any) || []).map((p: any) => ({
                     symbol: p.symbol,
                     price: p.price,
                     change24h: p.change24h || 0,

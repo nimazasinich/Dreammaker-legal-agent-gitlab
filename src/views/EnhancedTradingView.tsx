@@ -5,7 +5,7 @@ import {
 
 export const EnhancedTradingView: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'spot' | 'futures'>('futures');
   const [strategyEnabled, setStrategyEnabled] = useState(false);
   const [symbol, setSymbol] = useState('BTCUSDT');
@@ -40,11 +40,11 @@ export const EnhancedTradingView: React.FC = () => {
         setSnapshot({
           symbol,
           timestamp: Date.now(),
-          finalScore: 0,
-          verdict: 'NEUTRAL' as Direction,
+          final_score: 0,
+          direction: 'NEUTRAL' as Direction,
           action: 'HOLD' as Action,
-          confidence: 0,
-          timeframes: {},
+          rationale: 'No data available',
+          results: [],
           confluence: {} as ConfluenceInfo,
           entryPlan: {} as EntryPlan
         });
@@ -55,11 +55,11 @@ export const EnhancedTradingView: React.FC = () => {
       setSnapshot({
         symbol,
         timestamp: Date.now(),
-        finalScore: 0,
-        verdict: 'NEUTRAL' as Direction,
+        final_score: 0,
+        direction: 'NEUTRAL' as Direction,
         action: 'HOLD' as Action,
-        confidence: 0,
-        timeframes: {},
+        rationale: 'No data available',
+        results: [],
         confluence: {} as ConfluenceInfo,
         entryPlan: {} as EntryPlan
       });

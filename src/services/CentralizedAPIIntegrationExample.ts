@@ -140,10 +140,10 @@ export function healthCheckExample() {
 export function cacheManagementExample() {
   // Clear specific cache
   APIIntegrationHelper.clearCache('marketData');
-  
+
   // Clear all caches
-  APIIntegrationHelper.clearAllCaches();
-  
+  // APIIntegrationHelper.clearAllCaches();
+
   logger.info('Caches cleared');
 }
 

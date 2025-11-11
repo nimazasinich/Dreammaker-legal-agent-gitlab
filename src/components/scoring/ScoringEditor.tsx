@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
-import { apiService } from '../services/apiService';
+import { apiService } from '../../services/apiService';
 
 interface DetectorWeights {
   technical_analysis: {
@@ -91,9 +91,9 @@ export const ScoringEditor: React.FC = () => {
   const loadWeights = async () => {
     try {
       const response = await apiService.get('/api/scoring/weights');
-      if (response.success) {
-        setDetectorWeights(response.detectorWeights);
-        setTimeframeWeights(response.timeframeWeights);
+      if (response.success && response.data) {
+        setDetectorWeights((response.data as any).detectorWeights);
+        setTimeframeWeights((response.data as any).timeframeWeights);
       }
       } catch (err) {
         if (import.meta.env.DEV) logger.error('Failed to load weights', {}, err);
@@ -105,8 +105,8 @@ export const ScoringEditor: React.FC = () => {
     setError(null);
     try {
       const response = await apiService.get(`/api/scoring/snapshot?symbol=${symbol}`);
-      if (response.success) {
-        setSnapshot(response.snapshot);
+      if (response.success && response.data) {
+        setSnapshot((response.data as any).snapshot);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load snapshot');
@@ -139,10 +139,10 @@ export const ScoringEditor: React.FC = () => {
 
   const resetWeights = async () => {
     if (!confirm('Reset weights to defaults?')) return;
-    
+
     setLoading(true);
     try {
-      await apiService.post('/api/scoring/weights/reset');
+      await apiService.post('/api/scoring/weights/reset', {});
       await loadWeights();
       alert('Weights reset to defaults');
     } catch (err: unknown) {

@@ -281,7 +281,21 @@ export class QuantumScoringService {
       sar: 100,
       sentiment: 100,
       news: 100,
-      whales: 100
+      whales: 100,
+      volume: 100,
+      rsi: 100,
+      macd: 100,
+      bollinger: 100,
+      // stochastic: 100, // not in DetectorName type
+      // atr: 100, // not in DetectorName type
+      // moving_average: 100, // not in DetectorName type
+      ml_ai: 100,
+      ma_cross: 100,
+      support_resistance: 100,
+      adx: 100,
+      roc: 100,
+      market_structure: 100,
+      reversal: 100
     };
   }
 

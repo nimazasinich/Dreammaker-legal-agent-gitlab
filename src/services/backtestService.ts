@@ -99,6 +99,14 @@ export class BacktestService {
   private equity: EquityPoint[] = [];
   private currentPosition: Position | null = null;
 
+  private toDate(timestamp: Date | number): Date {
+    return timestamp instanceof Date ? timestamp : new Date(timestamp);
+  }
+
+  private toTimestamp(timestamp: Date | number): number {
+    return timestamp instanceof Date ? timestamp.getTime() : timestamp;
+  }
+
   async runWalkForwardBacktest(
     data: MarketData[],
     symbol: string,
@@ -108,8 +116,8 @@ export class BacktestService {
     const defaultConfig: BacktestConfig = {
       symbol,
       timeframe,
-      startDate: data[0]?.timestamp || new Date(),
-      endDate: data[data.length - 1]?.timestamp || new Date(),
+      startDate: data[0] ? this.toDate(data[0].timestamp) : new Date(),
+      endDate: data[data.length - 1] ? this.toDate(data[data.length - 1].timestamp) : new Date(),
       initialBalance: 10000,
       positionSize: 0.1,
       commission: 0.001,
@@ -122,16 +130,16 @@ export class BacktestService {
     };
 
     const finalConfig = { ...defaultConfig, ...config };
-    
-    logger.info(`Starting walk-forward backtest for ${symbol} on ${timeframe}`);
-    logger.info(`Data points: ${data.length}, Period: ${finalConfig.startDate.toISOString()} to ${finalConfig.endDate.toISOString()}`);
+
+    this.logger.info(`Starting walk-forward backtest for ${symbol} on ${timeframe}`);
+    this.logger.info(`Data points: ${data.length}, Period: ${finalConfig.startDate.toISOString()} to ${finalConfig.endDate.toISOString()}`);
 
     this.trades = [];
     this.equity = [];
     this.currentPosition = null;
 
     const periods = this.createWalkForwardPeriods(data, finalConfig);
-    logger.info(`Created ${periods.length} walk-forward periods`);
+    this.logger.info(`Created ${periods.length} walk-forward periods`);
 
     let currentBalance = finalConfig.initialBalance;
     let maxBalance = finalConfig.initialBalance;
@@ -144,14 +152,14 @@ export class BacktestService {
 
     for (let i = 0; i < periods.length; i++) {
       const period = periods[i];
-      logger.info(`Processing period ${i + 1}/${periods.length}: ${period.startDate.toISOString()} to ${period.endDate.toISOString()}`);
+      this.logger.info(`Processing period ${i + 1}/${periods.length}: ${period.startDate.toISOString()} to ${period.endDate.toISOString()}`);
       
       if ((period.trainingData?.length || 0) > 50) {
         try {
           await aiService.trainModel(period.trainingData);
-          logger.info(`Model trained on ${period.trainingData.length} data points`);
+          this.logger.info(`Model trained on ${period.trainingData.length} data points`);
         } catch (error) {
-          logger.error(`Training failed for period ${i + 1}:`, {}, error);
+          this.logger.error(`Training failed for period ${i + 1}:`, {}, error);
           continue;
         }
       }
@@ -179,13 +187,13 @@ export class BacktestService {
 
           const drawdown = maxBalance > 0 ? (maxBalance - currentBalance) / maxBalance : 0;
           this.equity.push({
-            timestamp: currentCandle.timestamp,
+            timestamp: this.toDate(currentCandle.timestamp),
             equity: currentBalance,
             drawdown
           });
 
         } catch (error) {
-          logger.error(`Prediction failed for ${currentCandle.timestamp}:`, {}, error);
+          this.logger.error(`Prediction failed for ${currentCandle.timestamp}:`, {}, error);
         }
       }
     }
@@ -198,11 +206,11 @@ export class BacktestService {
     const statistics = this.calculateStatistics(this.trades, this.equity, finalConfig);
     const acceptanceCriteriaMet = this.validateAcceptanceCriteria(statistics);
 
-    logger.info(`Backtest completed: ${this.trades.length} trades, ${(statistics.winRate * 100).toFixed(1)}% win rate`);
-    logger.info(`Directional accuracy: ${(statistics.directionalAccuracy * 100).toFixed(1)}%`);
-    logger.info(`Max drawdown: ${(statistics.maxDrawdown * 100).toFixed(1)}%`);
-    logger.info(`Sharpe ratio: ${statistics.sharpeRatio.toFixed(2)}`);
-    logger.info(`Acceptance criteria met: ${acceptanceCriteriaMet}`);
+    this.logger.info(`Backtest completed: ${this.trades.length} trades, ${(statistics.winRate * 100).toFixed(1)}% win rate`);
+    this.logger.info(`Directional accuracy: ${(statistics.directionalAccuracy * 100).toFixed(1)}%`);
+    this.logger.info(`Max drawdown: ${(statistics.maxDrawdown * 100).toFixed(1)}%`);
+    this.logger.info(`Sharpe ratio: ${statistics.sharpeRatio.toFixed(2)}`);
+    this.logger.info(`Acceptance criteria met: ${acceptanceCriteriaMet}`);
 
     return {
       runId: `backtest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -251,12 +259,12 @@ export class BacktestService {
       const trainingEnd = currentStart + trainingMs;
       const testingEnd = trainingEnd + testingMs;
 
-      const trainingData = data.filter(d => 
-        d.timestamp.getTime() >= currentStart && d.timestamp.getTime() < trainingEnd
+      const trainingData = data.filter(d =>
+        this.toTimestamp(d.timestamp) >= currentStart && this.toTimestamp(d.timestamp) < trainingEnd
       );
 
-      const testingData = data.filter(d => 
-        d.timestamp.getTime() >= trainingEnd && d.timestamp.getTime() < testingEnd
+      const testingData = data.filter(d =>
+        this.toTimestamp(d.timestamp) >= trainingEnd && this.toTimestamp(d.timestamp) < testingEnd
       );
 
       if ((trainingData?.length || 0) > 50 && (testingData?.length || 0) > 0) {
@@ -329,7 +337,7 @@ export class BacktestService {
       if (profit > 0.05) return true;
     }
 
-    const holdingTime = candle.timestamp.getTime() - this.currentPosition.entryTime.getTime();
+    const holdingTime = this.toTimestamp(candle.timestamp) - this.currentPosition.entryTime.getTime();
     const maxHoldingTime = 24 * 60 * 60 * 1000;
     if (holdingTime > maxHoldingTime) return true;
 
@@ -352,13 +360,13 @@ export class BacktestService {
       side: decision.action as 'LONG' | 'SHORT',
       quantity,
       entryPrice: price,
-      entryTime: candle.timestamp,
+      entryTime: this.toDate(candle.timestamp),
       confidence: decision.confidence,
-      predictedDirection: decision.bullProbability > decision.bearProbability ? 'BULL' : 
+      predictedDirection: decision.bullProbability > decision.bearProbability ? 'BULL' :
                          decision.bearProbability > decision.bullProbability ? 'BEAR' : 'NEUTRAL'
     };
 
-    logger.info(`Opened ${decision.action} position: ${quantity.toFixed(4)} @ ${price.toFixed(2)} (confidence: ${(decision.confidence * 100).toFixed(1)}%)`);
+    this.logger.info(`Opened ${decision.action} position: ${quantity.toFixed(4)} @ ${price.toFixed(2)} (confidence: ${(decision.confidence * 100).toFixed(1)}%)`);
 
     return balance - commission;
   }
@@ -388,14 +396,14 @@ export class BacktestService {
     const actualDirection: 'BULL' | 'BEAR' | 'NEUTRAL' = 
       priceChange > 0.01 ? 'BULL' : priceChange < -0.01 ? 'BEAR' : 'NEUTRAL';
 
-    const holdingPeriod = (candle.timestamp.getTime() - this.currentPosition.entryTime.getTime()) / (1000 * 60 * 60);
+    const holdingPeriod = (this.toTimestamp(candle.timestamp) - this.currentPosition.entryTime.getTime()) / (1000 * 60 * 60);
 
     const trade: Trade = {
       id: `trade_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       symbol: this.currentPosition.symbol,
       side: this.currentPosition.side,
       entryTime: this.currentPosition.entryTime,
-      exitTime: candle.timestamp,
+      exitTime: this.toDate(candle.timestamp),
       entryPrice: this.currentPosition.entryPrice,
       exitPrice,
       quantity: this.currentPosition.quantity,
@@ -411,7 +419,7 @@ export class BacktestService {
 
     this.trades.push(trade);
 
-    logger.info(`Closed ${this.currentPosition.side} position: PnL = ${netPnl.toFixed(2)} (${(pnlPercent * 100).toFixed(2)}%)`);
+    this.logger.info(`Closed ${this.currentPosition.side} position: PnL = ${netPnl.toFixed(2)} (${(pnlPercent * 100).toFixed(2)}%)`);
 
     this.currentPosition = null;
     return balance + positionValue - commission;
@@ -632,13 +640,16 @@ Generated on: ${new Date().toISOString()}
   async exportResults(result: BacktestResult, format: 'csv' | 'excel' | 'pdf'): Promise<Blob> {
     switch (format) {
       case 'csv':
-        return this.exportToCSV(result);
+        return Promise.resolve(this.exportToCSV(result));
       case 'excel':
         console.error('Excel export not implemented in browser environment');
+        return Promise.reject(new Error('Excel export not implemented in browser environment'));
       case 'pdf':
         console.error('PDF export not implemented in browser environment');
+        return Promise.reject(new Error('PDF export not implemented in browser environment'));
       default:
         console.error('Unsupported export format: ' + format);
+        return Promise.reject(new Error('Unsupported export format: ' + format));
     }
   }
 
@@ -652,8 +663,8 @@ Generated on: ${new Date().toISOString()}
       trade.id || 'N/A',
       trade.symbol,
       trade.side,
-      trade.entryTime.toISOString(),
-      trade.exitTime.toISOString(),
+      this.toDate(trade.entryTime).toISOString(),
+      this.toDate(trade.exitTime).toISOString(),
       trade.entryPrice.toFixed(6),
       trade.exitPrice.toFixed(6),
       trade.pnl.toFixed(2),

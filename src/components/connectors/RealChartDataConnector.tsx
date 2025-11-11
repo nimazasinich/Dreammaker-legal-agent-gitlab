@@ -22,8 +22,6 @@ export const RealChartDataConnector: React.FC<RealChartDataConnectorProps> = ({
   timeframe,
   limit = 100
 }) => {
-    const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [realChartData, setRealChartData] = useState<MarketData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +103,17 @@ export const RealChartDataConnector: React.FC<RealChartDataConnectorProps> = ({
     );
   }
 
+  // Convert MarketData to CandleData format for AdvancedChart
+  const candleData = realChartData.map(data => ({
+    time: typeof data.timestamp === 'number' ? data.timestamp : data.timestamp.getTime(),
+    open: data.open,
+    high: data.high,
+    low: data.low,
+    close: data.close,
+    volume: data.volume
+  }));
+
   // Pass real data to existing AdvancedChart component
-  return <AdvancedChart data={realChartData} symbol={symbol} timeframe={timeframe} />;
+  return <AdvancedChart data={candleData} symbol={symbol} timeframe={timeframe} />;
 };
 

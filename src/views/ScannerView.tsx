@@ -7,7 +7,7 @@ import fmt from '../lib/formatNumber';
 import { Signal } from '../lib/signalEngine';
 import BacktestButton from '../components/backtesting/BacktestButton';
 import { useData } from '../contexts/DataContext';
-import { buildWebSocketUrl } from '../config/env';
+import { WS_BASE } from '../config/env';
 
 type ScannerStatus = 'idle' | 'loading' | 'ready' | 'error';
 type SortField = 'symbol' | 'price' | 'change24h' | 'volume24h' | 'score';
@@ -58,7 +58,7 @@ const DEFAULT_SYMBOLS = [
   'SANDUSDT', 'AXSUSDT', 'THETAUSDT', 'ALGOUSDT', 'EOSUSDT', 'XMRUSDT'
 ];
 
-const parseSignalLabel = (signal: Signal['type']) => {
+const parseSignalLabel = (signal: Signal['action']) => {
   switch (signal) {
     case 'BUY':
       return t('scanner.signals.buy');
@@ -123,7 +123,7 @@ const ScannerView: React.FC = () => {
 
       const response = await dataManager.fetchData<{ prices?: MarketPrice[]; data?: MarketPrice[] }>(
         `/market/prices?${params.toString()}`,
-        signal
+        { signal }
       );
 
       if (signal?.aborted) return;
@@ -144,14 +144,14 @@ const ScannerView: React.FC = () => {
 
           // Map signal from API or default to HOLD
           const signal: Signal = market.signal ? {
-            type: market.signal.type,
-            reason: market.signal.reason || 'No analysis',
-            score: market.signal.score ?? market.score ?? 0
-          } : {
-            type: 'HOLD',
-            reason: 'No signal data',
-            score: 0
-          };
+            action: market.signal.type,
+            reasons: [market.signal.reason || 'No analysis'],
+            strength: market.signal.score ?? market.score ?? 0
+          } as Signal : {
+            action: 'HOLD',
+            reasons: ['No signal data'],
+            strength: 0
+          } as Signal;
 
           return {
             symbol: market.symbol,
@@ -159,7 +159,7 @@ const ScannerView: React.FC = () => {
             change24h: change,
             volume24h: volume,
             signal,
-            score: market.score ?? signal.score
+            score: market.score ?? signal.strength
           };
         })
         .filter((row): row is ScannerRow => row !== null);
@@ -202,8 +202,8 @@ const ScannerView: React.FC = () => {
 
   // WebSocket connection for live updates
   useEffect(() => {
-    // Use unified buildWebSocketUrl function to prevent /ws/ws duplication
-    const wsUrl = buildWebSocketUrl('/ws/market');
+    // Use WS_BASE to build WebSocket URL
+    const wsUrl = `${WS_BASE}/ws/market`;
 
     try {
       const ws = new WebSocket(wsUrl);
@@ -330,9 +330,9 @@ const ScannerView: React.FC = () => {
       };
     }
 
-    const buy = filteredRows.filter((row) => row.signal.type === 'BUY').length;
-    const sell = filteredRows.filter((row) => row.signal.type === 'SELL').length;
-    const hold = filteredRows.filter((row) => row.signal.type === 'HOLD').length;
+    const buy = filteredRows.filter((row) => row.signal.action === 'BUY').length;
+    const sell = filteredRows.filter((row) => row.signal.action === 'SELL').length;
+    const hold = filteredRows.filter((row) => row.signal.action === 'HOLD').length;
     const avgScore = filteredRows.reduce((sum, row) => sum + row.score, 0) / filteredRows.length;
 
     return {
@@ -706,10 +706,10 @@ const ScannerView: React.FC = () => {
                           maximumFractionDigits: row.volume24h > 1_000_000 ? 0 : 2,
                         })}</td>
                         <td className="px-4 py-3">
-                          <SignalBadge signal={row.signal.type} />
+                          <SignalBadge signal={row.signal.action} />
                         </td>
                         <td className="px-4 py-3 text-[color:var(--text-primary)] tabular-nums">{fmt(row.score * 100, { maximumFractionDigits: 1 })}</td>
-                        <td className="px-4 py-3 text-xs text-[color:var(--text-secondary)]">{row.signal.reason}</td>
+                        <td className="px-4 py-3 text-xs text-[color:var(--text-secondary)]">{row.signal.reasons?.[0] || ''}</td>
                         <td className="px-4 py-3">
                           <button
                             onClick={() => removeSymbol(row.symbol)}
@@ -800,7 +800,7 @@ const ChangeCell: React.FC<{ value: number }> = ({ value }) => {
   return <span className="text-xs text-[color:var(--text-muted)]">0.00%</span>;
 };
 
-const SignalBadge: React.FC<{ signal: Signal['type'] }> = ({ signal }) => {
+const SignalBadge: React.FC<{ signal: Signal['action'] }> = ({ signal }) => {
   const label = parseSignalLabel(signal);
 
   if (signal === 'BUY') {

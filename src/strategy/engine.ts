@@ -15,8 +15,11 @@ import {
 } from '../types/index.js';
 import { OHLCVData, TechnicalFeatures, generateFeatures } from './features.js';
 import { DETECTORS, DetectorKey } from './detectors.js';
+import { Logger } from '../core/Logger.js';
 import fs from 'fs';
 import path from 'path';
+
+const logger = Logger.getInstance();
 
 // ========== CONFIG LOADERS ==========
 
@@ -38,7 +41,7 @@ function loadScoringConfig(): any {
     lastScoringLoad = now;
     return scoringConfig;
   } catch (error) {
-    console.warn('Failed to load scoring.config.json, using defaults', error);
+    logger.warn('Failed to load scoring.config.json, using defaults', {}, error);
     return { weights: {} };
   }
 }
@@ -56,7 +59,7 @@ function loadStrategyConfig(): any {
     lastStrategyLoad = now;
     return strategyConfig;
   } catch (error) {
-    console.warn('Failed to load strategy.config.json, using defaults', error);
+    logger.warn('Failed to load strategy.config.json, using defaults', {}, error);
     return {
       tfs: ['15m', '1h', '4h'],
       neutralEpsilon: 0.05,
@@ -89,25 +92,36 @@ export function combinePerTF(
     const weight = weights[detectorName] || 0;
     if (weight === 0) continue;
 
-    const detector = DETECTORS[detectorName];
-    let output;
+    let output: { score: number; meta?: Record<string, unknown> };
 
     try {
-      if (detectorName === 'sentiment') {
-        output = detector(contextData?.sentiment);
-      } else if (detectorName === 'news') {
-        output = detector(contextData?.news);
-      } else if (detectorName === 'whales') {
-        output = detector(contextData?.whales);
+      // Context detectors use pre-fetched data
+      if (detectorName === 'sentiment' && contextData?.sentiment) {
+        // Use pre-fetched sentiment data directly
+        const sentimentScore = contextData.sentiment.score || 0;
+        output = { score: sentimentScore, meta: contextData.sentiment };
+      } else if (detectorName === 'news' && contextData?.news) {
+        // Use pre-fetched news data directly
+        const newsScore = (contextData.news[0]?.score || 0);
+        output = { score: newsScore, meta: { count: contextData.news.length } };
+      } else if (detectorName === 'whales' && contextData?.whales) {
+        // Use pre-fetched whales data directly
+        const whalesScore = contextData.whales.score || 0;
+        output = { score: whalesScore, meta: contextData.whales };
+      } else if (detectorName === 'sentiment' || detectorName === 'news' || detectorName === 'whales') {
+        // Skip if context data not available
+        continue;
       } else if (detectorName === 'ml_ai' || detectorName === 'reversal' ||
                  detectorName === 'bollinger' || detectorName === 'support_resistance' ||
                  detectorName === 'market_structure') {
+        const detector = DETECTORS[detectorName] as (c: typeof candles, f: typeof features) => typeof output;
         output = detector(candles, features);
       } else {
+        const detector = DETECTORS[detectorName] as (f: typeof features) => typeof output;
         output = detector(features);
       }
     } catch (error) {
-      console.warn(`Detector ${detectorName} failed:`, error);
+      logger.warn(`Detector ${detectorName} failed`, {}, error);
       output = { score: 0, meta: { error: 'detector_failed' } };
     }
 
@@ -649,7 +663,7 @@ export async function runStrategyEngine(
   for (const tf of tfs) {
     const candles = candlesMap.get(tf);
     if (!candles || candles.length < 50) {
-      console.warn(`Insufficient data for ${tf}, skipping`);
+      logger.warn(`Insufficient data for ${tf}, skipping`, {});
       continue;
     }
 
@@ -659,7 +673,7 @@ export async function runStrategyEngine(
   }
 
   if (results.length === 0) {
-    console.error('No valid timeframe results');
+    logger.error('No valid timeframe results', {});
   }
 
   // MTF decision

@@ -168,16 +168,16 @@ export const AISignalsScanner: React.FC = () => {
   }, [selectedSymbols.join(',')]); // Use join to prevent array reference changes
 
   const getSignalColor = (signal: AISignal) => {
-    const isBullish = signal.prediction.prediction === 'BULL' || signal.prediction.prediction === 'BULLISH' || signal.prediction.prediction === 'UP';
+    const isBullish = signal.prediction.prediction === 'BULL';
     return isBullish ? 'text-green-400' : signal.prediction.prediction === 'NEUTRAL' ? 'text-gray-400' : 'text-red-400';
   };
 
   const getSignalBg = (signal: AISignal) => {
-    const isBullish = signal.prediction.prediction === 'BULL' || signal.prediction.prediction === 'BULLISH' || signal.prediction.prediction === 'UP';
+    const isBullish = signal.prediction.prediction === 'BULL';
     if (signal.prediction.prediction === 'NEUTRAL') {
       return theme === 'dark' ? 'bg-gray-900/20 border-gray-800/30' : 'bg-gray-50 border-gray-200';
     }
-    return isBullish 
+    return isBullish
       ? theme === 'dark' ? 'bg-green-900/20 border-green-800/30' : 'bg-green-50 border-green-200'
       : theme === 'dark' ? 'bg-red-900/20 border-red-800/30' : 'bg-red-50 border-red-200';
   };
@@ -251,7 +251,7 @@ export const AISignalsScanner: React.FC = () => {
                     {new Date(signal.timestamp).toLocaleTimeString()}
                   </p>
                 </div>
-                {signal.prediction.prediction === 'BULL' || signal.prediction.prediction === 'BULLISH' || signal.prediction.prediction === 'UP' ? (
+                {signal.prediction.prediction === 'BULL' ? (
                   <TrendingUp className="w-8 h-8 text-green-400" />
                 ) : signal.prediction.prediction === 'NEUTRAL' ? (
                   <Activity className="w-8 h-8 text-gray-400" />

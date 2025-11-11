@@ -66,7 +66,7 @@ export const RiskView: React.FC = () => {
     const fetchRiskData = async () => {
       try {
         setLoading(true);
-        const response = await dataManager.fetchData('/api/risk/metrics');
+        const response = await dataManager.fetchData('/api/risk/metrics') as any;
         if (response && response.success) {
           setRiskMetrics(response.data);
           setError(null);
@@ -100,7 +100,9 @@ export const RiskView: React.FC = () => {
     // Cleanup
     return () => {
       clearInterval(intervalId);
-      unsubscribe();
+      if (unsubscribe && typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
     };
   }, [subscribeToSignals]);
 

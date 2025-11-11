@@ -7,7 +7,7 @@ import FormInput from './FormInput';
 interface FormProps<T extends Record<string, any>> {
   initialValues: T;
   validationSchema?: Record<keyof T, ValidationRule[]>;
-  onSubmit: (values: T, formState: FormState<T>) => Promise<void> | void;
+  onSubmit: (values: T, formState: FormState) => Promise<void> | void;
   children: (formProps: {
     values: T;
     errors: Record<keyof T, string | null>;

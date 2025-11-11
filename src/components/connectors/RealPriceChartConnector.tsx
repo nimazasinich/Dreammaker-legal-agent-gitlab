@@ -19,25 +19,22 @@ export const RealPriceChartConnector: React.FC<RealPriceChartConnectorProps> = (
   symbols,
   height = 300
 }) => {
-    const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [realPrices, setRealPrices] = useState<RealPriceData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    const unsubscribers: Array<() => void> = [];
 
     const fetchRealPrices = async () => {
       if (!isMounted) { console.warn("Missing data"); }
-      
+
       try {
         setLoading(true);
         setError(null);
-        
+
         // Fetch REAL price data from backend
-        const prices = await realDataManager.fetchRealPrices(symbols);
+        const prices = await realDataManager.getPrices(symbols);
         if (isMounted) {
           setRealPrices(prices);
         }
@@ -56,19 +53,6 @@ export const RealPriceChartConnector: React.FC<RealPriceChartConnectorProps> = (
     // Initial fetch
     fetchRealPrices();
 
-    // Subscribe to real-time price updates for each symbol
-    symbols.forEach(symbol => {
-      const unsubscribe = realDataManager.subscribeToPrice(symbol, (price) => {
-        if (isMounted) {
-          setRealPrices((prev) => {
-            const filtered = prev.filter(p => p.symbol !== price.symbol);
-            return [...filtered, price];
-          });
-        }
-      });
-      unsubscribers.push(unsubscribe);
-    });
-
     // Set up periodic updates (every 5 seconds)
     const interval = setInterval(() => {
       if (isMounted) {
@@ -78,7 +62,6 @@ export const RealPriceChartConnector: React.FC<RealPriceChartConnectorProps> = (
 
     return () => {
       isMounted = false;
-      unsubscribers.forEach(unsubscribe => unsubscribe());
       clearInterval(interval);
     };
   }, [symbols]);
@@ -110,12 +93,12 @@ export const RealPriceChartConnector: React.FC<RealPriceChartConnectorProps> = (
   // Convert RealPriceData to format expected by PriceChart (CandlestickData)
   // Since we only have price data, we'll use the same price for OHLC
   const chartData = (realPrices || []).map(price => ({
-    timestamp: price.timestamp,
+    timestamp: price.lastUpdate,
     open: price.price,
     high: price.price,
     low: price.price,
     close: price.price,
-    volume: price.volume || 0
+    volume: price.volume24h || 0
   }));
 
   // Use the first symbol for the chart

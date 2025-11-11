@@ -11,6 +11,9 @@ import { Logger } from '../core/Logger.js';
 import { APIIntegrationHelper } from './APIIntegrationHelper.js';
 import { CentralizedAPIConfig } from '../config/CentralizedAPIConfig.js';
 
+// Initialize logger instance
+const logger = Logger.getInstance();
+
 /**
  * ============================================================================
  * راهنمای استفاده از سیستم مدیریت متمرکز API
@@ -148,9 +151,9 @@ export function exampleManageCacheAndHealth() {
   
   // پاک کردن cache خاص
   APIIntegrationHelper.clearCache('marketData');
-  
+
   // پاک کردن همه cache ها
-  APIIntegrationHelper.clearAllCaches();
+  APIIntegrationHelper.clearCache();
   
   // Reset health برای API خاص
   APIIntegrationHelper.resetAPIHealth('coingecko');
@@ -182,11 +185,13 @@ export class EnhancedMultiProviderService {
  * برای استفاده در SentimentNewsService:
  */
 export class EnhancedSentimentService {
+  private readonly logger = Logger.getInstance();
+
   async getFearGreedIndex(): Promise<any> {
     try {
       return await APIIntegrationHelper.getFearGreedIndex();
     } catch (error) {
-      logger.warn('Centralized manager failed, using fallback...');
+      this.logger.warn('Centralized manager failed, using fallback...');
       throw error;
     }
   }
@@ -195,7 +200,7 @@ export class EnhancedSentimentService {
     try {
       return await APIIntegrationHelper.getCryptoNews(limit);
     } catch (error) {
-      logger.warn('Centralized manager failed, using fallback...');
+      this.logger.warn('Centralized manager failed, using fallback...');
       throw error;
     }
   }
@@ -205,11 +210,13 @@ export class EnhancedSentimentService {
  * برای استفاده در BlockchainDataService:
  */
 export class EnhancedBlockchainService {
+  private readonly logger = Logger.getInstance();
+
   async getBalance(chain: 'ethereum' | 'bsc' | 'tron', address: string): Promise<any> {
     try {
       return await APIIntegrationHelper.getBlockchainBalance(chain, address);
     } catch (error) {
-      logger.warn('Centralized manager failed, using fallback...');
+      this.logger.warn('Centralized manager failed, using fallback...');
       throw error;
     }
   }

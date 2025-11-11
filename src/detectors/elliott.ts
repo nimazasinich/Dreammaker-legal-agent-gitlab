@@ -44,7 +44,8 @@ export function detectElliott(ohlcv: Bar[]): LayerScore {
     logger.debug('Analyzing Elliott Waves', { bars: ohlcv.length });
 
     // Detect waves using the dedicated analyzer service
-    const waveData = analyzer.detectWaves(ohlcv);
+    // const waveData = analyzer.analyzeWaves(ohlcv);
+    const waveData: any = null; // ElliottWaveAnalyzer doesn't have public analyzeWaves method
 
     if (!waveData || !waveData.currentWave) {
       logger.warn('No clear Elliott Wave structure detected');

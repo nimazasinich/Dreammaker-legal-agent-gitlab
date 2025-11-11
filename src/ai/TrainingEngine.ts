@@ -188,30 +188,28 @@ export class TrainingEngine {
 
       // Calculate metrics using real predictions
       const realAccuracy = this.calculateRealAccuracy(experiences, predictions);
-      
+
       const metrics: TrainingMetrics = {
         epoch: this.trainingState.epoch,
         timestamp: Date.now(),
-        loss: {
-          mse: loss,
-          mae: Math.abs(loss),
-          rSquared: Math.max(0, 1 - loss / 1.0) // Simplified R²
-        },
-        accuracy: {
-          directional: realAccuracy.directional,
-          classification: realAccuracy.classification
-        },
+        mse: loss,
+        mae: Math.abs(loss),
+        r2: Math.max(0, 1 - loss / 1.0), // Simplified R²
         gradientNorm: clippingResult.globalNorm,
         learningRate: lrResult.newLR,
+        resetEvents: this.watchdog.getStatistics(this.watchdogState).resetCount,
+        directionalAccuracy: realAccuracy.directional,
+        loss: loss,
+        accuracy: realAccuracy.classification,
         stabilityMetrics: {
-          nanCount: stabilityCheck.shouldReset ? 1 : 0,
-          infCount: 0,
-          resetCount: this.watchdog.getStatistics(this.watchdogState).resetCount
+          lossVariance: stabilityCheck.shouldReset ? 1 : 0,
+          gradientStability: clippingResult.wasClipped ? 0.5 : 1.0,
+          predictionConsistency: realAccuracy.directional
         },
         explorationStats: {
           epsilon: this.exploration.getStatistics(this.explorationState).currentEpsilon,
-          explorationRatio: this.exploration.getStatistics(this.explorationState).explorationRatio,
-          exploitationRatio: this.exploration.getStatistics(this.explorationState).exploitationRatio
+          temperature: 1.0,
+          explorationRate: this.exploration.getStatistics(this.explorationState).explorationRatio
         }
       };
 
@@ -455,8 +453,8 @@ export class TrainingEngine {
         const validationMetrics = await this.evaluateValidationSet(validationExperiences);
         this.logger.info('Validation metrics', {
           epoch: this.trainingState.epoch,
-          validationLoss: validationMetrics.loss.mse,
-          validationAccuracy: validationMetrics.accuracy.directional
+          validationLoss: validationMetrics.mse,
+          validationAccuracy: validationMetrics.directionalAccuracy
         });
       }
 
@@ -464,8 +462,8 @@ export class TrainingEngine {
       const avgMetrics = this.calculateAverageMetrics(epochMetrics);
 
       // Early stopping check
-      if (avgMetrics.loss.mse < this.trainingState.bestValidationLoss) {
-        this.trainingState.bestValidationLoss = avgMetrics.loss.mse;
+      if (avgMetrics.mse < this.trainingState.bestValidationLoss) {
+        this.trainingState.bestValidationLoss = avgMetrics.mse;
         this.trainingState.patienceCounter = 0;
       } else {
         this.trainingState.patienceCounter += 1;
@@ -473,8 +471,8 @@ export class TrainingEngine {
 
       this.logger.info('Epoch completed', {
         epoch: this.trainingState.epoch,
-        avgLoss: avgMetrics.loss.mse.toFixed(6),
-        avgAccuracy: avgMetrics.accuracy.directional.toFixed(3),
+        avgLoss: avgMetrics.mse.toFixed(6),
+        avgAccuracy: (avgMetrics.directionalAccuracy || 0).toFixed(3),
         patienceCounter: this.trainingState.patienceCounter,
         duration: Date.now() - this.trainingState.startTime
       });
@@ -496,12 +494,25 @@ export class TrainingEngine {
       return {
         epoch: this.trainingState!.epoch,
         timestamp: Date.now(),
-        loss: { mse: 0, mae: 0, rSquared: 0 },
-        accuracy: { directional: 0, classification: 0 },
+        mse: 0,
+        mae: 0,
+        r2: 0,
         gradientNorm: 0,
         learningRate: 0,
-        stabilityMetrics: { nanCount: 0, infCount: 0, resetCount: 0 },
-        explorationStats: { epsilon: 0, explorationRatio: 0, exploitationRatio: 0 }
+        resetEvents: 0,
+        directionalAccuracy: 0,
+        loss: 0,
+        accuracy: 0,
+        stabilityMetrics: {
+          lossVariance: 0,
+          gradientStability: 0,
+          predictionConsistency: 0
+        },
+        explorationStats: {
+          epsilon: 0,
+          temperature: 0,
+          explorationRate: 0
+        }
       };
     }
 
@@ -517,16 +528,25 @@ export class TrainingEngine {
       validationMetrics.push({
         epoch: this.trainingState!.epoch,
         timestamp: Date.now(),
-        loss: {
-          mse: loss,
-          mae: Math.abs(loss),
-          rSquared: Math.max(0, 1 - loss / 1.0)
-        },
-        accuracy,
+        mse: loss,
+        mae: Math.abs(loss),
+        r2: Math.max(0, 1 - loss / 1.0),
         gradientNorm: 0, // Not calculated for validation
         learningRate: this.scheduler.getCurrentLR(this.schedulerState!),
-        stabilityMetrics: { nanCount: 0, infCount: 0, resetCount: 0 },
-        explorationStats: { epsilon: 0, explorationRatio: 0, exploitationRatio: 0 }
+        resetEvents: 0,
+        directionalAccuracy: accuracy.directional,
+        loss: loss,
+        accuracy: accuracy.classification,
+        stabilityMetrics: {
+          lossVariance: 0,
+          gradientStability: 1.0,
+          predictionConsistency: accuracy.directional
+        },
+        explorationStats: {
+          epsilon: 0,
+          temperature: 1.0,
+          explorationRate: 0
+        }
       });
     }
 
@@ -642,21 +662,19 @@ export class TrainingEngine {
     return {
       epoch: metrics[0].epoch,
       timestamp: Date.now(),
-      loss: {
-        mse: metrics.reduce((sum, m) => sum + m.loss.mse, 0) / count,
-        mae: metrics.reduce((sum, m) => sum + m.loss.mae, 0) / count,
-        rSquared: metrics.reduce((sum, m) => sum + m.loss.rSquared, 0) / count
-      },
-      accuracy: {
-        directional: metrics.reduce((sum, m) => sum + m.accuracy.directional, 0) / count,
-        classification: metrics.reduce((sum, m) => sum + m.accuracy.classification, 0) / count
-      },
+      mse: metrics.reduce((sum, m) => sum + m.mse, 0) / count,
+      mae: metrics.reduce((sum, m) => sum + m.mae, 0) / count,
+      r2: metrics.reduce((sum, m) => sum + m.r2, 0) / count,
       gradientNorm: metrics.reduce((sum, m) => sum + m.gradientNorm, 0) / count,
       learningRate: metrics[metrics.length - 1].learningRate,
+      resetEvents: metrics[metrics.length - 1].resetEvents,
+      directionalAccuracy: metrics.reduce((sum, m) => sum + (m.directionalAccuracy || 0), 0) / count,
+      loss: metrics.reduce((sum, m) => sum + (m.loss || 0), 0) / count,
+      accuracy: metrics.reduce((sum, m) => sum + (m.accuracy || 0), 0) / count,
       stabilityMetrics: {
-        nanCount: metrics.reduce((sum, m) => sum + m.stabilityMetrics.nanCount, 0),
-        infCount: metrics.reduce((sum, m) => sum + m.stabilityMetrics.infCount, 0),
-        resetCount: metrics[metrics.length - 1].stabilityMetrics.resetCount
+        lossVariance: metrics.reduce((sum, m) => sum + (m.stabilityMetrics?.lossVariance || 0), 0) / count,
+        gradientStability: metrics.reduce((sum, m) => sum + (m.stabilityMetrics?.gradientStability || 0), 0) / count,
+        predictionConsistency: metrics.reduce((sum, m) => sum + (m.stabilityMetrics?.predictionConsistency || 0), 0) / count
       },
       explorationStats: metrics[metrics.length - 1].explorationStats
     };

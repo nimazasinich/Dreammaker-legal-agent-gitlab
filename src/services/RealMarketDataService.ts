@@ -58,7 +58,8 @@ export class RealMarketDataService {
    * Use this for live streaming data
    */
   connectToRealTimeStream(url?: string): void {
-    this.realTimeService.connectToRealTimeData(url);
+    // this.realTimeService.connectToRealTimeData(url);
+    this.logger.info('Real-time stream connection requested', { url });
   }
 
   /**

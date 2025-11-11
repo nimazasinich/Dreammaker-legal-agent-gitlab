@@ -88,8 +88,8 @@ export class RealTrainingEngine {
         if (epoch % 10 === 0) {
           const avgMetrics = this.calculateAverageMetrics(epochMetrics);
           this.logger.info(`Real Training - Epoch ${epoch}`, {
-            loss: avgMetrics.loss.mse.toFixed(6),
-            accuracy: avgMetrics.accuracy.directional.toFixed(3),
+            loss: avgMetrics.mse.toFixed(6),
+            accuracy: (avgMetrics.directionalAccuracy || 0).toFixed(3),
             learningRate: avgMetrics.learningRate.toExponential(3)
           });
         }
@@ -105,8 +105,8 @@ export class RealTrainingEngine {
       const finalMetrics = this.calculateAverageMetrics(allMetrics);
 
       return {
-        accuracy: finalMetrics.accuracy.directional,
-        loss: finalMetrics.loss.mse,
+        accuracy: finalMetrics.directionalAccuracy || 0,
+        loss: finalMetrics.mse,
         epochs: config.epochs,
         dataPoints: trainingDataset.features.length
       };
@@ -225,12 +225,22 @@ export class RealTrainingEngine {
    */
   private convertToExperiences(dataset: { features: number[][]; labels: number[] }): Experience[] {
     return (dataset.features || []).map((feature, i) => ({
+      id: `exp_${Date.now()}_${i}`,
       state: feature,
       action: dataset.labels[i],
       reward: dataset.labels[i] === 2 ? 1 : dataset.labels[i] === 0 ? -1 : 0,
       nextState: dataset.features[Math.min(i + 1, dataset.features.length - 1)],
-      done: i === dataset.features.length - 1,
-      timestamp: Date.now() - (dataset.features.length - i) * 60000 // Simulate timestamps
+      terminal: i === dataset.features.length - 1,
+      tdError: 0,
+      priority: 1.0,
+      timestamp: Date.now() - (dataset.features.length - i) * 60000, // Simulate timestamps
+      symbol: 'BTC',
+      metadata: {
+        price: 0,
+        volume: 0,
+        volatility: 0,
+        confidence: 1.0
+      }
     }));
   }
 
@@ -242,22 +252,14 @@ export class RealTrainingEngine {
     return {
       epoch: metrics[0].epoch,
       timestamp: Date.now(),
-      loss: {
-        mse: metrics.reduce((sum, m) => sum + m.loss.mse, 0) / count,
-        mae: metrics.reduce((sum, m) => sum + m.loss.mae, 0) / count,
-        rSquared: metrics.reduce((sum, m) => sum + m.loss.rSquared, 0) / count
-      },
-      accuracy: {
-        directional: metrics.reduce((sum, m) => sum + m.accuracy.directional, 0) / count,
-        classification: metrics.reduce((sum, m) => sum + m.accuracy.classification, 0) / count
-      },
+      mse: metrics.reduce((sum, m) => sum + m.mse, 0) / count,
+      mae: metrics.reduce((sum, m) => sum + m.mae, 0) / count,
+      r2: metrics.reduce((sum, m) => sum + m.r2, 0) / count,
+      directionalAccuracy: metrics.reduce((sum, m) => sum + (m.directionalAccuracy || 0), 0) / count,
       gradientNorm: metrics.reduce((sum, m) => sum + m.gradientNorm, 0) / count,
       learningRate: metrics[metrics.length - 1].learningRate,
-      stabilityMetrics: {
-        nanCount: metrics.reduce((sum, m) => sum + m.stabilityMetrics.nanCount, 0),
-        infCount: metrics.reduce((sum, m) => sum + m.stabilityMetrics.infCount, 0),
-        resetCount: metrics[metrics.length - 1].stabilityMetrics.resetCount
-      },
+      resetEvents: metrics.reduce((sum, m) => sum + m.resetEvents, 0),
+      stabilityMetrics: metrics[metrics.length - 1].stabilityMetrics,
       explorationStats: metrics[metrics.length - 1].explorationStats
     };
   }

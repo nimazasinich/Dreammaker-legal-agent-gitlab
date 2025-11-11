@@ -15,12 +15,15 @@ export class RealTradingService {
   async analyzeMarket(symbol: string): Promise<any> {
     const marketData = await this.marketDataService.getRealTimePrice(symbol);
     const historicalData = await this.marketDataService.getHistoricalData(symbol, 7);
-    const sentiment = await this.marketDataService.getMarketSentiment();
+    const sentiment = await this.marketDataService.getMarketSentiment() || { value: 50, label: 'NEUTRAL' };
+
+    // Extract price from marketData
+    const currentPrice = typeof marketData === 'number' ? marketData : (marketData as any).price || 0;
 
     // تحلیل تکنیکال با داده‌های واقعی
     const analysis = {
       symbol,
-      currentPrice: marketData.price,
+      currentPrice,
       trend: this.calculateTrend(historicalData),
       support: this.calculateSupportResistance(historicalData),
       rsi: this.calculateRSI(historicalData),
@@ -35,13 +38,14 @@ export class RealTradingService {
   // شبیه‌سازی تریدینگ با داده‌های واقعی (بدون اجرای واقعی)
   async simulateTrade(symbol: string, side: 'BUY' | 'SELL', amount: number): Promise<any> {
     const marketData = await this.marketDataService.getRealTimePrice(symbol);
+    const price = typeof marketData === 'number' ? marketData : (marketData as any).price || 0;
 
     const trade = {
       id: `sim-${Date.now()}`,
       symbol,
       side,
       amount,
-      entryPrice: marketData.price,
+      entryPrice: price,
       timestamp: Date.now(),
       status: 'EXECUTED',
       simulated: true,
@@ -74,7 +78,7 @@ export class RealTradingService {
       return { support: 0, resistance: 0 };
     }
 
-    const prices = (historicalData || []).map(d => d.price);
+    const prices = historicalData.map(d => d.price);
     return {
       support: Math.min(...prices) * 0.98,
       resistance: Math.max(...prices) * 1.02
@@ -124,7 +128,8 @@ export class RealTradingService {
     for (const position of positionsArray) {
       try {
         const currentData = await this.marketDataService.getRealTimePrice(position.symbol);
-        const currentValue = position.amount * currentData.price;
+        const currentPrice = typeof currentData === 'number' ? currentData : (currentData as any).price || 0;
+        const currentValue = position.amount * currentPrice;
         const entryValue = position.amount * position.entryPrice;
         const pnl = currentValue - entryValue;
 
@@ -139,7 +144,7 @@ export class RealTradingService {
       totalPositions: positionsArray.length,
       totalValue,
       totalPnL,
-      positions: (positionsArray || []).map(p => ({
+      positions: positionsArray.map(p => ({
         ...p,
         currentPrice: undefined // Will be updated in real-time
       }))

@@ -11,6 +11,20 @@ export interface RealPriceData {
     lastUpdate: number;
 }
 
+export interface RealSignalData {
+    id: string | number;
+    symbol: string;
+    action: 'BUY' | 'SELL' | 'HOLD';
+    confidence: number;
+    confluence?: number;
+    timeframe: string;
+    timestamp: number;
+    entry?: number;
+    stopLoss?: number;
+    takeProfit?: number;
+    reasoning?: string[];
+}
+
 type OHLCV = {
     timestamp: number;
     open: number;
@@ -30,11 +44,25 @@ export interface Signal {
     timestamp: number;
 }
 
+export interface RealPortfolioData {
+    totalValue: number;
+    balances: Record<string, number>;
+    positions: any[];
+    lastUpdated: Date;
+}
+
+export interface BlockchainBalances {
+    balances: Record<string, number>;
+    lastUpdate: number;
+}
+
 export class RealDataManager {
     private readonly logger = Logger.getInstance();
     private static instance: RealDataManager;
     private cache: Map<string, { data: any; timestamp: number }> = new Map();
     private readonly CACHE_TTL = 120000; // افزایش از 60 به 120 ثانیه
+    private signalSubscribers: Array<(signal: RealSignalData) => void> = [];
+    private portfolioSubscribers: Array<(portfolio: RealPortfolioData) => void> = [];
 
     private constructor() {}
 
@@ -262,7 +290,7 @@ export class RealDataManager {
             });
             return response.data;
         } catch (error) {
-            this.logger.error('Failed to fetch portfolio', error);
+            this.logger.error('Failed to fetch portfolio', {}, error as Error);
             // Return default portfolio structure
             return {
                 totalValue: 0,
@@ -282,7 +310,7 @@ export class RealDataManager {
             });
             return response.data.positions || response.data || [];
         } catch (error) {
-            this.logger.error('Failed to fetch positions', error);
+            this.logger.error('Failed to fetch positions', {}, error as Error);
             return [];
         }
     }
@@ -307,7 +335,7 @@ export class RealDataManager {
                 timestamp: s.timestamp || Date.now()
             }));
         } catch (error) {
-            this.logger.error('Failed to fetch AI signals', error);
+            this.logger.error('Failed to fetch AI signals', {}, error as Error);
             return [];
         }
     }
@@ -369,6 +397,165 @@ export class RealDataManager {
         };
         return map[symbol.toUpperCase()] || 'XBTUSD';
     }
+
+    /**
+     * Fetch real trading signals from backend
+     */
+    async fetchRealSignals(limit: number = 20): Promise<RealSignalData[]> {
+        const cacheKey = this.getCacheKey('signals', { limit });
+        const cached = this.getFromCache(cacheKey);
+        if (cached) return cached;
+
+        try {
+            const response = await axios.get(`${API_BASE}/api/signals/history`, {
+                params: { limit },
+                timeout: 15000
+            });
+
+            const signals = response.data.data || response.data.history || response.data.signals || [];
+
+            // Map to RealSignalData format
+            const mappedSignals: RealSignalData[] = signals.map((s: any) => ({
+                id: s.id || `${s.symbol}-${Date.now()}`,
+                symbol: s.symbol || 'BTCUSDT',
+                action: s.action || (s.direction === 'BULLISH' ? 'BUY' : s.direction === 'BEARISH' ? 'SELL' : 'HOLD'),
+                confidence: s.confidence || 0.5,
+                confluence: s.confluence || Math.floor((s.confidence || 0.5) * 10),
+                timeframe: s.timeframe || '1h',
+                timestamp: s.timestamp || Date.now(),
+                entry: s.entry || s.entryPrice,
+                stopLoss: s.stopLoss || s.sl,
+                takeProfit: s.takeProfit || s.tp,
+                reasoning: s.reasoning || s.reasons || []
+            }));
+
+            this.setCache(cacheKey, mappedSignals);
+            return mappedSignals;
+        } catch (error) {
+            this.logger.error('Failed to fetch real signals', {}, error as Error);
+            return [];
+        }
+    }
+
+    /**
+     * Subscribe to signal updates
+     */
+    subscribeToSignals(callback: (signal: RealSignalData) => void): () => void {
+        this.signalSubscribers.push(callback);
+
+        // Return unsubscribe function
+        return () => {
+            const index = this.signalSubscribers.indexOf(callback);
+            if (index > -1) {
+                this.signalSubscribers.splice(index, 1);
+            }
+        };
+    }
+
+    /**
+     * Notify signal subscribers
+     */
+    private notifySignalSubscribers(signal: RealSignalData): void {
+        this.signalSubscribers.forEach(callback => {
+            try {
+                callback(signal);
+            } catch (error) {
+                this.logger.error('Error notifying signal subscriber', {}, error as Error);
+            }
+        });
+    }
+
+    /**
+     * Fetch real blockchain balances
+     */
+    async fetchRealBlockchainBalances(walletAddresses: { eth?: string; bsc?: string; trx?: string }): Promise<BlockchainBalances> {
+        try {
+            const response = await axios.post(`${API_BASE}/api/blockchain/balances`, {
+                addresses: walletAddresses
+            }, {
+                timeout: 15000
+            });
+
+            return {
+                balances: response.data.balances || {},
+                lastUpdate: Date.now()
+            };
+        } catch (error) {
+            this.logger.error('Failed to fetch blockchain balances', {}, error as Error);
+            return {
+                balances: {},
+                lastUpdate: Date.now()
+            };
+        }
+    }
+
+    /**
+     * Fetch real portfolio data
+     */
+    async fetchRealPortfolio(walletAddresses?: string[]): Promise<RealPortfolioData> {
+        try {
+            const response = await axios.get(`${API_BASE}/api/portfolio`, {
+                params: walletAddresses ? { addresses: walletAddresses.join(',') } : {},
+                timeout: 10000
+            });
+
+            const data = response.data;
+            return {
+                totalValue: data.totalValue || 0,
+                balances: data.balances || {},
+                positions: data.positions || [],
+                lastUpdated: new Date(data.lastUpdated || Date.now())
+            };
+        } catch (error) {
+            this.logger.error('Failed to fetch portfolio', {}, error as Error);
+            return {
+                totalValue: 0,
+                balances: {},
+                positions: [],
+                lastUpdated: new Date()
+            };
+        }
+    }
+
+    /**
+     * Subscribe to portfolio updates
+     */
+    subscribeToPortfolio(callback: (portfolio: RealPortfolioData) => void): () => void {
+        this.portfolioSubscribers.push(callback);
+
+        // Return unsubscribe function
+        return () => {
+            const index = this.portfolioSubscribers.indexOf(callback);
+            if (index > -1) {
+                this.portfolioSubscribers.splice(index, 1);
+            }
+        };
+    }
+
+    /**
+     * Fetch real chart data (OHLCV)
+     */
+    async fetchRealChartData(symbol: string, timeframe: string, limit: number = 100): Promise<any[]> {
+        try {
+            const ohlcv = await this.getOHLCV(symbol, timeframe, limit);
+
+            // Convert OHLCV to MarketData format
+            return ohlcv.map(candle => ({
+                symbol,
+                timestamp: candle.timestamp,
+                open: candle.open,
+                high: candle.high,
+                low: candle.low,
+                close: candle.close,
+                volume: candle.volume
+            }));
+        } catch (error) {
+            this.logger.error('Failed to fetch chart data', {}, error as Error);
+            return [];
+        }
+    }
 }
 
 export const realDataManager = RealDataManager.getInstance();
+// Types already exported from types/index.ts
+// export type { RealPortfolioData, BlockchainBalances };

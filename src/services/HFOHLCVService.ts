@@ -1,6 +1,6 @@
 // src/services/HFOHLCVService.ts
 import { HuggingFaceService } from './HuggingFaceService.js';
-import { MarketData, OHLCVData } from '../types/index.js';
+import { MarketData } from '../types/index.js';
 import { TTLCache } from '../utils/cache.js';
 import { Logger } from '../core/Logger.js';
 import axios from 'axios';
@@ -16,13 +16,15 @@ export interface HFOHLCVData {
   symbol?: string;
 }
 
+export type OHLCVData = HFOHLCVData;
+
 /**
  * Hugging Face OHLCV Service
  * Loads OHLCV data from HF datasets for cryptocurrencies
  */
 export class HFOHLCVService extends HuggingFaceService {
-  private static instance: HFOHLCVService;
-  private logger = Logger.getInstance();
+  protected static instance: HFOHLCVService;
+  protected logger = Logger.getInstance();
 
   // Dataset mappings
   private readonly DATASET_MAP: Record<string, string> = {

@@ -92,15 +92,17 @@ export class ElliottWaveAnalyzer {
                           rightWindow.every(d => d.low >= center.low);
 
       if (isFractalHigh && !isFractalLow) {
+        const ts = center.timestamp instanceof Date ? center.timestamp.getTime() : center.timestamp;
         fractals.push({
           price: center.high,
-          timestamp: center.timestamp,
+          timestamp: ts,
           type: 'HIGH'
         });
       } else if (isFractalLow && !isFractalHigh) {
+        const ts = center.timestamp instanceof Date ? center.timestamp.getTime() : center.timestamp;
         fractals.push({
           price: center.low,
-          timestamp: center.timestamp,
+          timestamp: ts,
           type: 'LOW'
         });
       }

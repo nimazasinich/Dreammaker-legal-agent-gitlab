@@ -11,7 +11,7 @@ if (typeof require !== 'undefined') {
     // Try to load TensorFlow.js Node.js version
     const tfNode = require('@tensorflow/tfjs-node');
     tf = tfNode;
-    logger.info('TensorFlow.js Node.js backend loaded successfully');
+    Logger.getInstance().info('TensorFlow.js Node.js backend loaded successfully');
   } catch (error) {
     // TensorFlow.js not installed - will use fallback mode
     // This is expected if @tensorflow/tfjs-node is not installed

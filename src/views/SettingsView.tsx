@@ -192,7 +192,7 @@ const SettingsView: React.FC = () => {
     }
     setSaving(true);
     try {
-      logger.info('Saving settings:', { data: config });
+      Logger.getInstance().info('Saving settings:', { data: config });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -773,7 +773,7 @@ const AgentsTab: React.FC = () => {
         setStatus(statusRes.data);
       }
     } catch (err) {
-      logger.error('Failed to load agent config', {}, err as Error);
+      Logger.getInstance().error('Failed to load agent config', {}, err as Error);
       setError('Failed to load scanner configuration');
     } finally {
       setLoading(false);
@@ -789,9 +789,9 @@ const AgentsTab: React.FC = () => {
       await saveAgentScannerConfig(config);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-      logger.info('Scanner config saved', { config });
+      Logger.getInstance().info('Scanner config saved', { config });
     } catch (err) {
-      logger.error('Failed to save scanner config', {}, err as Error);
+      Logger.getInstance().error('Failed to save scanner config', {}, err as Error);
       setError('Failed to save configuration');
     } finally {
       setLoading(false);
@@ -805,9 +805,9 @@ const AgentsTab: React.FC = () => {
       const { startAgentScanner } = await import('../services/settingsAPI');
       await startAgentScanner();
       await loadConfigAndStatus();
-      logger.info('Scanner agent started');
+      Logger.getInstance().info('Scanner agent started');
     } catch (err) {
-      logger.error('Failed to start scanner', {}, err as Error);
+      Logger.getInstance().error('Failed to start scanner', {}, err as Error);
       setError('Failed to start scanner agent');
     } finally {
       setLoading(false);
@@ -821,9 +821,9 @@ const AgentsTab: React.FC = () => {
       const { stopAgentScanner } = await import('../services/settingsAPI');
       await stopAgentScanner();
       await loadConfigAndStatus();
-      logger.info('Scanner agent stopped');
+      Logger.getInstance().info('Scanner agent stopped');
     } catch (err) {
-      logger.error('Failed to stop scanner', {}, err as Error);
+      Logger.getInstance().error('Failed to stop scanner', {}, err as Error);
       setError('Failed to stop scanner agent');
     } finally {
       setLoading(false);

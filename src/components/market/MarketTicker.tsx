@@ -48,7 +48,11 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
           change24h: p.change24h,
           changePercent24h: p.changePercent24h,
           volume: p.volume || 0,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          open: p.price,
+          high: p.price,
+          low: p.price,
+          close: p.price
         }));
         setMarketData(formatted);
       }

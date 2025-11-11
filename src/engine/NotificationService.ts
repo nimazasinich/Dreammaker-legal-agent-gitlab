@@ -59,8 +59,8 @@ export async function notifyTelegram(payload: AlertPayload): Promise<boolean> {
       logger.error('Telegram API returned not ok', { response: response.data });
       return false;
     }
-  } catch (error: any) {
-    logger.error('Failed to send Telegram notification', {}, error);
+  } catch (error) {
+    logger.error('Failed to send Telegram notification', {}, error as Error);
     return false;
   }
 }
@@ -113,7 +113,7 @@ export async function sendSignalAlert(signal: FinalSignal): Promise<void> {
 *Score:* ${signal.score.toFixed(2)} | *Confidence:* ${signal.confidence.toFixed(2)}
 
 *Reasoning:*
-${signal.reasoning.slice(0, 5).map(r => `• ${r}`).join('\n')}
+${(signal.reasoning || []).slice(0, 5).map(r => `• ${r}`).join('\n')}
 
 *Time:* ${new Date(signal.time).toISOString()}
   `.trim();
@@ -128,9 +128,9 @@ ${signal.reasoning.slice(0, 5).map(r => `• ${r}`).join('\n')}
     symbol: signal.symbol,
     side: signal.action === 'BUY' ? 'LONG' : 'SHORT',
     score: Number(signal.score.toFixed(2)),
-    timeframe: signal.timeframes.join(','),
-    price: signal.metadata?.price || 0,
-    riskPct: signal.risk?.atr || undefined
+    timeframe: (signal as any).timeframes?.join(',') ?? '1h',
+    price: (signal as any).metadata?.price ?? 0,
+    riskPct: (signal as any).risk?.atr
   });
 }
 

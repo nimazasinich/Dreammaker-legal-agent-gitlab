@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Logger } from '../core/Logger.js';
 import { StageData } from '../components/signal/SignalStagePipeline';
-import { WS_BASE, API_BASE, buildWebSocketUrl } from '../config/env.js';
+import { WS_BASE, API_BASE } from '../config/env.js';
 
 const logger = Logger.getInstance();
 
@@ -36,9 +36,8 @@ export interface SignalWebSocketData {
 }
 
 export const useSignalWebSocket = (symbol: string, enabled: boolean = true) => {
-      const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [stages, setStages] = useState<StageData[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [stages, setStages] = useState<StageData[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [signalData, setSignalData] = useState<SignalWebSocketData | null>(null);
@@ -52,8 +51,8 @@ export const useSignalWebSocket = (symbol: string, enabled: boolean = true) => {
         }
 
         try {
-            // Use unified buildWebSocketUrl function to prevent /ws/ws duplication
-            const wsUrl = buildWebSocketUrl('/ws');
+            // Use WS_BASE directly to construct WebSocket URL
+            const wsUrl = `${WS_BASE}/ws`;
 
             logger.info('Attempting WebSocket connection to signals endpoint:', { data: wsUrl });
             const ws = new WebSocket(wsUrl);
@@ -209,10 +208,7 @@ export const useSignalWebSocket = (symbol: string, enabled: boolean = true) => {
             };
 
             ws.onerror = (err) => {
-                logger.error('Signal WebSocket error:', {}, err);
-                logger.error('WebSocket error type:', {}, err.type);
-                logger.error('WebSocket URL:', {}, wsUrl);
-                logger.error('WebSocket readyState:', {}, ws.readyState);
+                logger.error('Signal WebSocket error occurred', { type: err.type, url: wsUrl, readyState: ws.readyState }, err as any);
                 setError(`WebSocket connection error: ${err.type || 'Unknown error'}`);
                 setIsConnected(false);
             };
@@ -241,14 +237,12 @@ export const useSignalWebSocket = (symbol: string, enabled: boolean = true) => {
                         connect();
                     }, delay);
                 } else {
-                    logger.error('Maximum signal WebSocket reconnection attempts reached');
+                    logger.error('Maximum signal WebSocket reconnection attempts reached', {});
                     setError('Failed to connect to signal WebSocket after multiple attempts. Please check if the server is running.');
                 }
             };
         } catch (err) {
-            logger.error('Failed to create signal WebSocket:', {}, err);
-            logger.error('Error details:', {}, err instanceof Error ? err.message : String(err));
-            logger.error('WebSocket URL attempted:', {}, WS_BASE);
+            logger.error('Failed to create signal WebSocket', { url: WS_BASE, details: err instanceof Error ? err.message : String(err) }, err instanceof Error ? err : undefined);
             setError(`Failed to establish WebSocket connection: ${err instanceof Error ? err.message : 'Unknown error'}`);
             setIsConnected(false);
         }

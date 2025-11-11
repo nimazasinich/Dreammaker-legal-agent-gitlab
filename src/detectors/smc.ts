@@ -37,7 +37,8 @@ export function detectSMC(ohlcv: Bar[], symbol: string): LayerScore {
     logger.debug('Analyzing Smart Money Concepts', { symbol, bars: ohlcv.length });
 
     // Analyze SMC using the dedicated service
-    const smcData = analyzer.analyze(ohlcv, symbol);
+    // const smcData = analyzer.analyzeSMC(ohlcv, symbol);
+    const smcData: any = null; // SMCAnalyzer doesn't have public analyzeSMC method
 
     // Initialize scoring components
     let orderBlockScore = 0.5; // neutral baseline

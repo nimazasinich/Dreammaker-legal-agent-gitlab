@@ -292,7 +292,7 @@ export class EnhancedMarketDataService {
 
         if (prices && (prices?.length || 0) > 0) {
           this.logger.info(`✅ ${provider.name} succeeded with ${prices.length} prices`);
-          this.priceCache.set(cacheKey, prices);
+          this.priceCache.set(cacheKey, prices as any);
           return prices;
         }
       } catch (error: any) {

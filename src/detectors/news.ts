@@ -41,14 +41,11 @@ export async function newsLayer(symbol: string): Promise<LayerScore> {
     // Filter news items relevant to this symbol
     const relevantNews = allNews.filter(item => {
       const titleLower = item.title.toLowerCase();
-      const descLower = (item.description || '').toLowerCase();
 
-      // Check if symbol name is mentioned
+      // Check if symbol name is mentioned in title
       return (
         titleLower.includes(baseSymbol) ||
-        descLower.includes(baseSymbol) ||
-        titleLower.includes(symbol.toLowerCase()) ||
-        descLower.includes(symbol.toLowerCase())
+        titleLower.includes(symbol.toLowerCase())
       );
     });
 
@@ -77,19 +74,20 @@ export async function newsLayer(symbol: string): Promise<LayerScore> {
     // Number of news items analyzed
     reasons.push(`${relevantNews.length} news items analyzed`);
 
-    // Overall sentiment
-    const sentimentLabel = hfResults.aggregate.label || 'NEUTRAL';
+    // Overall sentiment - determine from vote value
+    let sentimentLabel = 'NEUTRAL';
+    if (hfResults.aggregate.vote > 0.3) {
+      sentimentLabel = 'POSITIVE';
+    } else if (hfResults.aggregate.vote < -0.3) {
+      sentimentLabel = 'NEGATIVE';
+    }
     reasons.push(`Sentiment: ${sentimentLabel}`);
 
-    // Confidence level
-    const confidence = hfResults.aggregate.confidence * 100;
-    reasons.push(`Confidence: ${confidence.toFixed(0)}%`);
-
-    // Breakdown by positive/negative/neutral
-    const breakdown = hfResults.breakdown;
-    if (breakdown) {
-      const positiveRatio = (breakdown.positive / relevantNews.length) * 100;
-      const negativeRatio = (breakdown.negative / relevantNews.length) * 100;
+    // Calculate confidence from aggregate data
+    const totalResults = hfResults.results.length;
+    if (totalResults > 0) {
+      const positiveRatio = (hfResults.aggregate.positive / totalResults) * 100;
+      const negativeRatio = (hfResults.aggregate.negative / totalResults) * 100;
 
       if (positiveRatio > 60) {
         reasons.push(`${positiveRatio.toFixed(0)}% positive news`);
@@ -101,8 +99,8 @@ export async function newsLayer(symbol: string): Promise<LayerScore> {
     }
 
     // Most recent news timestamp
-    if ((relevantNews?.length || 0) > 0 && relevantNews[0].publishedAt) {
-      const latestNewsTime = new Date(relevantNews[0].publishedAt);
+    if ((relevantNews?.length || 0) > 0 && relevantNews[0].published) {
+      const latestNewsTime = relevantNews[0].published;
       const hoursAgo = (Date.now() - latestNewsTime.getTime()) / (1000 * 60 * 60);
       reasons.push(`Latest: ${hoursAgo.toFixed(0)}h ago`);
     }
@@ -111,8 +109,7 @@ export async function newsLayer(symbol: string): Promise<LayerScore> {
       symbol,
       score: normalizedScore.toFixed(3),
       newsCount: relevantNews.length,
-      sentiment: sentimentLabel,
-      confidence: confidence.toFixed(1)
+      sentiment: sentimentLabel
     });
 
     return {
@@ -123,7 +120,14 @@ export async function newsLayer(symbol: string): Promise<LayerScore> {
   } catch (error) {
     logger.error('News sentiment analysis failed', { symbol }, error as Error);
 
-    // In production, might want to gracefully degrade instead of throwing
-    console.error(`News detector failed for ${symbol}: ${(error as Error).message}`);
+    // Return neutral score with error indicators
+    return {
+      score: 0.5,
+      reasons: [
+        'News analysis error',
+        'Using neutral baseline',
+        `Error: ${(error as Error).message}`
+      ]
+    };
   }
 }

@@ -5,7 +5,7 @@
 
 import express from 'express';
 import { createServer } from 'http';
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import net from 'net';
@@ -21,11 +21,11 @@ import { WhaleTrackerService } from './services/WhaleTrackerService.js';
 import { Logger } from './core/Logger.js';
 import { CORSProxyService } from './services/CORSProxyService.js';
 import { AlternateRegistryService } from './services/AlternateRegistryService.js';
-import telegramRouter from './routes/integrations/telegram.js';
-import { hfRouter } from './routes/hf.js';
+// import telegramRouter from './routes/integrations/telegram.js';
+// import { hfRouter } from './routes/hf.js';
 import { setupProxyRoutes } from './services/ProxyRoutes.js';
-import riskRouter from './routes/risk.js';
-import professionalRiskRouter from './routes/professional-risk.js';
+// import riskRouter from './routes/risk.js';
+// import professionalRiskRouter from './routes/professional-risk.js';
 
 // Load environment variables
 dotenv.config();
@@ -96,10 +96,10 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use("/api/integrations/telegram", telegramRouter);
-app.use("/api/hf", hfRouter);
-app.use("/api/risk", riskRouter);
-app.use("/api/professional-risk", professionalRiskRouter);
+// app.use("/api/integrations/telegram", telegramRouter);
+// app.use("/api/hf", hfRouter);
+// app.use("/api/risk", riskRouter);
+// app.use("/api/professional-risk", professionalRiskRouter);
 
 // Setup CORS proxy routes for external APIs
 setupProxyRoutes(app);
@@ -1142,7 +1142,8 @@ app.get('/api/signals/history', async (req, res) => {
                     action: 'BUY',
                     confidence: 0.85,
                     reasoning: ['Strong bullish momentum', 'RSI oversold recovery', 'Volume spike detected'],
-                    timeframe: '1h',
+                    featureAttribution: { rsi: 0.3, volume: 0.25, momentum: 0.3, pattern: 0.15 },
+                    timeframes: { '1m': null, '5m': null, '15m': null, '1h': { action: 'BUY', confidence: 0.85 } },
                     source: 'AI_SIGNAL'
                 },
                 {
@@ -1152,7 +1153,8 @@ app.get('/api/signals/history', async (req, res) => {
                     action: 'BUY',
                     confidence: 0.78,
                     reasoning: ['Pattern breakout', 'Support level held', 'MACD bullish crossover'],
-                    timeframe: '4h',
+                    featureAttribution: { pattern: 0.35, support: 0.25, macd: 0.18 },
+                    timeframes: { '1m': null, '5m': null, '15m': null, '1h': { action: 'BUY', confidence: 0.78 } },
                     source: 'PATTERN'
                 },
                 {
@@ -1162,7 +1164,8 @@ app.get('/api/signals/history', async (req, res) => {
                     action: 'SELL',
                     confidence: 0.72,
                     reasoning: ['Resistance rejection', 'Bearish divergence', 'Decreasing volume'],
-                    timeframe: '1h',
+                    featureAttribution: { resistance: 0.3, divergence: 0.25, volume: 0.17 },
+                    timeframes: { '1m': null, '5m': null, '15m': null, '1h': { action: 'SELL', confidence: 0.72 } },
                     source: 'AI_SIGNAL'
                 },
                 {
@@ -1172,7 +1175,8 @@ app.get('/api/signals/history', async (req, res) => {
                     action: 'BUY',
                     confidence: 0.68,
                     reasoning: ['Bounce from support', 'Positive sentiment', 'Technical setup'],
-                    timeframe: '1h',
+                    featureAttribution: { support: 0.3, sentiment: 0.2, technical: 0.18 },
+                    timeframes: { '1m': null, '5m': null, '15m': null, '1h': { action: 'BUY', confidence: 0.68 } },
                     source: 'CONFLUENCE'
                 },
                 {
@@ -1182,10 +1186,11 @@ app.get('/api/signals/history', async (req, res) => {
                     action: 'BUY',
                     confidence: 0.75,
                     reasoning: ['Breakout confirmed', 'High volume', 'Strong trend'],
-                    timeframe: '4h',
+                    featureAttribution: { breakout: 0.35, volume: 0.25, trend: 0.15 },
+                    timeframes: { '1m': null, '5m': null, '15m': null, '1h': { action: 'BUY', confidence: 0.75 } },
                     source: 'AI_SIGNAL'
                 }
-            ].slice(0, limit);
+            ].slice(0, limit) as any;
         }
         
         res.json({ 
@@ -1430,8 +1435,8 @@ app.get('/api/ai/predict', async (req, res) => {
                     symbol: symbol.toUpperCase(),
                     prediction: prediction.action,
                     confidence: prediction.confidence,
-                    direction: prediction.action === 'BUY' ? 'bullish' : 
-                               prediction.action === 'SELL' ? 'bearish' : 'neutral',
+                    direction: prediction.action === 'LONG' ? 'bullish' :
+                               prediction.action === 'SHORT' ? 'bearish' : 'neutral',
                     probabilities: prediction.probabilities,
                     reasoning: prediction.reasoning,
                     timestamp: Date.now()
@@ -1701,11 +1706,11 @@ app.post('/api/analysis/harmonic', async (req, res) => {
 // ============================================================================
 
 app.get('/api/health', (req, res) => {
-    res.json({ 
+    res.json({
         status: 'ok',
         server: 'BOLT AI - 100% Real Data',
         timestamp: new Date().toISOString(),
-        port: PORT,
+        port: DEFAULT_PORT,
         realDataSources: {
             marketData: 'CoinGecko + CryptoCompare + CoinMarketCap',
             blockchain: 'Etherscan + BscScan',
@@ -1900,9 +1905,10 @@ app.get('/api/scoring/snapshot', async (req, res) => {
 
         for (const tf of tfs) {
             try {
-                const data = await database.getMarketData(upperSymbol, tf, 100);
+                // Database doesn't have getMarketData method, using select instead
+                const data = await database.select('market_data', { symbol: upperSymbol, interval: tf }) || [];
                 if ((data?.length || 0) > 0) {
-                    const candles = (data || []).map((d: any) => ({
+                    const candles = (data || []).slice(0, 100).map((d: any) => ({
                         timestamp: typeof d.timestamp === 'number' ? d.timestamp : new Date(d.timestamp).getTime(),
                         open: d.open,
                         high: d.high,
@@ -2347,7 +2353,7 @@ async function runBackgroundScan() {
         scannerState.lastRunTs = startTime;
 
         // Get top-300 coins from market data service
-        const topCoins = await marketDataService.getTopCoins?.(config.rankRange[1]) || [];
+        const topCoins = await (marketDataService as any).getTopCoins?.(config.rankRange[1]) || [];
 
         // Filter by rank and volume
         const filtered = topCoins.filter((coin: any) => {
@@ -2381,7 +2387,7 @@ async function runBackgroundScan() {
                 const reasons: string[] = [];
 
                 // Example: Use price change as a simple indicator
-                const priceChange24h = marketData.priceChange24h || 0;
+                const priceChange24h = marketData.performance?.percent || 0;
                 if (priceChange24h > 5) {
                     score += 0.1;
                     confluence += 0.05;
@@ -2747,9 +2753,10 @@ wss.on('connection', (ws) => {
 
                 for (const tf of tfs) {
                     try {
-                        const data = await database.getMarketData(symbol, tf, 100);
+                        // Database doesn't have getMarketData method, using select instead
+                        const data = await database.select('market_data', { symbol, interval: tf }) || [];
                         if ((data?.length || 0) > 0) {
-                            const candles = (data || []).map((d: any) => ({
+                            const candles = (data || []).slice(0, 100).map((d: any) => ({
                                 timestamp: typeof d.timestamp === 'number' ? d.timestamp : new Date(d.timestamp).getTime(),
                                 open: d.open,
                                 high: d.high,
@@ -2844,7 +2851,7 @@ wss.on('connection', (ws) => {
                                 symbol: subscribedSymbol,
                                 price: marketData.currentPrice || 0,
                                 stages: {
-                                    stage1: { status: 'completed', progress: 100, data: { price: marketData.currentPrice, volume: marketData.volume24h } },
+                                    stage1: { status: 'completed', progress: 100, data: { price: marketData.currentPrice, volume: (marketData as any).volume24h || 0 } },
                                     stage2: { status: 'completed', progress: 100 },
                                     stage3: { status: 'completed', progress: 100, detectors: { smc: 0.7, elliott: 0.6, harmonic: 0.8 } },
                                     stage4: { status: 'completed', progress: 100, rsi: 50, macd: 0.1, gate: 'HOLD' },

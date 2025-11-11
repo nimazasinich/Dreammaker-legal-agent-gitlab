@@ -260,11 +260,12 @@ export class MultiProviderMarketDataService {
           // Track success
           this.resourceMonitor.trackSuccess(providerKey, startTime);
           
-          this.logger.info(`✅ ${provider.name} succeeded in ${duration}ms`, { 
-            count: prices.length, 
+          this.logger.info(`✅ ${provider.name} succeeded in ${duration}ms`, {
+            count: prices.length,
             symbols: (prices || []).map(p => p.symbol).join(',')
           });
-          this.priceCache.set(cacheKey, prices);
+          const cacheKey = symbols.sort().join(',');
+          prices.forEach(price => this.priceCache.set(`${price.symbol}`, price));
           return prices;
         } else {
           // Track failure (empty response)
@@ -292,9 +293,8 @@ export class MultiProviderMarketDataService {
 
     // All providers failed - log detailed error
     const errorMessage = `All ${providers.length} price providers failed for symbols: ${symbols.join(', ')}. Errors: ${errors.join('; ')}`;
-    this.logger.error(`❌ ${errorMessage}`);
-    this.logger.error(`Provider failure summary:`, errors);
-    console.error(errorMessage);
+    this.logger.error(`❌ ${errorMessage}`, { errors });
+    this.logger.error(`Provider failure summary:`, { count: errors.length });
     // بازگشت آرایه خالی به جای throw error برای جلوگیری از crash
     return [];
   }
@@ -433,7 +433,7 @@ export class MultiProviderMarketDataService {
     const results: PriceData[] = [];
     
     // CryptoCompare doesn't support batch requests efficiently, so we do them in parallel
-    const pricePromises = (symbols || []).map(async (symbol) => {
+    const pricePromises = (symbols || []).map(async (symbol): Promise<PriceData | null> => {
       try {
         const response = await this.cryptoCompareClient.get('/price', {
           params: {
@@ -441,7 +441,7 @@ export class MultiProviderMarketDataService {
             tsyms: 'USD'
           }
         });
-        
+
         const price = response.data.USD;
         if (typeof price === 'number') {
           // Get additional data
@@ -451,9 +451,9 @@ export class MultiProviderMarketDataService {
               tsyms: 'USD'
             }
           }).catch(() => null);
-          
+
           const fullInfo = fullData?.data?.RAW?.[symbol.toUpperCase()]?.USD;
-          
+
           return {
             symbol: symbol.toUpperCase(),
             price,
@@ -466,7 +466,7 @@ export class MultiProviderMarketDataService {
           };
         }
       } catch (error) {
-        this.logger.warn(`CryptoCompare failed for ${symbol}`, {}, error as Error);
+        this.logger.warn(`CryptoCompare failed for ${symbol}`, { symbol }, error as Error);
       }
       return null;
     });
@@ -553,13 +553,13 @@ export class MultiProviderMarketDataService {
       }
       
       // Fallback: Individual requests (more reliable)
-      const pricePromises = (binanceSymbols || []).map(async (binanceSymbol, index) => {
+      const pricePromises = (binanceSymbols || []).map(async (binanceSymbol, index): Promise<PriceData | null> => {
         try {
           // Small delay to avoid rate limit
           if (index > 0) {
             await new Promise(resolve => setTimeout(resolve, 100 * index));
           }
-          
+
           // Get 24hr ticker stats (includes volume and change)
           const tickerResponse = await this.binanceClient.get('/ticker/24hr', {
             params: { symbol: binanceSymbol }
@@ -580,8 +580,8 @@ export class MultiProviderMarketDataService {
             };
           }
         } catch (error: any) {
-          this.logger.debug(`Binance failed for ${binanceSymbol}`, { 
-            error: error.message 
+          this.logger.debug(`Binance failed for ${binanceSymbol}`, {
+            error: error.message
           });
         }
         return null;
@@ -633,12 +633,12 @@ export class MultiProviderMarketDataService {
       'XLM': 'stellar'
     };
 
-    const pricePromises = (symbols || []).map(async (symbol) => {
+    const pricePromises = (symbols || []).map(async (symbol): Promise<PriceData | null> => {
       try {
         const coinId = symbolIdMap[symbol.toUpperCase()] || symbol.toLowerCase();
-        
+
         const response = await this.coincapClient.get(`/assets/${coinId}`);
-        
+
         if (response.data && response.data.data) {
           const asset = response.data.data;
           return {
@@ -653,7 +653,7 @@ export class MultiProviderMarketDataService {
           };
         }
       } catch (error) {
-        this.logger.debug(`CoinCap failed for ${symbol}`, {}, error as Error);
+        this.logger.debug(`CoinCap failed for ${symbol}`, { symbol, error: (error as Error).message });
       }
       return null;
     });
@@ -686,12 +686,12 @@ export class MultiProviderMarketDataService {
       'XLM': 'xlm-stellar'
     };
 
-    const pricePromises = (symbols || []).map(async (symbol) => {
+    const pricePromises = (symbols || []).map(async (symbol): Promise<PriceData | null> => {
       try {
         const coinId = symbolIdMap[symbol.toUpperCase()] || symbol.toLowerCase();
-        
+
         const response = await this.coinpaprikaClient.get(`/tickers/${coinId}`);
-        
+
         if (response.data && response.data.quotes && response.data.quotes.USD) {
           const quote = response.data.quotes.USD;
           return {
@@ -706,7 +706,7 @@ export class MultiProviderMarketDataService {
           };
         }
       } catch (error) {
-        this.logger.debug(`CoinPaprika failed for ${symbol}`, {}, error as Error);
+        this.logger.debug(`CoinPaprika failed for ${symbol}`, { symbol, error: (error as Error).message });
       }
       return null;
     });
@@ -764,7 +764,7 @@ export class MultiProviderMarketDataService {
         }
       }
     } catch (error) {
-      this.logger.debug(`CoinLore failed`, {}, error as Error);
+      this.logger.debug(`CoinLore failed`, { error: (error as Error).message });
     }
 
     return results;
@@ -812,7 +812,7 @@ export class MultiProviderMarketDataService {
       });
 
       if (tickerResponse.data?.error && (tickerResponse.data.error?.length || 0) > 0) {
-        console.error(`Kraken API error: ${tickerResponse.data.error.join(', ')}`);
+        throw new Error(`Kraken API error: ${tickerResponse.data.error.join(', ')}`);
       }
 
       const tickerData = tickerResponse.data?.result || {};
@@ -908,7 +908,7 @@ export class MultiProviderMarketDataService {
       const data = await this.getHistoricalFromCoinGecko(symbol, daysForInterval);
       this.ohlcvCache.set(cacheKey, data);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.warn('CoinGecko historical failed, trying CryptoCompare fallback', {}, error as Error);
       try {
         const data = await this.getHistoricalFromCryptoCompare(symbol, interval, daysForInterval);
@@ -923,7 +923,7 @@ export class MultiProviderMarketDataService {
           return data;
         } catch (hfFinalError) {
           this.logger.error('All historical data providers failed (including HF)', { symbol, interval }, hfFinalError as Error);
-          console.error(`Failed to fetch historical data for ${symbol}: ${(hfFinalError as Error).message}`);
+          throw new Error(`Failed to fetch historical data for ${symbol}: ${(hfFinalError as Error).message}`);
         }
       }
     }
@@ -975,7 +975,7 @@ export class MultiProviderMarketDataService {
 
     const pair = symbolPairMap[symbol.toUpperCase()];
     if (!pair) {
-      console.error(`Kraken: Unsupported symbol ${symbol}`);
+      throw new Error(`Kraken: Unsupported symbol ${symbol}`);
     }
 
     // Map interval to Kraken's format (in minutes)
@@ -1005,14 +1005,14 @@ export class MultiProviderMarketDataService {
       });
 
       if (response.data?.error && (response.data.error?.length || 0) > 0) {
-        console.error(`Kraken OHLC error: ${response.data.error.join(', ')}`);
+        throw new Error(`Kraken OHLC error: ${response.data.error.join(', ')}`);
       }
 
       const result = response.data?.result || {};
       const ohlcData = result[pair] || result[Object.keys(result)[0]] || [];
 
       if (!Array.isArray(ohlcData) || ohlcData.length === 0) {
-        console.error('Kraken returned no OHLC data');
+        throw new Error('Kraken returned no OHLC data');
       }
 
       // Kraken OHLC format: [time, open, high, low, close, vwap, volume, count]
@@ -1107,9 +1107,9 @@ export class MultiProviderMarketDataService {
           aggregate: this.getCryptoCompareAggregate(interval)
         }
       });
-      
+
       if (response.data.Response === 'Error') {
-        console.error(`CryptoCompare API error: ${response.data.Message}`);
+        throw new Error(`CryptoCompare API error: ${response.data.Message}`);
       }
       
       const dataPoints = response.data.Data?.Data || [];
@@ -1171,7 +1171,7 @@ export class MultiProviderMarketDataService {
   async getRealTimePrice(symbol: string): Promise<PriceData> {
     const prices = await this.getRealTimePrices([symbol]);
     if (prices.length === 0) {
-      console.error(`No price data found for ${symbol}`);
+      throw new Error(`No price data found for ${symbol}`);
     }
     return prices[0];
   }

@@ -93,8 +93,8 @@ export async function whalesLayer(symbol: string): Promise<LayerScore> {
 
     // 3. On-Chain Metrics (20% weight)
     // Rising active addresses = Growing interest = Bullish
-    const activeAddresses = whaleData.onChainMetrics.activeAddresses24h || 0;
-    const holderConcentration = whaleData.onChainMetrics.holderConcentration || 0;
+    const activeAddresses = whaleData.onChainMetrics.activeAddresses || 0;
+    const holderConcentration = 0; // whaleData.onChainMetrics.holderConcentration || 0;
 
     if (activeAddresses > 1000) {
       onChainScore = 0.7;

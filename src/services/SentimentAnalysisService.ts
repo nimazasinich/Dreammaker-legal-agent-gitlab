@@ -174,7 +174,7 @@ export class SentimentAnalysisService {
           twitter: 0, // Disabled - no real API
           reddit: reddit,
           news: news,
-          fearGreed: fearGreed,
+          fearGreedIndex: fearGreed,
           googleTrends: 0 // Disabled - no real API
         },
         velocity,
@@ -348,7 +348,7 @@ export class SentimentAnalysisService {
         twitter: 0,
         reddit: 0,
         news: 0,
-        fearGreed: 0,
+        fearGreedIndex: 0,
         googleTrends: 0
       },
       velocity: 0,

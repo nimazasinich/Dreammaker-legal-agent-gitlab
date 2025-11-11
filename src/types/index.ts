@@ -514,6 +514,16 @@ export interface ApiConfig {
       dailyLimit: number;
     };
   };
+  kucoin?: {
+    apiKey: string;
+    secretKey: string;
+    passphrase: string;
+    testnet: boolean;
+    rateLimits: {
+      requestsPerSecond: number;
+      requestsPerMinute: number;
+    };
+  };
   telegram: {
     botToken: string;
     chatId: string;

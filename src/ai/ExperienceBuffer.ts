@@ -226,7 +226,7 @@ export class ExperienceBuffer {
         reward: rewards[i],
         nextState,
         terminal: i === marketData.length - 2, // Last transition is terminal
-        timestamp: currentData.timestamp,
+        timestamp: currentData.timestamp instanceof Date ? currentData.timestamp.getTime() : currentData.timestamp,
         symbol: currentData.symbol,
         metadata: {
           price: currentData.close,

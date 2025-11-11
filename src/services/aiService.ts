@@ -196,9 +196,9 @@ class NeuralNetwork {
       const epochAccuracy = epochCorrect / trainInputs.length;
 
       const valLoss = this.validateModel(valInputs, valTargets);
-      
+
       if (!isFinite(epochLoss) || !isFinite(valLoss) || epochLoss > this.bestLoss * 3) {
-        logger.warn('Training instability detected, resetting...');
+        console.warn('Training instability detected, resetting...');
         this.resetToStableState();
         this.resetCount++;
         continue;
@@ -213,7 +213,7 @@ class NeuralNetwork {
       }
 
       if (patience >= config.earlyStopping.patience) {
-        logger.info(`Early stopping at epoch ${epoch}`);
+        console.info(`Early stopping at epoch ${epoch}`);
         break;
       }
 
@@ -223,18 +223,19 @@ class NeuralNetwork {
     }
 
     const rSquared = Math.max(0, 1 - totalLoss);
-    
+
     return {
       modelVersion: '1.0.0',
       epoch: config.epochs,
       mse: totalLoss,
       mae: totalMae,
-      rSquared,
+      r2: rSquared,
       directionalAccuracy: correctPredictions / trainInputs.length,
       learningRate: this.optimizer.learningRate,
       resetEvents: this.resetCount,
-      seed: this.seed,
-      timestamp: new Date()
+      gradientNorm: 0,
+      // seed: this.seed,
+      timestamp: Date.now()
     };
   }
 
@@ -448,7 +449,7 @@ class ExperienceReplay {
 }
 
 export class AIService {
-  private readonly logger = Logger.getInstance();
+  private readonly logger: Logger;
 
   private network: NeuralNetwork;
   private experienceReplay: ExperienceReplay;
@@ -465,6 +466,8 @@ export class AIService {
   private bestLoss = Infinity;
 
   constructor() {
+    this.logger = Logger.getInstance();
+
     this.config = {
       initializer: { type: 'xavier', mode: 'uniform', gain: 1.0 },
       activations: { preClip: 50.0, postClip: 50.0, leakySlope: 0.01 },

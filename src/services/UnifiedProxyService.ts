@@ -12,6 +12,7 @@
 
 import { Router, Request, Response } from 'express';
 import axios, { AxiosError } from 'axios';
+import { Logger } from '../core/Logger.js';
 
 interface CacheEntry {
   data: any;
@@ -27,11 +28,13 @@ interface ProxyConfig {
 }
 
 export class UnifiedProxyService {
+  private logger: Logger;
   private router: Router;
   private cache: Map<string, CacheEntry>;
   private requestCounts: Map<string, number[]>;
-  
+
   constructor() {
+    this.logger = Logger.getInstance();
     this.router = Router();
     this.cache = new Map();
     this.requestCounts = new Map();
@@ -319,8 +322,8 @@ export class UnifiedProxyService {
   /**
    * مدیریت خطاها
    */
-  private handleProxyError(error: AxiosError, res: Response, cacheKey?: string): void {
-    console.error('Proxy error:', error.message);
+  private handleProxyError(error: AxiosError, res: Response, cacheKey?: string): Response | void {
+    this.logger.error('Proxy error', {}, error);
 
     // اگر داده cache شده (expired) داریم، آن را برگردان
     if (cacheKey) {

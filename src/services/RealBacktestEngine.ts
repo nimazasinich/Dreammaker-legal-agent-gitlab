@@ -38,9 +38,8 @@ export class RealBacktestEngine {
     slippageRate: number;
     maxPositionSize: number;
   }): Promise<BacktestResult> {
-    const md: MarketData[] = await RealMarketDataService.getInstance().getHistoricalData(symbol, timeframe, bars);
-    const engine = BacktestEngine.getInstance();
-    return await engine.runBacktest(md, config);
+    const md: MarketData[] = await this.marketDataService.getHistoricalData(symbol, bars);
+    return await this.backtestEngine.runBacktest(md, config);
   }
 
   /**
@@ -61,7 +60,8 @@ export class RealBacktestEngine {
       const historicalData = await this.marketDataService.getHistoricalData(symbol, days);
 
       if (!historicalData || historicalData.length === 0) {
-        console.error(`No historical data available for ${symbol}`);
+        this.logger.error(`No historical data available for ${symbol}`);
+        throw new Error(`No historical data available for ${symbol}`);
       }
 
       this.logger.info('Real historical data fetched', {
@@ -114,8 +114,8 @@ export class RealBacktestEngine {
 
     return {
       performance: {
-        totalReturn: results.totalReturn,
-        annualizedReturn: results.annualizedReturn,
+        totalReturn: (results as any).totalReturn || 0,
+        annualizedReturn: (results as any).annualizedReturn || 0,
         sharpeRatio: results.sharpeRatio,
         maxDrawdown: results.maxDrawdown,
         winRate: results.winRate
@@ -186,7 +186,7 @@ export class RealBacktestEngine {
   private calculateVolatility(trades: any[]): number {
     if (trades.length === 0) return 0;
 
-    const returns = (trades || []).map(t => t.pnl);
+    const returns = trades.map(t => t.pnl);
     const avgReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length;
     const variance = returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length;
 

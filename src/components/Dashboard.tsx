@@ -5,6 +5,8 @@ import TopSignalsPanel from './TopSignalsPanel';
 import { Signal } from './TopSignalsPanel';
 import { realDataManager } from '../services/RealDataManager';
 
+const logger = Logger.getInstance();
+
 const Dashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);

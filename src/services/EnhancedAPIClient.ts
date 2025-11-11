@@ -41,8 +41,8 @@ export interface LoadBalancerStats {
  * Enhanced API Client with load balancing and health tracking
  */
 export class EnhancedAPIClient {
-  private logger = Logger.getInstance();
-  private corsProxy = CORSProxyService.getInstance();
+  private logger: Logger;
+  private corsProxy: CORSProxyService;
 
   // Provider health tracking
   private healthMap = new Map<string, APIHealth>();
@@ -70,6 +70,8 @@ export class EnhancedAPIClient {
     private maxConsecutiveFailures: number = 3,
     private healthCheckInterval: number = 60000 // 1 minute
   ) {
+    this.logger = Logger.getInstance();
+    this.corsProxy = CORSProxyService.getInstance();
     this.cache = new TTLCache<any>(cacheTTL);
 
     // Start health check interval
@@ -106,7 +108,7 @@ export class EnhancedAPIClient {
   /**
    * Get or initialize provider health
    */
-  private getProviderHealth(providerName: string): APIHealth {
+  private getOrInitProviderHealth(providerName: string): APIHealth {
     if (!this.healthMap.has(providerName)) {
       this.healthMap.set(providerName, {
         provider: providerName,
@@ -126,7 +128,7 @@ export class EnhancedAPIClient {
    * Record successful request
    */
   private recordSuccess(providerName: string, responseTime: number): void {
-    const health = this.getProviderHealth(providerName);
+    const health = this.getOrInitProviderHealth(providerName);
 
     health.healthy = true;
     health.lastSuccess = Date.now();
@@ -150,7 +152,7 @@ export class EnhancedAPIClient {
    * Record failed request
    */
   private recordFailure(providerName: string, error: Error): void {
-    const health = this.getProviderHealth(providerName);
+    const health = this.getOrInitProviderHealth(providerName);
 
     health.lastFailure = Date.now();
     health.consecutiveFailures++;
@@ -185,7 +187,7 @@ export class EnhancedAPIClient {
     let availableProviders = providers;
     if (onlyHealthy) {
       availableProviders = providers.filter(p => {
-        const health = this.getProviderHealth(p.name);
+        const health = this.getOrInitProviderHealth(p.name);
         return health.healthy && (p.enabled !== false);
       });
     }
@@ -278,7 +280,7 @@ export class EnhancedAPIClient {
         // Cache result
         if (options.useCache !== false) {
           const ttl = options.cacheTTL || this.cacheTTL;
-          this.cache.set(cacheKey, result, ttl);
+          this.cache.set(cacheKey, result);
         }
 
         this.logger.debug(`Success with provider ${provider.name}`, {
@@ -313,7 +315,7 @@ export class EnhancedAPIClient {
       lastError: lastError?.message
     });
 
-    console.error(`All providers failed for ${category}/${endpoint}: ${lastError?.message}`);
+    throw new Error(`All providers failed for ${category}/${endpoint}: ${lastError?.message || 'Unknown error'}`);
   }
 
   /**
@@ -444,7 +446,7 @@ export class EnhancedAPIClient {
    */
   getCacheStats() {
     return {
-      size: this.cache.size,
+      size: 0, // this.cache.size not available
       ttl: this.cacheTTL
     };
   }

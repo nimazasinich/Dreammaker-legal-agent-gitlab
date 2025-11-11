@@ -19,12 +19,12 @@ export * from './MultiProviderMarketDataService';
 export * from './ImprovedRealTimeDataService';
 export * from './HistoricalDataService';
 export * from './marketDataService';
-export * from './HFOHLCVService';
+// export * from './HFOHLCVService'; // Conflicts with MultiProviderMarketDataService (OHLCVData)
 
 // Trading Services
 export * from './RealTradingService';
 export * from './OrderManagementService';
-export * from './SignalGeneratorService';
+export { SignalGeneratorService } from './SignalGeneratorService';
 
 // Learning Services
 export * from './ContinuousLearningService';
@@ -44,7 +44,7 @@ export * from './EmergencyDataFallbackService';
 export * from './SentimentNewsService';
 export * from './HFSentimentService';
 export * from './SocialAggregationService';
-export * from './FearGreedService';
+// export * from './FearGreedService'; // Conflicts with SentimentNewsService exports
 
 // Backtest Services
 export * from './backtestService';

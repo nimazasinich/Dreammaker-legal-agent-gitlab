@@ -79,8 +79,8 @@ export class AlertService {
     });
     
     // Also create alert in AlertManager (alternative system)
-    const alertSeverity = alert.priority === 'high' ? 'high' : 
-                         alert.priority === 'critical' ? 'critical' : 'medium';
+    const alertSeverity = alert.priority === 'HIGH' ? 'high' :
+                         alert.priority === 'CRITICAL' ? 'critical' : 'medium';
     this.alertManager.createAlert(
       'performance',
       alertSeverity,

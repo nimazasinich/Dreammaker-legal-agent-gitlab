@@ -32,27 +32,14 @@ export class TrainingMetricsRepository extends BaseRepository<TrainingMetrics> {
     return {
       epoch: row.epoch,
       timestamp: row.timestamp,
-      loss: {
-        mse: row.mse,
-        mae: row.mae,
-        rSquared: row.r_squared
-      },
-      accuracy: {
-        directional: row.directional_accuracy,
-        classification: row.classification_accuracy
-      },
-      gradientNorm: row.gradient_norm,
+      mse: row.mse,
+      mae: row.mae,
+      r2: row.r_squared,
       learningRate: row.learning_rate,
-      stabilityMetrics: {
-        nanCount: row.nan_count,
-        infCount: row.inf_count,
-        resetCount: row.reset_count
-      },
-      explorationStats: {
-        epsilon: row.epsilon,
-        explorationRatio: row.exploration_ratio,
-        exploitationRatio: row.exploitation_ratio
-      }
+      gradientNorm: row.gradient_norm,
+      resetEvents: row.reset_count,
+      modelVersion: row.model_version,
+      directionalAccuracy: row.directional_accuracy
     };
   }
 
@@ -60,59 +47,59 @@ export class TrainingMetricsRepository extends BaseRepository<TrainingMetrics> {
     return {
       epoch: entity.epoch,
       timestamp: entity.timestamp,
-      model_version: 'v1.0', // Default version
-      mse: entity.loss.mse,
-      mae: entity.loss.mae,
-      r_squared: entity.loss.rSquared,
-      directional_accuracy: entity.accuracy.directional,
-      classification_accuracy: entity.accuracy.classification,
+      model_version: entity.modelVersion || 'v1.0',
+      mse: entity.mse,
+      mae: entity.mae,
+      r_squared: entity.r2,
+      directional_accuracy: entity.directionalAccuracy || 0,
+      classification_accuracy: 0, // Not in TrainingMetrics interface
       gradient_norm: entity.gradientNorm,
       learning_rate: entity.learningRate,
-      nan_count: entity.stabilityMetrics.nanCount,
-      inf_count: entity.stabilityMetrics.infCount,
-      reset_count: entity.stabilityMetrics.resetCount,
-      epsilon: entity.explorationStats.epsilon,
-      exploration_ratio: entity.explorationStats.explorationRatio,
-      exploitation_ratio: entity.explorationStats.exploitationRatio
+      nan_count: 0, // Not in TrainingMetrics interface
+      inf_count: 0, // Not in TrainingMetrics interface
+      reset_count: entity.resetEvents,
+      epsilon: entity.explorationStats?.epsilon || 0,
+      exploration_ratio: entity.explorationStats?.explorationRate || 0,
+      exploitation_ratio: 0 // Not in TrainingMetrics interface
     };
   }
 
   async insertMetrics(metrics: TrainingMetrics, modelVersion: string = 'v1.0'): Promise<TrainingMetrics> {
     try {
       const query = `
-        INSERT INTO ${this.tableName} 
-        (epoch, timestamp, model_version, mse, mae, r_squared, directional_accuracy, 
-         classification_accuracy, gradient_norm, learning_rate, nan_count, inf_count, 
+        INSERT INTO ${this.tableName}
+        (epoch, timestamp, model_version, mse, mae, r_squared, directional_accuracy,
+         classification_accuracy, gradient_norm, learning_rate, nan_count, inf_count,
          reset_count, epsilon, exploration_ratio, exploitation_ratio)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
-      
+
       const params = [
         metrics.epoch,
         metrics.timestamp,
         modelVersion,
-        metrics.loss.mse,
-        metrics.loss.mae,
-        metrics.loss.rSquared,
-        metrics.accuracy.directional,
-        metrics.accuracy.classification,
+        metrics.mse,
+        metrics.mae,
+        metrics.r2,
+        metrics.directionalAccuracy || 0,
+        0, // classification_accuracy - not in interface
         metrics.gradientNorm,
         metrics.learningRate,
-        metrics.stabilityMetrics.nanCount,
-        metrics.stabilityMetrics.infCount,
-        metrics.stabilityMetrics.resetCount,
-        metrics.explorationStats.epsilon,
-        metrics.explorationStats.explorationRatio,
-        metrics.explorationStats.exploitationRatio
+        0, // nan_count - not in interface
+        0, // inf_count - not in interface
+        metrics.resetEvents,
+        metrics.explorationStats?.epsilon || 0,
+        metrics.explorationStats?.explorationRate || 0,
+        0 // exploitation_ratio - not in interface
       ];
 
       this.executeStatement(query, params);
-      
+
       this.logger.info('Training metrics inserted', {
         epoch: metrics.epoch,
         modelVersion,
-        mse: metrics.loss.mse,
-        directionalAccuracy: metrics.accuracy.directional
+        mse: metrics.mse,
+        directionalAccuracy: metrics.directionalAccuracy
       });
 
       return metrics;

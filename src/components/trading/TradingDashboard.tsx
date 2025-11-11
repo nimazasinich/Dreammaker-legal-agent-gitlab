@@ -61,7 +61,7 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
   const [isLive, setIsLive] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected'>('disconnected');
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
-  const [modelPerformance, setModelPerformance] = useState<Record<string, unknown> | null>(null);
+  const [modelPerformance, setModelPerformance] = useState<any>(null);
 
   const symbols = marketDataService.getSupportedSymbols();
   const timeframes = marketDataService.getSupportedTimeframes();
@@ -144,17 +144,17 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
           const priceData = await marketDataService.getRealTimePrice(sym);
           
           // Use real change24h from priceData if available, otherwise calculate from price history
-          const change24h = priceData.change24h || 
+          const change24h = priceData.change24h ||
                            (priceData.changePercent24h ? (priceData.changePercent24h / 100) * priceData.close : 0);
-          const changePercent24h = priceData.changePercent24h || 
+          const changePercent24h = priceData.changePercent24h ||
                                   (priceData.change24h ? (priceData.change24h / priceData.close) * 100 : 0);
-          
+
           updatedTickers.push({
             symbol: sym,
             price: priceData.close,
             change24h,
             changePercent24h,
-            volume24h: priceData.volume || priceData.volume24h || 0,
+            volume24h: priceData.volume || 0,
             isConnected: true
           });
           
@@ -638,7 +638,7 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
                   <div>
                     <div className="text-sm font-medium text-gray-600">R²</div>
                     <div className="text-xl font-bold text-green-600">
-                      {latestMetrics.rSquared.toFixed(3)}
+                      {latestMetrics.r2.toFixed(3)}
                     </div>
                   </div>
                   <div>

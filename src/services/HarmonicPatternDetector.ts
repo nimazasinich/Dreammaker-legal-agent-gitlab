@@ -258,9 +258,11 @@ export class HarmonicPatternDetector {
                         rightWindow.every(d => d.low >= center.low);
 
       if (isSwingHigh) {
-        pivots.push({ price: center.high, timestamp: center.timestamp });
+        const ts = center.timestamp instanceof Date ? center.timestamp.getTime() : center.timestamp;
+        pivots.push({ price: center.high, timestamp: ts });
       } else if (isSwingLow) {
-        pivots.push({ price: center.low, timestamp: center.timestamp });
+        const ts = center.timestamp instanceof Date ? center.timestamp.getTime() : center.timestamp;
+        pivots.push({ price: center.low, timestamp: ts });
       }
     }
 

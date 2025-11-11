@@ -154,7 +154,7 @@ export class FeatureEngineering {
     technicalIndicators: Record<string, number>;
   }> {
     if (marketData.length < 50) {
-      console.error('Insufficient market data for feature extraction');
+      this.logger.warn('Insufficient market data for feature extraction', { length: marketData.length });
     }
 
     const rawFeatures = this.extractAllFeatures(marketData);
@@ -409,17 +409,18 @@ export class FeatureEngineering {
 
   private detectOrderBlocks(data: MarketData[]): Array<{ high: number; low: number; timestamp: number; type: 'BULLISH' | 'BEARISH' }> {
     const blocks: Array<{ high: number; low: number; timestamp: number; type: 'BULLISH' | 'BEARISH' }> = [];
-    
+
     // Simplified order block detection
     for (let i = 5; i < data.length - 5; i++) {
       const isHighVolume = data[i].volume > data.slice(i - 5, i + 5).reduce((sum, d) => sum + d.volume, 0) / 10 * 1.5;
       const isSignificantMove = Math.abs(data[i].close - data[i].open) / data[i].open > 0.02;
-      
+
       if (isHighVolume && isSignificantMove) {
+        const ts = data[i].timestamp;
         blocks.push({
           high: data[i].high,
           low: data[i].low,
-          timestamp: data[i].timestamp,
+          timestamp: ts instanceof Date ? ts.getTime() : ts,
           type: data[i].close > data[i].open ? 'BULLISH' : 'BEARISH'
         });
       }
@@ -430,30 +431,32 @@ export class FeatureEngineering {
 
   private detectFairValueGaps(data: MarketData[]): Array<{ upper: number; lower: number; timestamp: number; filled: boolean; fillProbability: number }> {
     const gaps: Array<{ upper: number; lower: number; timestamp: number; filled: boolean; fillProbability: number }> = [];
-    
+
     // Detect price gaps
     for (let i = 1; i < data.length; i++) {
       const prevHigh = data[i - 1].high;
       const prevLow = data[i - 1].low;
       const currentHigh = data[i].high;
       const currentLow = data[i].low;
-      
+
       // Gap up
       if (currentLow > prevHigh) {
+        const ts = data[i].timestamp;
         gaps.push({
           upper: currentLow,
           lower: prevHigh,
-          timestamp: data[i].timestamp,
+          timestamp: ts instanceof Date ? ts.getTime() : ts,
           filled: false,
           fillProbability: 0.7 // Historical probability
         });
       }
       // Gap down
       else if (currentHigh < prevLow) {
+        const ts = data[i].timestamp;
         gaps.push({
           upper: prevLow,
           lower: currentHigh,
-          timestamp: data[i].timestamp,
+          timestamp: ts instanceof Date ? ts.getTime() : ts,
           filled: false,
           fillProbability: 0.7
         });
@@ -545,7 +548,7 @@ export class FeatureEngineering {
   private analyzeWaveStructure(data: MarketData[]): Array<{ wave: string; start: number; end: number; price: number; timestamp: number }> {
     // Simplified wave structure analysis
     const structure: Array<{ wave: string; start: number; end: number; price: number; timestamp: number }> = [];
-    
+
     if ((data?.length || 0) >= 5) {
       const segment = Math.floor(data.length / 5);
       for (let i = 0; i < 5; i++) {
@@ -556,11 +559,11 @@ export class FeatureEngineering {
           start,
           end,
           price: data[end].close,
-          timestamp: data[end].timestamp
+          timestamp: data[end].timestamp instanceof Date ? data[end].timestamp.getTime() : data[end].timestamp
         });
       }
     }
-    
+
     return structure;
   }
 
@@ -606,21 +609,21 @@ export class FeatureEngineering {
   private findPivotPoints(data: MarketData[]): Array<{ price: number; timestamp: number }> {
     const pivots: Array<{ price: number; timestamp: number }> = [];
     const window = 5;
-    
+
     for (let i = window; i < data.length - window; i++) {
       const slice = data.slice(i - window, i + window + 1);
       const center = slice[window];
-      
+
       const isHigh = slice.every((d, idx) => idx === window || d.high <= center.high);
       const isLow = slice.every((d, idx) => idx === window || d.low >= center.low);
-      
+
       if (isHigh) {
-        pivots.push({ price: center.high, timestamp: center.timestamp });
+        pivots.push({ price: center.high, timestamp: center.timestamp instanceof Date ? center.timestamp.getTime() : center.timestamp });
       } else if (isLow) {
-        pivots.push({ price: center.low, timestamp: center.timestamp });
+        pivots.push({ price: center.low, timestamp: center.timestamp instanceof Date ? center.timestamp.getTime() : center.timestamp });
       }
     }
-    
+
     return pivots;
   }
 

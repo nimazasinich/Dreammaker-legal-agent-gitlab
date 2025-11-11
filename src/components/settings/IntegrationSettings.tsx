@@ -32,7 +32,7 @@ export default function IntegrationSettings() {
   const loadStatus = async () => {
     try {
       const { data } = await axios.get<CredentialsStatus>(`${API_BASE}/admin/creds/status`);
-      if (data.success !== undefined) {
+      if ((data as any).success !== undefined) {
         // Response has success wrapper
         setStatus((data as any).telegram ? data as CredentialsStatus : null);
       } else {

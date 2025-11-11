@@ -9,7 +9,6 @@ import { SentimentNewsService } from './SentimentNewsService.js';
 import { RealTradingService } from './RealTradingService.js';
 import { HFOHLCVService } from './HFOHLCVService.js';
 import { ConfigManager } from '../core/ConfigManager.js';
-import { FallbackDataProvider } from '../providers/FallbackDataProvider.js';
 import cron from 'node-cron';
 
 export class MarketDataIngestionService {
@@ -58,7 +57,7 @@ export class MarketDataIngestionService {
       await this.redisService.initialize();
       
       // Set preferred exchange from config
-      const exchangeConfig = this.config.getExchangeConfig();
+      const exchangeConfig: any = this.config.getExchangeConfig();
       if (exchangeConfig.preferredExchange) {
         this.preferredExchange = exchangeConfig.preferredExchange;
         this.logger.info(`Using ${this.preferredExchange} as preferred exchange`);
@@ -228,10 +227,10 @@ export class MarketDataIngestionService {
             interval, 
             count: ohlcvData.length 
           });
-        } catch (hfError) {
-          this.logger.warn('HF dataset fetch failed, using fallback', { 
-            symbol, 
-            interval 
+        } catch (hfError: any) {
+          this.logger.warn('HF dataset fetch failed, using fallback', {
+            symbol,
+            interval
           }, hfError as Error);
           
           // FALLBACK: Use multi-provider service
@@ -244,10 +243,10 @@ export class MarketDataIngestionService {
               interval, 
               count: ohlcvData.length 
             });
-          } catch (fallbackError) {
-            this.logger.error('All data sources failed for historical ingestion', { 
-              symbol, 
-              interval 
+          } catch (fallbackError: any) {
+            this.logger.error('All data sources failed for historical ingestion', {
+              symbol,
+              interval
             }, fallbackError as Error);
             continue; // Skip this symbol
           }
@@ -366,9 +365,10 @@ export class MarketDataIngestionService {
       (this as any).streamInterval ||
       '1m';
 
+    const timestamp = typeof data.timestamp === 'number' ? data.timestamp : data.timestamp.getTime();
     return {
       symbol: data.symbol.toUpperCase(),
-      timestamp: Math.floor(data.timestamp),
+      timestamp: Math.floor(timestamp),
       open: Number(data.open.toFixed(8)),
       high: Number(data.high.toFixed(8)),
       low: Number(data.low.toFixed(8)),
@@ -381,7 +381,8 @@ export class MarketDataIngestionService {
   private validateMarketData(data: MarketData): boolean {
     // Basic validation checks
     if (!data.symbol || typeof data.symbol !== 'string') return false;
-    if (!data.timestamp || data.timestamp <= 0) return false;
+    const timestamp = typeof data.timestamp === 'number' ? data.timestamp : data.timestamp.getTime();
+    if (!timestamp || timestamp <= 0) return false;
     if (data.open <= 0 || data.high <= 0 || data.low <= 0 || data.close <= 0) return false;
     if (data.volume < 0) return false;
     if (data.high < data.low) return false;
@@ -558,8 +559,8 @@ export class MarketDataIngestionService {
           this.logger.debug('HF data retrieved via cascade', { symbol, count: hfData.length });
           return hfData;
         }
-      } catch (hfError) {
-        this.logger.debug('HF cascade attempt failed', { symbol }, hfError as Error);
+      } catch (hfError: any) {
+        this.logger.debug('HF cascade attempt failed', { symbol, error: hfError.message });
       }
 
       // Try MultiProvider fallback
@@ -570,27 +571,15 @@ export class MarketDataIngestionService {
           this.logger.debug('MultiProvider data retrieved via cascade', { symbol, count: multiData.length });
           return multiData;
         }
-      } catch (multiError) {
-        this.logger.debug('MultiProvider cascade attempt failed', { symbol }, multiError as Error);
+      } catch (multiError: any) {
+        this.logger.debug('MultiProvider cascade attempt failed', { symbol, error: multiError.message });
       }
-    } catch (err) {
+    } catch (err: any) {
       this.logger.warn('All existing providers failed in cascade', { symbol }, err as Error);
     }
 
-    // Final fallback: FallbackDataProvider (never fails - includes synthetic)
-    this.logger.info('Using FallbackDataProvider as last resort', { symbol, tf });
-    const bars = await FallbackDataProvider.getOHLCV(symbol, tf, limit);
-
-    // Convert Bar format to MarketData format for consistency
-    return (bars || []).map(bar => ({
-      symbol: symbol.toUpperCase(),
-      timestamp: bar.t,
-      open: bar.o,
-      high: bar.h,
-      low: bar.l,
-      close: bar.c,
-      volume: bar.v,
-      interval: tf
-    }));
+    // All providers exhausted - return empty array
+    this.logger.error('All data providers exhausted for cascade request', { symbol, tf, limit });
+    return [];
   }
 }

@@ -6,7 +6,7 @@ import { FormState } from '../types';
 interface UseFormOptions<T> {
   initialValues: T;
   validationSchema?: Record<keyof T, ValidationRule[]>;
-  onSubmit: (values: T, formState: FormState<T>) => Promise<void> | void;
+  onSubmit: (values: T, formState: FormState) => Promise<void> | void;
 }
 
 /**
@@ -172,14 +172,9 @@ export function useForm<T extends Record<string, any>>({
         
         try {
           await onSubmit(values, {
-            values,
-            errors,
-            touched,
             isSubmitting: true,
-            submitCount: submitCount + 1,
-            setFieldValue,
-            setFieldError,
-            resetForm,
+            isValid: !hasErrors(errors as any),
+            errors: Object.entries(errors).map(([field, message]) => ({ field, message: message || '' })).filter(e => e.message),
           });
         } catch (error) {
           setSubmitError(error instanceof Error ? error.message : 'An error occurred');
@@ -201,15 +196,10 @@ export function useForm<T extends Record<string, any>>({
   }, [initialValues]);
 
   // Form state
-  const formState: FormState<T> = {
-    values,
-    errors,
-    touched,
+  const formState: FormState = {
     isSubmitting,
-    submitCount,
-    setFieldValue,
-    setFieldError,
-    resetForm,
+    isValid: !hasErrors(errors as any),
+    errors: Object.entries(errors).map(([field, message]) => ({ field, message: message || '' })).filter(e => e.message),
   };
 
   return {

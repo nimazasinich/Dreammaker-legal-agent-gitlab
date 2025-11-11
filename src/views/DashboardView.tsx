@@ -51,7 +51,7 @@ interface StatCard {
     change: string;
     subValue: string;
     positive: boolean;
-    icon: React.ComponentType<{ className?: string }>;
+    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
     gradient: string;
     iconGradient: string;
     glowColor: string;
@@ -102,8 +102,7 @@ export const DashboardView: React.FC = () => {
     } = useData();
 
     // Local state for UI
-    const [isLoading, setIsLoading] = useState(false);
-  const [portfolio, setPortfolio] = useState<PortfolioSummary>({
+    const [portfolio, setPortfolio] = useState<PortfolioSummary>({
         totalValue: 0,
         totalChangePercent: 0,
         dayPnL: 0,
@@ -377,12 +376,10 @@ export const DashboardView: React.FC = () => {
         return (
             <div className="w-full min-h-full animate-fade-in flex items-center justify-center">
                 <ErrorBoundary>
-                    <ResponseHandler loading={loading} error={error}>
-                        <div className="text-center">
-                            <LoadingSpinner size="lg" />
-                            <p className="text-slate-400 mt-4">Loading dashboard data...</p>
-                        </div>
-                    </ResponseHandler>
+                    <div className="text-center">
+                        <LoadingSpinner size="large" />
+                        <p className="text-slate-400 mt-4">Loading dashboard data...</p>
+                    </div>
                 </ErrorBoundary>
             </div>
         );

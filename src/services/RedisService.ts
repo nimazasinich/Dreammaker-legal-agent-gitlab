@@ -155,8 +155,8 @@ export class RedisService {
         await this.initialize();
       } catch (error) {
         logThrottled('redis_reconnect_failed', () => {
-          this.logger.debug('Redis reconnection failed', {}, error as Error);
-        }, 60000);
+          this.logger.debug('Redis reconnection failed', {});
+        });
       }
     }, delay);
   }

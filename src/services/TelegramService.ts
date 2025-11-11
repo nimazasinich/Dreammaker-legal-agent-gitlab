@@ -1,6 +1,6 @@
 import { readVault, writeVault } from '../config/secrets.js';
 import { Logger } from '../core/Logger.js';
-import { Signal } from '../types/index.js';
+import type { Signal } from './SignalGeneratorService.js';
 
 interface TelegramConfig {
   enabled: boolean;
@@ -50,7 +50,7 @@ export class TelegramService {
   async reload(): Promise<void> {
     try {
       const vault = await readVault();
-      const telegramConfig = vault.telegram || {};
+      const telegramConfig: any = vault.telegram || {};
       this.config = {
         enabled: telegramConfig.enabled || false,
         bot_token: telegramConfig.bot_token,
@@ -110,9 +110,10 @@ export class TelegramService {
 
     try {
       const timeframe = signal.timeframes ? Object.keys(signal.timeframes)[0] : 'N/A';
+      const reasoningText = Array.isArray(signal.reasoning) ? signal.reasoning.join(', ') : 'N/A';
       const text = `*Signal*: ${signal.symbol} ${signal.action} @ ${timeframe}\\n` +
         `Score: ${signal.confidence.toFixed(2)}\\n` +
-        `Reasoning: ${signal.reasoning || 'N/A'}`;
+        `Reasoning: ${reasoningText}`;
       await this.sendText(text);
     } catch (error) {
       this.logger.error('Failed to notify signal', { symbol: signal.symbol }, error as Error);
