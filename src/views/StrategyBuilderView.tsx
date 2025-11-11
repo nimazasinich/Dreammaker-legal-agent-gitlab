@@ -33,10 +33,10 @@ export default function StrategyBuilderView() {
   const estimateScore = React.useCallback((tpl:any) => {
     if (!tpl) return 0;
     const w = tpl?.weights || {};
-    const sum = Object.values(w).reduce((a:any,b:any)=>a+(Number.isFinite(b)?b:0),0);
-    const conf = Number.isFinite(tpl?.confluence) ? tpl.confluence : 0.6;
+    const sum = Object.values(w).reduce((a:any,b:any)=>(Number(a) || 0) + (Number.isFinite(b) ? Number(b) : 0), 0);
+    const conf = Number.isFinite(tpl?.confluence) ? Number(tpl.confluence) : 0.6;
     // capped to [0,1]
-    return Math.max(0, Math.min(1, (sum / Math.max(1, Object.keys(w).length)) * conf));
+    return Math.max(0, Math.min(1, (Number(sum) / Math.max(1, Object.keys(w).length)) * Number(conf)));
   }, []);
 
   React.useEffect(() => {
@@ -98,10 +98,7 @@ export default function StrategyBuilderView() {
         <div className="md:col-span-2 space-y-4">
           <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur p-4">
             <h3 className="font-semibold mb-2">Strategy Templates</h3>
-            <StrategyTemplateEditor
-              onTemplateSelect={(tpl:any)=> setSelectedTemplate(tpl)}
-              onSaveTemplate={(id:string, tpl:any)=> {/* editor stores in localStorage; CRUD to server optional via new endpoints */}}
-            />
+            <StrategyTemplateEditor />
           </div>
 
           <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur p-4">

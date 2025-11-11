@@ -119,9 +119,7 @@ export function lazyLoadOnVisible<T extends ComponentType<any>>(
   options: IntersectionObserverInit = { rootMargin: '200px' }
 ) {
   return function LazyOnVisible(props: React.ComponentProps<T>) {
-      const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [isVisible, setIsVisible] = React.useState(false);
+    const [isVisible, setIsVisible] = React.useState(false);
     const ref = React.useRef<HTMLDivElement>(null);
     
     React.useEffect(() => {

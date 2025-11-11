@@ -5,7 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
-import { apiService } from '../services/apiService';
+import { API_BASE } from '../../config/env.js';
+import axios from 'axios';
 
 interface DetectorWeights {
   technical_analysis: {
@@ -90,10 +91,10 @@ export const ScoringEditor: React.FC = () => {
 
   const loadWeights = async () => {
     try {
-      const response = await apiService.get('/api/scoring/weights');
-      if (response.success) {
-        setDetectorWeights(response.detectorWeights);
-        setTimeframeWeights(response.timeframeWeights);
+      const response = await axios.get(`${API_BASE}/api/scoring/weights`);
+      if (response.data.success) {
+        setDetectorWeights(response.data.detectorWeights);
+        setTimeframeWeights(response.data.timeframeWeights);
       }
       } catch (err) {
         if (import.meta.env.DEV) logger.error('Failed to load weights', {}, err);
@@ -104,9 +105,9 @@ export const ScoringEditor: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiService.get(`/api/scoring/snapshot?symbol=${symbol}`);
-      if (response.success) {
-        setSnapshot(response.snapshot);
+      const response = await axios.get(`${API_BASE}/api/scoring/snapshot?symbol=${symbol}`);
+      if (response.data.success) {
+        setSnapshot(response.data.snapshot);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load snapshot');
@@ -119,14 +120,14 @@ export const ScoringEditor: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiService.post('/api/scoring/weights', {
+      const response = await axios.post(`${API_BASE}/api/scoring/weights`, {
         detectorWeights,
         timeframeWeights,
         reason: 'Manual adjustment via ScoringEditor',
         authority: 'PRESIDENTIAL'
       });
-      
-      if (response.success) {
+
+      if (response.data.success) {
         alert('Weights updated successfully!');
         await loadWeights();
       }
@@ -142,7 +143,7 @@ export const ScoringEditor: React.FC = () => {
     
     setLoading(true);
     try {
-      await apiService.post('/api/scoring/weights/reset');
+      await axios.post(`${API_BASE}/api/scoring/weights/reset`);
       await loadWeights();
       alert('Weights reset to defaults');
     } catch (err: unknown) {
