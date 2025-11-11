@@ -8,6 +8,8 @@ import ErrorBoundary from '../components/ui/ErrorBoundary';
 import { ExchangeSettings } from '../components/settings/ExchangeSettings';
 import TelegramSettingsCard from '../components/settings/TelegramSettingsCard';
 
+const logger = Logger.getInstance();
+
 interface DetectorConfig {
   id: string;
   name: string;

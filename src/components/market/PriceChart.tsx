@@ -75,14 +75,19 @@ export const PriceChart: React.FC<PriceChartProps> = ({
       const data = await marketDataService.getHistoricalData(`${cleanSymbol}USDT`, timeframe, 100);
 
       if (Array.isArray(data) && (data?.length || 0) > 0) {
-        const candles: CandlestickData[] = (data || []).map((d: Record<string, unknown>) => ({
-          timestamp: typeof d.timestamp === 'number' ? d.timestamp : new Date(d.timestamp as string).getTime(),
-          open: (d.open as number) || (d.price as number),
-          high: (d.high as number) || (d.price as number),
-          low: (d.low as number) || (d.price as number),
-          close: (d.close as number) || (d.price as number),
-          volume: (d.volume as number) || 0
-        }));
+        const candles: CandlestickData[] = data.map((d) => {
+          const timestamp = typeof d.timestamp === 'number' ? d.timestamp :
+                           d.timestamp instanceof Date ? d.timestamp.getTime() :
+                           Date.now();
+          return {
+            timestamp,
+            open: d.open || d.price || 0,
+            high: d.high || d.price || 0,
+            low: d.low || d.price || 0,
+            close: d.close || d.price || 0,
+            volume: d.volume || 0
+          };
+        });
 
         if (import.meta.env.DEV) logger.info(`✅ Loaded ${candles.length} REAL candles for ${symbol}`);
         setChartData(candles);

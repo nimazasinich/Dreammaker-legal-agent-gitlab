@@ -5,9 +5,9 @@ import TopSignalsPanel from './TopSignalsPanel';
 import { Signal } from './TopSignalsPanel';
 import { realDataManager } from '../services/RealDataManager';
 
+const logger = Logger.getInstance();
+
 const Dashboard: React.FC = () => {
-    const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [signals, setSignals] = useState<Signal[]>([]);
   const [selectedSymbol, setSelectedSymbol] = useState('BTC');
   const [neuralNetworkAccuracy, setNeuralNetworkAccuracy] = useState(85);
@@ -24,8 +24,8 @@ const Dashboard: React.FC = () => {
           const avgConfidence = signalsData.reduce((sum, s) => sum + s.confidence, 0) / signalsData.length;
           setNeuralNetworkAccuracy(Math.round(avgConfidence));
         }
-      } catch (error) {
-        if (import.meta.env.DEV) logger.error('Failed to fetch signals:', {}, error);
+      } catch (err) {
+        logger.error('Failed to fetch signals:', {}, err as Error);
       }
     };
 

@@ -58,8 +58,8 @@ export const PositionsView: React.FC = () => {
       }
     };
 
-    websocket.onerror = (error) => {
-      logger.error('WebSocket error', {}, error as Error);
+    websocket.onerror = (event) => {
+      logger.error('WebSocket error', {}, new Error('WebSocket connection error'));
     };
 
     setWs(websocket);

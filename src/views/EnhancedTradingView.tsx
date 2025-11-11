@@ -40,11 +40,11 @@ export const EnhancedTradingView: React.FC = () => {
         setSnapshot({
           symbol,
           timestamp: Date.now(),
-          finalScore: 0,
-          verdict: 'NEUTRAL' as Direction,
+          results: [],
+          final_score: 0,
+          direction: 'NEUTRAL' as Direction,
           action: 'HOLD' as Action,
-          confidence: 0,
-          timeframes: {},
+          rationale: '',
           confluence: {} as ConfluenceInfo,
           entryPlan: {} as EntryPlan
         });
@@ -55,11 +55,11 @@ export const EnhancedTradingView: React.FC = () => {
       setSnapshot({
         symbol,
         timestamp: Date.now(),
-        finalScore: 0,
-        verdict: 'NEUTRAL' as Direction,
+        results: [],
+        final_score: 0,
+        direction: 'NEUTRAL' as Direction,
         action: 'HOLD' as Action,
-        confidence: 0,
-        timeframes: {},
+        rationale: '',
         confluence: {} as ConfluenceInfo,
         entryPlan: {} as EntryPlan
       });

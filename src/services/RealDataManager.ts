@@ -9,6 +9,8 @@ export interface RealPriceData {
     change24h: number;
     volume24h: number;
     lastUpdate: number;
+    timestamp?: number;
+    volume?: number;
 }
 
 type OHLCV = {
@@ -28,6 +30,32 @@ export interface Signal {
     timeframe: string;
     strength: 'STRONG' | 'MODERATE' | 'WEAK';
     timestamp: number;
+}
+
+export interface RealSignalData {
+    id: string;
+    symbol: string;
+    action: 'BUY' | 'SELL' | 'HOLD';
+    confidence: number;
+    confluence: number;
+    timeframe: string;
+    entry?: number;
+    stopLoss?: number;
+    takeProfit?: number;
+    reasoning?: string[];
+    timestamp: number;
+}
+
+export interface RealPortfolioData {
+    totalValue: number;
+    totalChangePercent: number;
+    dayPnL: number;
+    dayPnLPercent: number;
+    activePositions: number;
+    totalPositions: number;
+    balances?: any[];
+    positions?: any[];
+    lastUpdated?: number;
 }
 
 export class RealDataManager {
@@ -255,12 +283,22 @@ export class RealDataManager {
         return results;
     }
 
-    async getPortfolio(): Promise<any> {
+    async getPortfolio(): Promise<RealPortfolioData> {
         try {
             const response = await axios.get(`${API_BASE}/api/portfolio`, {
                 timeout: 10000
             });
-            return response.data;
+            return {
+                totalValue: response.data.totalValue || 0,
+                totalChangePercent: response.data.totalChangePercent || 0,
+                dayPnL: response.data.dayPnL || 0,
+                dayPnLPercent: response.data.dayPnLPercent || 0,
+                activePositions: response.data.activePositions || 0,
+                totalPositions: response.data.totalPositions || 0,
+                balances: response.data.balances || [],
+                positions: response.data.positions || [],
+                lastUpdated: Date.now()
+            };
         } catch (error) {
             this.logger.error('Failed to fetch portfolio', error);
             // Return default portfolio structure
@@ -270,7 +308,10 @@ export class RealDataManager {
                 dayPnL: 0,
                 dayPnLPercent: 0,
                 activePositions: 0,
-                totalPositions: 0
+                totalPositions: 0,
+                balances: [],
+                positions: [],
+                lastUpdated: Date.now()
             };
         }
     }
@@ -368,6 +409,92 @@ export class RealDataManager {
             'LINKUSDT': 'LINKUSD'
         };
         return map[symbol.toUpperCase()] || 'XBTUSD';
+    }
+
+    // Alias methods for connector compatibility
+    async fetchRealChartData(symbol: string, timeframe: string, limit: number = 100): Promise<any[]> {
+        return this.getOHLCV(symbol, timeframe, limit);
+    }
+
+    async fetchRealPrices(symbols: string[]): Promise<RealPriceData[]> {
+        return this.getPrices(symbols);
+    }
+
+    async fetchRealSignals(limit: number = 20): Promise<RealSignalData[]> {
+        const signals = await this.getAISignals(limit);
+        return signals.map(s => ({
+            id: s.id,
+            symbol: s.symbol,
+            action: s.direction === 'BULLISH' ? 'BUY' : s.direction === 'BEARISH' ? 'SELL' : 'HOLD',
+            confidence: s.confidence,
+            confluence: Math.round(s.confidence * 10),
+            timeframe: s.timeframe,
+            timestamp: s.timestamp,
+            reasoning: []
+        }));
+    }
+
+    async fetchRealPortfolio(): Promise<RealPortfolioData> {
+        return this.getPortfolio();
+    }
+
+    async fetchRealBlockchainBalances(blockchain?: string): Promise<any> {
+        try {
+            const url = blockchain
+                ? `${API_BASE}/api/blockchain/balances/${blockchain}`
+                : `${API_BASE}/api/blockchain/balances`;
+            const response = await axios.get(url, {
+                timeout: 10000
+            });
+            return response.data;
+        } catch (error) {
+            this.logger.error('Failed to fetch blockchain balances', error);
+            return {};
+        }
+    }
+
+    // Subscription methods (simple polling-based implementation)
+    subscribeToPrice(symbol: string, callback: (price: RealPriceData) => void): () => void {
+        const interval = setInterval(async () => {
+            try {
+                const price = await this.getPrice(symbol);
+                if (price) {
+                    callback(price);
+                }
+            } catch (error) {
+                this.logger.error(`Subscription error for ${symbol}`, { symbol }, error as Error);
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }
+
+    subscribeToSignals(callback: (signal: RealSignalData) => void): () => void {
+        const interval = setInterval(async () => {
+            try {
+                const signals = await this.fetchRealSignals(1);
+                if (signals.length > 0) {
+                    callback(signals[0]);
+                }
+            } catch (error) {
+                this.logger.error('Subscription error for signals', error);
+            }
+        }, 15000);
+
+        return () => clearInterval(interval);
+    }
+
+    subscribeToPortfolio(callback: (portfolio: RealPortfolioData) => void): () => void {
+        const interval = setInterval(async () => {
+            try {
+                const portfolio = await this.getPortfolio();
+                callback(portfolio);
+            } catch (error) {
+                this.logger.error('Subscription error for portfolio', error);
+            }
+        }, 10000);
+
+        return () => clearInterval(interval);
     }
 }
 

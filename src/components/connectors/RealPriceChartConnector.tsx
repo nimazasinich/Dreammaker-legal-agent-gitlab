@@ -19,8 +19,6 @@ export const RealPriceChartConnector: React.FC<RealPriceChartConnectorProps> = (
   symbols,
   height = 300
 }) => {
-    const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [realPrices, setRealPrices] = useState<RealPriceData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

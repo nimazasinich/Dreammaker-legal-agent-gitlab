@@ -262,7 +262,7 @@ export const StrategyLabView: React.FC = () => {
                   style={{ borderRadius: '12px' }}
                 >
                   <div className="text-sm font-semibold">{template.name}</div>
-                  {template.payload?.description && <div className="text-xs opacity-75">{template.payload.description}</div>}
+                  {template.description && <div className="text-xs opacity-75">{template.description}</div>}
                 </button>
               ))}
 

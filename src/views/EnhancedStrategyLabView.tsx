@@ -362,7 +362,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
-          payload: {
+          config: {
             scoringWeights: weights,
             strategyConfig: strategyParams
           }
@@ -382,12 +382,12 @@ export const EnhancedStrategyLabView: React.FC = () => {
   };
 
   const handleLoadTemplate = (template: any) => {
-    if (template.payload) {
-      if (template.payload.scoringWeights) {
-        setWeights({ ...weights, ...template.payload.scoringWeights });
+    if (template.config) {
+      if (template.config.scoringWeights) {
+        setWeights({ ...weights, ...template.config.scoringWeights });
       }
-      if (template.payload.strategyConfig) {
-        setStrategyParams({ ...strategyParams, ...template.payload.strategyConfig });
+      if (template.config.strategyConfig) {
+        setStrategyParams({ ...strategyParams, ...template.config.strategyConfig });
       }
       setCurrentTemplate(template.name);
       alert(`Template "${template.name}" loaded successfully`);
@@ -449,7 +449,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 name,
-                payload: {
+                config: {
                   scoringWeights: importData.weights,
                   strategyConfig: importData.strategyParams
                 }
@@ -557,7 +557,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
                     }`}
                   >
                     <div className="text-sm font-semibold">{template.name}</div>
-                    {template.payload?.description && <div className="text-xs opacity-75">{template.payload.description}</div>}
+                    {template.description && <div className="text-xs opacity-75">{template.description}</div>}
                   </button>
                 ))}
               </div>
