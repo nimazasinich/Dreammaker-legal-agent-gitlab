@@ -277,7 +277,7 @@ export class BullBearAgent {
       
       if (parameters.length === 0) {
         // If no trained parameters, use simplified heuristic
-        return this.simulateForwardPass(features); // Last resort fallback
+        return [this.simulateForwardPass(features)]; // Last resort fallback - wrap in array
       }
       
       // Use trained model for predictions
@@ -317,8 +317,8 @@ export class BullBearAgent {
       return predictions;
     } catch (error) {
       this.logger.warn('Training engine fallback failed, using simulation', {}, error as Error);
-      // Last resort: use simulation
-      return this.simulateForwardPass(features);
+      // Last resort: use simulation - wrap in array to match return type
+      return [this.simulateForwardPass(features)];
     }
   }
 
@@ -546,13 +546,17 @@ export class BullBearAgent {
       const actions = (labels || []).map(label => label > 0 ? 1 : (label < 0 ? 2 : 0));
       const rewards = (labels || []).map(label => label);
       
-      this.trainingEngine.experienceBuffer.addMarketDataExperiences(marketData, actions, rewards);
+      this.trainingEngine.addMarketDataExperiences(marketData, actions, rewards);
       const metrics = await this.trainingEngine.trainEpoch();
       
+      const lastMetric = metrics[metrics.length - 1];
+      const avgLoss = typeof lastMetric?.loss === 'object' ? lastMetric.loss.mse : lastMetric?.loss;
+      const avgAccuracy = typeof lastMetric?.accuracy === 'object' ? lastMetric.accuracy.directional : lastMetric?.accuracy;
+
       this.logger.info('Training completed on market data (fallback mode)', {
         dataPoints: marketData.length,
-        avgLoss: metrics[metrics.length - 1]?.loss.mse.toFixed(6),
-        avgAccuracy: metrics[metrics.length - 1]?.accuracy.directional.toFixed(3)
+        avgLoss: avgLoss?.toFixed(6),
+        avgAccuracy: avgAccuracy?.toFixed(3)
       });
     } catch (error) {
       this.logger.error('Failed to train on market data', {}, error as Error);
@@ -574,7 +578,7 @@ export class BullBearAgent {
       isInitialized: this.isInitialized,
       isTraining: this.trainingEngine.isTraining(),
       trainingState: this.trainingEngine.getTrainingState(),
-      experienceBufferSize: this.trainingEngine.experienceBuffer.getStatistics().size,
+      experienceBufferSize: this.trainingEngine.getExperienceBufferStatistics().size,
       tensorFlowAvailable: this.tensorFlowModel.isTensorFlowAvailable(),
       usingTensorFlow: this.useTensorFlow,
       modelSummary: this.tensorFlowModel.getModelSummary(),

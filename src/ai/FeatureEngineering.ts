@@ -4,6 +4,10 @@ import { SMCAnalyzer } from '../services/SMCAnalyzer.js';
 import { ElliottWaveAnalyzer } from '../services/ElliottWaveAnalyzer.js';
 import { HarmonicPatternDetector } from '../services/HarmonicPatternDetector.js';
 
+// Utility to convert Date | number to number
+const toTimestamp = (ts: Date | number): number =>
+  typeof ts === 'number' ? ts : ts.getTime();
+
 export interface TechnicalIndicators {
   sma: number[];
   ema: number[];
@@ -419,7 +423,7 @@ export class FeatureEngineering {
         blocks.push({
           high: data[i].high,
           low: data[i].low,
-          timestamp: data[i].timestamp,
+          timestamp: toTimestamp(data[i].timestamp),
           type: data[i].close > data[i].open ? 'BULLISH' : 'BEARISH'
         });
       }
@@ -443,7 +447,7 @@ export class FeatureEngineering {
         gaps.push({
           upper: currentLow,
           lower: prevHigh,
-          timestamp: data[i].timestamp,
+          timestamp: toTimestamp(data[i].timestamp),
           filled: false,
           fillProbability: 0.7 // Historical probability
         });
@@ -453,7 +457,7 @@ export class FeatureEngineering {
         gaps.push({
           upper: prevLow,
           lower: currentHigh,
-          timestamp: data[i].timestamp,
+          timestamp: toTimestamp(data[i].timestamp),
           filled: false,
           fillProbability: 0.7
         });
@@ -556,7 +560,7 @@ export class FeatureEngineering {
           start,
           end,
           price: data[end].close,
-          timestamp: data[end].timestamp
+          timestamp: toTimestamp(data[end].timestamp)
         });
       }
     }
@@ -615,9 +619,9 @@ export class FeatureEngineering {
       const isLow = slice.every((d, idx) => idx === window || d.low >= center.low);
       
       if (isHigh) {
-        pivots.push({ price: center.high, timestamp: center.timestamp });
+        pivots.push({ price: center.high, timestamp: toTimestamp(center.timestamp) });
       } else if (isLow) {
-        pivots.push({ price: center.low, timestamp: center.timestamp });
+        pivots.push({ price: center.low, timestamp: toTimestamp(center.timestamp) });
       }
     }
     
