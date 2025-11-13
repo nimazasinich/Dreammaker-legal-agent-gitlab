@@ -632,3 +632,6 @@ export interface ApiConfig {
     volatilityFactor?: number;
   };
 }
+
+// Re-export strategy pipeline types
+export * from './strategyPipeline';

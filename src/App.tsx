@@ -61,6 +61,7 @@ const StrategyLabView = lazyLoad(() => import('./views/EnhancedStrategyLabView')
     return { default: () => <div className="p-4 text-red-500">Error loading Strategy Lab View</div> };
   }), 'EnhancedStrategyLabView');
 const StrategyBuilderView = lazyLoad(() => import('./views/StrategyBuilderView'), 'StrategyBuilderView');
+const StrategyInsightsView = lazyLoad(() => import('./views/StrategyInsightsView'), 'StrategyInsightsView');
 const ExchangeSettingsView = lazyLoad(() => import('./views/ExchangeSettingsView'), 'ExchangeSettingsView');
 
 const AppContent: React.FC = () => {
@@ -100,6 +101,7 @@ const AppContent: React.FC = () => {
         case 'enhanced-trading': return <EnhancedTradingView />;
         case 'positions': return <PositionsView />;
         case 'strategylab': return <StrategyLabView />;
+        case 'strategy-insights': return <StrategyInsightsView />;
         case 'exchange-settings': return <ExchangeSettingsView />;
         default: return <DashboardView />;
       }
