@@ -95,6 +95,7 @@ import { TradingController } from './controllers/TradingController.js';
 import { MarketDataController } from './controllers/MarketDataController.js';
 import { SystemController } from './controllers/SystemController.js';
 import { ScoringController } from './controllers/ScoringController.js';
+import { StrategyPipelineController } from './controllers/StrategyPipelineController.js';
 import { setupProxyRoutes } from './services/ProxyRoutes.js';
 import { SignalVisualizationWebSocketService } from './services/SignalVisualizationWebSocketService.js';
 import { TelegramService } from './services/TelegramService.js';
@@ -216,6 +217,7 @@ const tradingController = new TradingController();
 const marketDataController = new MarketDataController();
 const systemController = new SystemController();
 const scoringController = new ScoringController();
+const strategyPipelineController = new StrategyPipelineController();
 
 // Initialize AI Core and Training Systems
 const { XavierInitializer, StableActivations, NetworkArchitectures } = AICore;
@@ -1724,6 +1726,19 @@ app.post('/api/scoring/config', async (req, res) => {
       message: (error as Error).message
     });
   }
+});
+
+// ============================
+// Strategy Pipeline Routes
+// ============================
+// Run complete Strategy 1 → 2 → 3 pipeline
+app.post('/api/strategies/pipeline/run', async (req, res) => {
+  await strategyPipelineController.runPipeline(req, res);
+});
+
+// Get pipeline status
+app.get('/api/strategies/pipeline/status', async (req, res) => {
+  await strategyPipelineController.getStatus(req, res);
 });
 
 // Futures Trading Routes
