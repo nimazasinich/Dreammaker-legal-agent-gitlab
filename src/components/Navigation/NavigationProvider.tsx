@@ -18,6 +18,7 @@ export type NavigationView =
   | 'enhanced-trading'
   | 'positions'
   | 'strategylab'
+  | 'strategy-insights'
   | 'exchange-settings';
 
 interface NavigationContextType {
