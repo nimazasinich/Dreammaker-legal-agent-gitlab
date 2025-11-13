@@ -44,11 +44,58 @@ export type SentimentScores = {
 
 export type MLScore = LayerScore;
 
+/**
+ * Category-level score for HTS Smart Scoring Engine
+ * Represents aggregated performance of all detectors within a category
+ */
+export type CategoryScore = {
+  name: 'core' | 'smc' | 'patterns' | 'sentiment' | 'ml';
+  rawScore: number;         // 0..1 - averaged score from category detectors
+  weightedScore: number;    // rawScore * categoryWeight
+  weight: number;           // current category weight (may be adaptive)
+  contributingDetectors: string[]; // list of detector names that contributed
+  description?: string;
+};
+
+/**
+ * Effective weights used in scoring (may differ from config if adaptive is enabled)
+ */
+export type EffectiveWeights = {
+  categories: {
+    core: number;
+    smc: number;
+    patterns: number;
+    sentiment: number;
+    ml: number;
+  };
+  detectors?: Record<string, number>; // optional per-detector weights
+  isAdaptive: boolean;      // true if weights were adjusted by adaptive engine
+  lastUpdated?: number;     // timestamp of last weight update
+};
+
+/**
+ * Lightweight telemetry summary (not full history)
+ */
+export type TelemetrySummary = {
+  totalSignals: number;
+  winRate: number;          // 0..1
+  avgConfidence: number;    // 0..1
+  bestCategory?: string;    // category with highest win rate
+  lastUpdate?: number;      // timestamp
+};
+
 export type FinalDecision = {
   action: Action;
   score: number;          // 0..1 (final aggregated score)
   confidence: number;     // 0..1 (confidence in the decision)
   finalScore?: number;    // DEPRECATED: use 'score' instead
+
+  // HTS Smart Scoring Extensions
+  finalStrategyScore?: number;  // 0..1 - strategy-level score from category aggregation
+  categoryScores?: CategoryScore[]; // detailed breakdown by category (Core/SMC/Patterns/Sentiment/ML)
+  effectiveWeights?: EffectiveWeights; // current weights used (static or adaptive)
+  telemetrySummary?: TelemetrySummary; // lightweight performance summary
+
   components: {
     core: CoreSignal;
     smc: LayerScore;

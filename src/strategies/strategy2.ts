@@ -1,11 +1,12 @@
 import { getOHLCV } from '../services/marketData';
 import { runStrategyPipeline } from '../engine/pipeline';
 import { saveStrategyOutput } from '../storage/mlOutputs';
+import { FinalDecision } from '../types/signals';
 
 type Strategy1Result = {
   symbol: string;
   priceUsd: number;
-  decision: { finalScore: number; action: 'BUY' | 'SELL' | 'HOLD' };
+  decision: FinalDecision; // Updated to use full FinalDecision type
 };
 
 export async function runStrategy2({
@@ -24,8 +25,11 @@ export async function runStrategy2({
       const ohlcv = await getOHLCV({ symbol: r.symbol, timeframe, mode, limit: 300 });
       const decision = await runStrategyPipeline(ohlcv, r.symbol);
 
+      // Use finalStrategyScore (HTS smart score) or fallback to finalScore/score
+      const strategyScore = decision.finalStrategyScore ?? decision.finalScore ?? decision.score;
+
       // Placeholder ETA model: higher score = sooner entry opportunity
-      const etaMinutes = Math.max(5, Math.round((1 - decision.finalScore) * 120));
+      const etaMinutes = Math.max(5, Math.round((1 - strategyScore) * 120));
 
       rows.push({ symbol: r.symbol, decision, etaMinutes });
     } catch (err) {
