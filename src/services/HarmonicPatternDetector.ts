@@ -258,9 +258,9 @@ export class HarmonicPatternDetector {
                         rightWindow.every(d => d.low >= center.low);
 
       if (isSwingHigh) {
-        pivots.push({ price: center.high, timestamp: center.timestamp });
+        pivots.push({ price: center.high, timestamp: typeof center.timestamp === 'number' ? center.timestamp : center.timestamp.getTime() });
       } else if (isSwingLow) {
-        pivots.push({ price: center.low, timestamp: center.timestamp });
+        pivots.push({ price: center.low, timestamp: typeof center.timestamp === 'number' ? center.timestamp : center.timestamp.getTime() });
       }
     }
 

@@ -6,6 +6,7 @@
 import express from 'express';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
+import type WsWebSocket from 'ws';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import net from 'net';
@@ -21,11 +22,12 @@ import { WhaleTrackerService } from './services/WhaleTrackerService.js';
 import { Logger } from './core/Logger.js';
 import { CORSProxyService } from './services/CORSProxyService.js';
 import { AlternateRegistryService } from './services/AlternateRegistryService.js';
-import telegramRouter from './routes/integrations/telegram.js';
-import { hfRouter } from './routes/hf.js';
+// COMMENTED OUT: Missing route files - need to be created or removed
+// import telegramRouter from './routes/integrations/telegram.js';
+// import { hfRouter } from './routes/hf.js';
 import { setupProxyRoutes } from './services/ProxyRoutes.js';
-import riskRouter from './routes/risk.js';
-import professionalRiskRouter from './routes/professional-risk.js';
+// import riskRouter from './routes/risk.js';
+// import professionalRiskRouter from './routes/professional-risk.js';
 
 // Load environment variables
 dotenv.config();
@@ -96,10 +98,11 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use("/api/integrations/telegram", telegramRouter);
-app.use("/api/hf", hfRouter);
-app.use("/api/risk", riskRouter);
-app.use("/api/professional-risk", professionalRiskRouter);
+// COMMENTED OUT: Missing route files - need to be created or removed
+// app.use("/api/integrations/telegram", telegramRouter);
+// app.use("/api/hf", hfRouter);
+// app.use("/api/risk", riskRouter);
+// app.use("/api/professional-risk", professionalRiskRouter);
 
 // Setup CORS proxy routes for external APIs
 setupProxyRoutes(app);
@@ -1139,51 +1142,81 @@ app.get('/api/signals/history', async (req, res) => {
                     id: 'signal-1',
                     symbol: 'BTCUSDT',
                     timestamp: Date.now(),
-                    action: 'BUY',
+                    action: 'BUY' as const,
                     confidence: 0.85,
                     reasoning: ['Strong bullish momentum', 'RSI oversold recovery', 'Volume spike detected'],
-                    timeframe: '1h',
-                    source: 'AI_SIGNAL'
+                    source: 'AI_SIGNAL' as const,
+                    featureAttribution: { rsi: 0.3, volume: 0.4, momentum: 0.3 },
+                    timeframes: {
+                        '1m': { action: 'BUY', confidence: 0.80 },
+                        '5m': { action: 'BUY', confidence: 0.82 },
+                        '15m': { action: 'BUY', confidence: 0.85 },
+                        '1h': { action: 'BUY', confidence: 0.85 }
+                    }
                 },
                 {
                     id: 'signal-2',
                     symbol: 'ETHUSDT',
                     timestamp: Date.now() - 3600000,
-                    action: 'BUY',
+                    action: 'BUY' as const,
                     confidence: 0.78,
                     reasoning: ['Pattern breakout', 'Support level held', 'MACD bullish crossover'],
-                    timeframe: '4h',
-                    source: 'PATTERN'
+                    source: 'PATTERN' as const,
+                    featureAttribution: { macd: 0.4, support: 0.3, pattern: 0.3 },
+                    timeframes: {
+                        '1m': { action: 'BUY', confidence: 0.70 },
+                        '5m': { action: 'BUY', confidence: 0.73 },
+                        '15m': { action: 'BUY', confidence: 0.75 },
+                        '1h': { action: 'BUY', confidence: 0.78 }
+                    }
                 },
                 {
                     id: 'signal-3',
                     symbol: 'SOLUSDT',
                     timestamp: Date.now() - 7200000,
-                    action: 'SELL',
+                    action: 'SELL' as const,
                     confidence: 0.72,
                     reasoning: ['Resistance rejection', 'Bearish divergence', 'Decreasing volume'],
-                    timeframe: '1h',
-                    source: 'AI_SIGNAL'
+                    source: 'AI_SIGNAL' as const,
+                    featureAttribution: { resistance: 0.35, divergence: 0.35, volume: 0.3 },
+                    timeframes: {
+                        '1m': { action: 'SELL', confidence: 0.68 },
+                        '5m': { action: 'SELL', confidence: 0.70 },
+                        '15m': { action: 'SELL', confidence: 0.72 },
+                        '1h': { action: 'SELL', confidence: 0.72 }
+                    }
                 },
                 {
                     id: 'signal-4',
                     symbol: 'ADAUSDT',
                     timestamp: Date.now() - 10800000,
-                    action: 'BUY',
+                    action: 'BUY' as const,
                     confidence: 0.68,
                     reasoning: ['Bounce from support', 'Positive sentiment', 'Technical setup'],
-                    timeframe: '1h',
-                    source: 'CONFLUENCE'
+                    source: 'CONFLUENCE' as const,
+                    featureAttribution: { support: 0.4, sentiment: 0.3, technical: 0.3 },
+                    timeframes: {
+                        '1m': { action: 'BUY', confidence: 0.63 },
+                        '5m': { action: 'BUY', confidence: 0.65 },
+                        '15m': { action: 'BUY', confidence: 0.68 },
+                        '1h': { action: 'BUY', confidence: 0.68 }
+                    }
                 },
                 {
                     id: 'signal-5',
                     symbol: 'DOTUSDT',
                     timestamp: Date.now() - 14400000,
-                    action: 'BUY',
+                    action: 'BUY' as const,
                     confidence: 0.75,
                     reasoning: ['Breakout confirmed', 'High volume', 'Strong trend'],
-                    timeframe: '4h',
-                    source: 'AI_SIGNAL'
+                    source: 'AI_SIGNAL' as const,
+                    featureAttribution: { breakout: 0.4, volume: 0.35, trend: 0.25 },
+                    timeframes: {
+                        '1m': { action: 'BUY', confidence: 0.70 },
+                        '5m': { action: 'BUY', confidence: 0.72 },
+                        '15m': { action: 'BUY', confidence: 0.73 },
+                        '1h': { action: 'BUY', confidence: 0.75 }
+                    }
                 }
             ].slice(0, limit);
         }
@@ -1430,8 +1463,8 @@ app.get('/api/ai/predict', async (req, res) => {
                     symbol: symbol.toUpperCase(),
                     prediction: prediction.action,
                     confidence: prediction.confidence,
-                    direction: prediction.action === 'BUY' ? 'bullish' : 
-                               prediction.action === 'SELL' ? 'bearish' : 'neutral',
+                    direction: prediction.action === 'LONG' ? 'bullish' :
+                               prediction.action === 'SHORT' ? 'bearish' : 'neutral',
                     probabilities: prediction.probabilities,
                     reasoning: prediction.reasoning,
                     timestamp: Date.now()
@@ -1701,11 +1734,11 @@ app.post('/api/analysis/harmonic', async (req, res) => {
 // ============================================================================
 
 app.get('/api/health', (req, res) => {
-    res.json({ 
+    res.json({
         status: 'ok',
         server: 'BOLT AI - 100% Real Data',
         timestamp: new Date().toISOString(),
-        port: PORT,
+        port: DEFAULT_PORT,
         realDataSources: {
             marketData: 'CoinGecko + CryptoCompare + CoinMarketCap',
             blockchain: 'Etherscan + BscScan',
@@ -2631,25 +2664,25 @@ interface ClientTimers {
     idleTimeout?: NodeJS.Timeout;
 }
 
-const clientTimers = new WeakMap<WebSocket, ClientTimers>();
+const clientTimers = new WeakMap<WsWebSocket, ClientTimers>();
 
-function registerInterval(ws: WebSocket, interval: NodeJS.Timeout) {
+function registerInterval(ws: WsWebSocket, interval: NodeJS.Timeout) {
     const timers = clientTimers.get(ws);
     if (timers) {
         timers.intervals.add(interval);
     }
 }
 
-function registerTimeout(ws: WebSocket, timeout: NodeJS.Timeout) {
+function registerTimeout(ws: WsWebSocket, timeout: NodeJS.Timeout) {
     const timers = clientTimers.get(ws);
     if (timers) {
         timers.timeouts.add(timeout);
     }
 }
 
-function cleanupAllTimers(ws: WebSocket) {
+function cleanupAllTimers(ws: WsWebSocket) {
     const timers = clientTimers.get(ws);
-    if (!timers) { console.warn("Missing data"); }
+    if (!timers) { console.warn("Missing data"); return; }
 
     // Clear all intervals
     timers.intervals.forEach(interval => clearInterval(interval));

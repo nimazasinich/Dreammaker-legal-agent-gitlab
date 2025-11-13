@@ -41,7 +41,7 @@ export async function newsLayer(symbol: string): Promise<LayerScore> {
     // Filter news items relevant to this symbol
     const relevantNews = allNews.filter(item => {
       const titleLower = item.title.toLowerCase();
-      const descLower = (item.description || '').toLowerCase();
+      const descLower = ((item as any).description || '').toLowerCase();
 
       // Check if symbol name is mentioned
       return (
@@ -77,19 +77,24 @@ export async function newsLayer(symbol: string): Promise<LayerScore> {
     // Number of news items analyzed
     reasons.push(`${relevantNews.length} news items analyzed`);
 
-    // Overall sentiment
-    const sentimentLabel = hfResults.aggregate.label || 'NEUTRAL';
+    // Overall sentiment (derive label from vote)
+    const vote = hfResults.aggregate.vote;
+    const sentimentLabel = vote > 0.2 ? 'POSITIVE' : vote < -0.2 ? 'NEGATIVE' : 'NEUTRAL';
     reasons.push(`Sentiment: ${sentimentLabel}`);
 
-    // Confidence level
-    const confidence = hfResults.aggregate.confidence * 100;
+    // Confidence level (use average as proxy)
+    const confidence = Math.abs(hfResults.aggregate.average) * 100;
     reasons.push(`Confidence: ${confidence.toFixed(0)}%`);
 
-    // Breakdown by positive/negative/neutral
-    const breakdown = hfResults.breakdown;
-    if (breakdown) {
-      const positiveRatio = (breakdown.positive / relevantNews.length) * 100;
-      const negativeRatio = (breakdown.negative / relevantNews.length) * 100;
+    // Breakdown by positive/negative/neutral (use aggregate counters)
+    const positiveCount = hfResults.aggregate.positive;
+    const negativeCount = hfResults.aggregate.negative;
+    const neutralCount = hfResults.aggregate.neutral;
+    const total = relevantNews.length;
+
+    if (total > 0) {
+      const positiveRatio = (positiveCount / total) * 100;
+      const negativeRatio = (negativeCount / total) * 100;
 
       if (positiveRatio > 60) {
         reasons.push(`${positiveRatio.toFixed(0)}% positive news`);
@@ -100,9 +105,9 @@ export async function newsLayer(symbol: string): Promise<LayerScore> {
       }
     }
 
-    // Most recent news timestamp
-    if ((relevantNews?.length || 0) > 0 && relevantNews[0].publishedAt) {
-      const latestNewsTime = new Date(relevantNews[0].publishedAt);
+    // Most recent news timestamp (use 'published' property)
+    if ((relevantNews?.length || 0) > 0 && relevantNews[0].published) {
+      const latestNewsTime = new Date(relevantNews[0].published);
       const hoursAgo = (Date.now() - latestNewsTime.getTime()) / (1000 * 60 * 60);
       reasons.push(`Latest: ${hoursAgo.toFixed(0)}h ago`);
     }

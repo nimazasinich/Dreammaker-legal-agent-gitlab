@@ -586,6 +586,18 @@ export class CentralizedAPIManager {
       this.logger.info('All API health reset');
     }
   }
+
+  /**
+   * Generic request method (for compatibility)
+   */
+  async request<T = any>(endpoint: string, options: RequestOptions = {}): Promise<APIResponse<T>> {
+    // Use marketData as default category
+    return await this.requestWithFallback<T>(
+      this.config.marketData,
+      endpoint,
+      options
+    );
+  }
 }
 
 // Export singleton instance

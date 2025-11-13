@@ -36,9 +36,7 @@ export interface SignalWebSocketData {
 }
 
 export const useSignalWebSocket = (symbol: string, enabled: boolean = true) => {
-      const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [stages, setStages] = useState<StageData[]>([]);
+    const [stages, setStages] = useState<StageData[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [signalData, setSignalData] = useState<SignalWebSocketData | null>(null);
@@ -202,18 +200,20 @@ export const useSignalWebSocket = (symbol: string, enabled: boolean = true) => {
                         logger.info('Raw message:', { data: event.data });
                     }
                 } catch (err) {
-                    logger.error('Failed to parse WebSocket message:', {}, err);
+                    const errorMessage = err instanceof Error ? err.message : 'Failed to parse WebSocket message';
+                    logger.error('Failed to parse WebSocket message:', {}, err as Error);
                     logger.info('Raw message:', { data: event.data });
                     setError('Failed to parse signal data');
                 }
             };
 
             ws.onerror = (err) => {
-                logger.error('Signal WebSocket error:', {}, err);
-                logger.error('WebSocket error type:', {}, err.type);
-                logger.error('WebSocket URL:', {}, wsUrl);
-                logger.error('WebSocket readyState:', {}, ws.readyState);
-                setError(`WebSocket connection error: ${err.type || 'Unknown error'}`);
+                const errorEvent = err as ErrorEvent;
+                const errorObj = new Error(`WebSocket error: ${errorEvent.type || 'Unknown error'}`);
+                logger.error('Signal WebSocket error:', {}, errorObj);
+                logger.info('WebSocket URL:', { data: wsUrl });
+                logger.info('WebSocket readyState:', { data: ws.readyState });
+                setError(`WebSocket connection error: ${errorEvent.type || 'Unknown error'}`);
                 setIsConnected(false);
             };
 
@@ -246,10 +246,12 @@ export const useSignalWebSocket = (symbol: string, enabled: boolean = true) => {
                 }
             };
         } catch (err) {
-            logger.error('Failed to create signal WebSocket:', {}, err);
-            logger.error('Error details:', {}, err instanceof Error ? err.message : String(err));
-            logger.error('WebSocket URL attempted:', {}, WS_BASE);
-            setError(`Failed to establish WebSocket connection: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            const errorObj = err instanceof Error ? err : new Error(errorMessage);
+            logger.error('Failed to create signal WebSocket:', {}, errorObj);
+            logger.info('Error details:', { data: errorMessage });
+            logger.info('WebSocket URL attempted:', { data: WS_BASE });
+            setError(`Failed to establish WebSocket connection: ${errorMessage}`);
             setIsConnected(false);
         }
     }, [symbol, enabled]);
@@ -293,7 +295,7 @@ export const useSignalWebSocket = (symbol: string, enabled: boolean = true) => {
                 setSignalData(data);
             }
         } catch (err) {
-            logger.error('Failed to poll signal data:', {}, err);
+            logger.error('Failed to poll signal data:', {}, err as Error);
         }
     }, [symbol]);
 

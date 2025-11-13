@@ -10,6 +10,7 @@ import { MarketData } from '../types/index.js';
  */
 function ohlcToMarketData(ohlc: OHLC[]): MarketData[] {
   return (ohlc || []).map(bar => ({
+    symbol: 'UNKNOWN', // Default symbol for analyzer context
     timestamp: bar.t,
     open: bar.o,
     high: bar.h,

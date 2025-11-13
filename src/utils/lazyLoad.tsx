@@ -18,7 +18,7 @@ export function lazyLoad<T extends ComponentType<any>>(
   const LazyComponent = lazy(() => {
     return importFunc().catch((error) => {
       logger.error('Failed to lazy load component:', {}, error);
-      logger.error('Import function:', {}, importFunc.toString());
+      logger.error('Import function details:', { importFunc: importFunc.toString() });
       // Return a fallback component that displays an error
       return {
         default: ((() => {

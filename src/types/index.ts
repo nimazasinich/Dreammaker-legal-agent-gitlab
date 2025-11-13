@@ -112,6 +112,7 @@ export interface SmartMoneyFeatures {
     strength: number;
     displacement: number;
   };
+  strength?: number; // Overall strength of smart money features
 }
 
 export interface ElliottWaveAnalysis {
@@ -121,6 +122,7 @@ export interface ElliottWaveAnalysis {
     degree: 'MINUTE' | 'MINOR' | 'INTERMEDIATE' | 'PRIMARY';
   };
   completionProbability: number;
+  confidence?: number; // Confidence in the wave analysis
   nextExpectedDirection: 'UP' | 'DOWN' | 'SIDEWAYS';
   waveStructure: Array<{
     wave: string;
@@ -151,6 +153,7 @@ export interface HarmonicPattern {
     confluence: number;
   };
   completionProbability: number;
+  confidence?: number; // Confidence in the pattern
   reliabilityScore: number;
 }
 
@@ -158,6 +161,10 @@ export interface SentimentData {
   symbol: string;
   timestamp: number;
   overallScore: number; // -100 to +100
+  value?: number; // Alternative to overallScore (for compatibility)
+  score?: number; // Another alternative to overallScore (for compatibility)
+  classification?: string; // Classification label (for compatibility)
+  confidence?: number; // Confidence level (0-1)
   sources: {
     twitter: number;
     reddit: number;
@@ -373,6 +380,8 @@ export interface BacktestResult {
   directionalAccuracy: number;
   var95: number;
   trades: BacktestTrade[];
+  totalReturn?: number;
+  annualizedReturn?: number;
 }
 
 export interface SystemHealth {
@@ -527,6 +536,16 @@ export interface ApiConfig {
       dailyLimit: number;
     };
   };
+  kucoin?: {
+    apiKey: string;
+    secretKey: string;
+    passphrase: string;
+    testnet: boolean;
+    rateLimits: {
+      requestsPerSecond: number;
+      requestsPerMinute: number;
+    };
+  };
   telegram: {
     botToken: string;
     chatId: string;
@@ -548,6 +567,7 @@ export interface ApiConfig {
     primarySource?: string;
     fallbackSources?: string[];
     tradingEnabled?: boolean;
+    preferredExchange?: 'binance' | 'kucoin';
   };
   marketData?: {
     symbols?: string[];

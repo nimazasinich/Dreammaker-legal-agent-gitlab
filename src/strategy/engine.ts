@@ -94,17 +94,17 @@ export function combinePerTF(
 
     try {
       if (detectorName === 'sentiment') {
-        output = detector(contextData?.sentiment);
+        output = (detector as any)(contextData?.sentiment);
       } else if (detectorName === 'news') {
-        output = detector(contextData?.news);
+        output = (detector as any)(contextData?.news);
       } else if (detectorName === 'whales') {
-        output = detector(contextData?.whales);
+        output = (detector as any)(contextData?.whales);
       } else if (detectorName === 'ml_ai' || detectorName === 'reversal' ||
                  detectorName === 'bollinger' || detectorName === 'support_resistance' ||
                  detectorName === 'market_structure') {
-        output = detector(candles, features);
+        output = (detector as any)(candles, features);
       } else {
-        output = detector(features);
+        output = (detector as any)(features);
       }
     } catch (error) {
       console.warn(`Detector ${detectorName} failed:`, error);

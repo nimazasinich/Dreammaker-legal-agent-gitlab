@@ -270,7 +270,7 @@ export class SignalGeneratorService {
         const { TelegramService } = await import('./TelegramService.js');
         const telegramService = TelegramService.getInstance();
         if (telegramService.isConfigured() && signal.confidence >= 0.7) {
-          await telegramService.notifySignal(signal);
+          await telegramService.notifySignal(signal as any);
         }
       } catch (error) {
         // Silently fail - Telegram notification is optional
@@ -313,8 +313,8 @@ export class SignalGeneratorService {
   private async predictAllTimeframes(
     symbol: string,
     timeframeData: Record<string, any[]>
-  ): Promise<Record<string, { action: string; confidence: number } | null>> {
-    const predictions: Record<string, { action: string; confidence: number } | null> = {};
+  ): Promise<Record<string, { action: 'BUY' | 'SELL' | 'HOLD'; confidence: number } | null>> {
+    const predictions: Record<string, { action: 'BUY' | 'SELL' | 'HOLD'; confidence: number } | null> = {};
 
     for (const [timeframe, data] of Object.entries(timeframeData)) {
       if (data.length < 50) {
@@ -327,7 +327,7 @@ export class SignalGeneratorService {
         const prediction = await this.bullBearAgent.predict(data, 'crypto_bull_bear');
 
         // Map action from LONG/SHORT/HOLD to BUY/SELL/HOLD
-        let action: string;
+        let action: 'BUY' | 'SELL' | 'HOLD';
         if (prediction.action === 'LONG') {
           action = 'BUY';
         } else if (prediction.action === 'SHORT') {
@@ -350,10 +350,10 @@ export class SignalGeneratorService {
   }
 
   private calculateConfluence(
-    predictions: Record<string, { action: string; confidence: number } | null>
+    predictions: Record<string, { action: 'BUY' | 'SELL' | 'HOLD'; confidence: number } | null>
   ): {
     score: number;
-    dominantAction: 'BUY' | 'SELL';
+    dominantAction: 'BUY' | 'SELL' | 'HOLD';
     agreement: number;
   } {
     const actions = Object.values(predictions).filter(p => p !== null) as Array<{ action: string; confidence: number }>;
@@ -400,7 +400,7 @@ export class SignalGeneratorService {
     return { score, dominantAction, agreement };
   }
 
-  private calculateEntryExit(action: 'BUY' | 'SELL', currentPrice: number): {
+  private calculateEntryExit(action: 'BUY' | 'SELL' | 'HOLD', currentPrice: number): {
     targetPrice: number;
     stopLoss: number;
   } {
@@ -421,8 +421,8 @@ export class SignalGeneratorService {
   }
 
   private generateReasoning(
-    predictions: Record<string, { action: string; confidence: number } | null>,
-    confluence: { score: number; dominantAction: string; agreement: number }
+    predictions: Record<string, { action: 'BUY' | 'SELL' | 'HOLD'; confidence: number } | null>,
+    confluence: { score: number; dominantAction: 'BUY' | 'SELL' | 'HOLD'; agreement: number }
   ): string[] {
     const reasoning: string[] = [];
 
