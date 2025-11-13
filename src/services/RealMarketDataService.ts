@@ -34,6 +34,7 @@ const SYMBOL_MAP: Record<string, string> = {
 };
 
 export class RealMarketDataService {
+  private static instance: RealMarketDataService;
   private logger = Logger.getInstance();
   private config = ConfigManager.getInstance();
   private historicalService: HistoricalDataService;
@@ -43,7 +44,7 @@ export class RealMarketDataService {
   private readonly cmcLimiter = new TokenBucket(5, 1);      // 5 tokens, 1 req/sec
   private readonly ccLimiter = new TokenBucket(10, 2);      // CryptoCompare
   private readonly cgLimiter = new TokenBucket(10, 2);      // CoinGecko
-  
+
   // Caches
   private readonly priceCache = new TTLCache<any>(PRICE_CACHE_TTL_MS);
   private readonly histCache = new TTLCache<any>(PROVIDER_TTL_MS);
@@ -51,6 +52,13 @@ export class RealMarketDataService {
   constructor() {
     this.historicalService = new HistoricalDataService();
     this.realTimeService = ImprovedRealTimeDataService.getInstance();
+  }
+
+  static getInstance(): RealMarketDataService {
+    if (!RealMarketDataService.instance) {
+      RealMarketDataService.instance = new RealMarketDataService();
+    }
+    return RealMarketDataService.instance;
   }
 
   /**
@@ -338,6 +346,18 @@ export class RealMarketDataService {
     }
   }
 
+  async getTopCoins(limit: number = 100): Promise<any[]> {
+    try {
+      // Minimal stub - returns empty array for now
+      // Can be implemented with actual API calls if needed
+      this.logger.debug(`getTopCoins called with limit ${limit}`, { limit });
+      return [];
+    } catch (error) {
+      this.logger.error('Failed to get top coins', { limit }, error as Error);
+      return [];
+    }
+  }
+
   async getAggregatedMarketData(symbol: string) {
     try {
       const [historical, price] = await Promise.all([
@@ -356,7 +376,9 @@ export class RealMarketDataService {
         currentPrice: price,
         historical: historical.slice(-7),
         performance,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        priceChange24h: performance.percent,
+        volume24h: 0
       };
     } catch (error) {
       this.logger.error('Failed to get aggregated market data', { symbol }, error as Error);

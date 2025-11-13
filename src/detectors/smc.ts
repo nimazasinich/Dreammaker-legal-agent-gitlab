@@ -36,8 +36,11 @@ export function detectSMC(ohlcv: Bar[], symbol: string): LayerScore {
   try {
     logger.debug('Analyzing Smart Money Concepts', { symbol, bars: ohlcv.length });
 
+    // Convert Bar[] to MarketData[] by adding symbol property
+    const marketData = ohlcv.map(bar => ({ ...bar, symbol }));
+
     // Analyze SMC using the dedicated service
-    const smcData = analyzer.analyze(ohlcv, symbol);
+    const smcData = analyzer.analyzeFullSMC(marketData);
 
     // Initialize scoring components
     let orderBlockScore = 0.5; // neutral baseline
@@ -51,8 +54,8 @@ export function detectSMC(ohlcv: Bar[], symbol: string): LayerScore {
 
     if (smcData.orderBlocks && (smcData.orderBlocks?.length || 0) > 0) {
       // Count bullish vs bearish order blocks
-      const bullishOBs = smcData?.orderBlocks?.filter(ob => ob.type === 'bullish');
-      const bearishOBs = smcData?.orderBlocks?.filter(ob => ob.type === 'bearish');
+      const bullishOBs = smcData?.orderBlocks?.filter(ob => ob.type === 'BULLISH');
+      const bearishOBs = smcData?.orderBlocks?.filter(ob => ob.type === 'BEARISH');
 
       const bullishCount = bullishOBs.length;
       const bearishCount = bearishOBs.length;
@@ -61,8 +64,8 @@ export function detectSMC(ohlcv: Bar[], symbol: string): LayerScore {
       if (totalOBs > 0) {
         // Calculate strength based on most recent and strongest OBs
         const recentOBs = smcData.orderBlocks.slice(-5); // Last 5 OBs
-        const recentBullish = recentOBs.filter(ob => ob.type === 'bullish').length;
-        const recentBearish = recentOBs.filter(ob => ob.type === 'bearish').length;
+        const recentBullish = recentOBs.filter(ob => ob.type === 'BULLISH').length;
+        const recentBearish = recentOBs.filter(ob => ob.type === 'BEARISH').length;
 
         if (bullishCount > bearishCount) {
           // More bullish OBs
@@ -93,36 +96,35 @@ export function detectSMC(ohlcv: Bar[], symbol: string): LayerScore {
 
     // ========== 2. BREAK OF STRUCTURE (30% weight) ==========
 
-    if (smcData.structure && smcData.structure.breakOfStructure) {
-      const bos = smcData.structure.breakOfStructure;
+    if (smcData.breakOfStructure && smcData.breakOfStructure.detected) {
+      const bos = smcData.breakOfStructure;
 
-      if (bos.direction === 'bullish') {
+      if (bos.type === 'BULLISH_BOS') {
         // Bullish BoS - price breaking above previous highs
         bosScore = 0.75;
-        const strength = bos.strength || 'moderate';
-        reasons.push(`Bullish BoS detected (${strength})`);
+        const strength = bos.strength || 0.5;
+        const strengthLabel = strength > 0.7 ? 'strong' : strength > 0.4 ? 'moderate' : 'weak';
+        reasons.push(`Bullish BoS detected (${strengthLabel})`);
 
         // Strong BoS gets bonus
-        if (strength === 'strong') {
+        if (strength > 0.7) {
           bosScore = 0.85;
         }
-      } else if (bos.direction === 'bearish') {
+      } else if (bos.type === 'BEARISH_BOS') {
         // Bearish BoS - price breaking below previous lows
         bosScore = 0.25;
-        const strength = bos.strength || 'moderate';
-        reasons.push(`Bearish BoS detected (${strength})`);
+        const strength = bos.strength || 0.5;
+        const strengthLabel = strength > 0.7 ? 'strong' : strength > 0.4 ? 'moderate' : 'weak';
+        reasons.push(`Bearish BoS detected (${strengthLabel})`);
 
         // Strong BoS gets more weight
-        if (strength === 'strong') {
+        if (strength > 0.7) {
           bosScore = 0.15;
         }
-      } else {
-        bosScore = 0.5;
-        reasons.push('No clear Break of Structure');
       }
     } else {
       bosScore = 0.5;
-      reasons.push('Market structure ranging');
+      reasons.push('No clear Break of Structure');
     }
 
     // ========== 3. FAIR VALUE GAPS (20% weight) ==========
@@ -131,11 +133,15 @@ export function detectSMC(ohlcv: Bar[], symbol: string): LayerScore {
       // FVGs represent inefficiencies - price should fill them
       const recentFVG = smcData.fairValueGaps[smcData.fairValueGaps.length - 1];
 
-      if (recentFVG.type === 'bullish') {
+      // Determine FVG direction based on upper/lower prices
+      // If upper is higher than surrounding prices, it's a bullish gap
+      const isBullishFVG = recentFVG.upper > recentFVG.lower;
+
+      if (isBullishFVG) {
         // Bullish FVG - gap up, price inefficiency above
         fvgScore = 0.65;
         reasons.push('Bullish FVG (upward inefficiency)');
-      } else if (recentFVG.type === 'bearish') {
+      } else {
         // Bearish FVG - gap down, price inefficiency below
         fvgScore = 0.35;
         reasons.push('Bearish FVG (downward inefficiency)');
@@ -150,19 +156,18 @@ export function detectSMC(ohlcv: Bar[], symbol: string): LayerScore {
 
     // ========== 4. MARKET STRUCTURE SHIFT (10% weight) ==========
 
-    if (smcData.structure && smcData.structure.trend) {
-      const trend = smcData.structure.trend;
-
-      if (trend === 'bullish') {
+    // Infer trend from breakOfStructure type
+    if (smcData.breakOfStructure && smcData.breakOfStructure.detected) {
+      if (smcData.breakOfStructure.type === 'BULLISH_BOS') {
         structureScore = 0.7;
         reasons.push('Overall bullish market structure');
-      } else if (trend === 'bearish') {
+      } else if (smcData.breakOfStructure.type === 'BEARISH_BOS') {
         structureScore = 0.3;
         reasons.push('Overall bearish market structure');
-      } else {
-        structureScore = 0.5;
-        reasons.push('Neutral market structure (ranging)');
       }
+    } else {
+      structureScore = 0.5;
+      reasons.push('Neutral market structure (ranging)');
     }
 
     // ========== WEIGHTED FINAL SCORE ==========
@@ -182,7 +187,7 @@ export function detectSMC(ohlcv: Bar[], symbol: string): LayerScore {
       score: clampedScore.toFixed(3),
       orderBlocks: smcData.orderBlocks?.length || 0,
       fvgs: smcData.fairValueGaps?.length || 0,
-      bos: smcData.structure?.breakOfStructure?.direction || 'none'
+      bos: smcData.breakOfStructure?.detected ? smcData.breakOfStructure.type : 'none'
     });
 
     return {

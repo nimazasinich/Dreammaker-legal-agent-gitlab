@@ -121,7 +121,7 @@ export class AnalysisController {
         Number(bars)
       );
 
-      const elliottAnalysis = this.elliottWaveAnalyzer.analyze(marketData);
+      const elliottAnalysis = this.elliottWaveAnalyzer.analyzeElliottWaves(marketData);
 
       res.json({
         success: true,
@@ -156,7 +156,7 @@ export class AnalysisController {
         Number(bars)
       );
 
-      const harmonicPatterns = this.harmonicDetector.detectPatterns(marketData);
+      const harmonicPatterns = this.harmonicDetector.detectHarmonicPatterns(marketData);
 
       res.json({
         success: true,

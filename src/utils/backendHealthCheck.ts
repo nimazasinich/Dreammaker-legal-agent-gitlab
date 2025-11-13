@@ -3,6 +3,7 @@
  * Monitors backend server availability and provides health status
  */
 
+import React, { useState } from 'react';
 import { Logger } from '../core/Logger.js';
 import { API_BASE } from '../config/env.js';
 
@@ -214,7 +215,7 @@ class BackendHealthMonitor {
       try {
         callback(isHealthy);
       } catch (error) {
-        logger.error('Error in health change listener:', error);
+        logger.error('Error in health change listener:', {}, error as Error);
       }
     });
   }
@@ -263,6 +264,3 @@ export function useBackendHealth() {
     refresh: () => backendHealth.forceCheck(),
   };
 }
-
-// Import React for hook
-import React from 'react';

@@ -159,6 +159,10 @@ export class ConfigManager {
     return this.config.exchange?.realDataMode === true;
   }
 
+  isDemoMode(): boolean {
+    return this.config.exchange?.demoMode === true;
+  }
+
   getExchangeConfig() {
     return this.config.exchange || {};
   }

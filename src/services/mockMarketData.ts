@@ -136,16 +136,12 @@ export function generateMockCurrentPrice(symbol: string): MarketData {
 
   return {
     symbol: symbol,
-    price: Number(price.toFixed(8)),
     timestamp: Date.now(),
-    volume: Number(volume24h.toFixed(2)),
+    open: Number((price * (1 - change24h)).toFixed(8)),
     high: Number((price * 1.03).toFixed(8)),
     low: Number((price * 0.97).toFixed(8)),
-    open: Number((price * (1 - change24h)).toFixed(8)),
     close: Number(price.toFixed(8)),
-    changePercent24h: Number((change24h * 100).toFixed(2)),
-    volume24h: Number(volume24h.toFixed(2)),
-    quoteVolume: Number((volume24h * price).toFixed(2)),
+    volume: Number(volume24h.toFixed(2)),
   };
 }
 

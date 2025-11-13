@@ -126,7 +126,7 @@ export class DataFallbackManager {
 
     // 1. Try cache first
     if (options.cacheKey) {
-      const cached = this.cache.get<T>(options.cacheKey);
+      const cached = await this.cache.get<T>(options.cacheKey);
       if (cached) {
         this.logger.debug('DataFallbackManager: Cache hit', { key: options.cacheKey });
         return {
@@ -184,7 +184,7 @@ export class DataFallbackManager {
 
         // Cache successful result
         if (options.cacheKey && options.cacheTTL) {
-          this.cache.set(options.cacheKey, data, options.cacheTTL);
+          await this.cache.set(options.cacheKey, data, { ttl: options.cacheTTL });
         }
 
         this.logger.info('DataFallbackManager: Provider success', {

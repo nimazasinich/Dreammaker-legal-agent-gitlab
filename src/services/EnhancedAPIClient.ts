@@ -106,7 +106,7 @@ export class EnhancedAPIClient {
   /**
    * Get or initialize provider health
    */
-  private getProviderHealth(providerName: string): APIHealth {
+  private getOrCreateProviderHealth(providerName: string): APIHealth {
     if (!this.healthMap.has(providerName)) {
       this.healthMap.set(providerName, {
         provider: providerName,
@@ -126,7 +126,7 @@ export class EnhancedAPIClient {
    * Record successful request
    */
   private recordSuccess(providerName: string, responseTime: number): void {
-    const health = this.getProviderHealth(providerName);
+    const health = this.getOrCreateProviderHealth(providerName);
 
     health.healthy = true;
     health.lastSuccess = Date.now();
@@ -150,7 +150,7 @@ export class EnhancedAPIClient {
    * Record failed request
    */
   private recordFailure(providerName: string, error: Error): void {
-    const health = this.getProviderHealth(providerName);
+    const health = this.getOrCreateProviderHealth(providerName);
 
     health.lastFailure = Date.now();
     health.consecutiveFailures++;
@@ -186,7 +186,7 @@ export class EnhancedAPIClient {
     if (onlyHealthy) {
       availableProviders = providers.filter(p => {
         const health = this.getProviderHealth(p.name);
-        return health.healthy && (p.enabled !== false);
+        return health && health.healthy && (p.enabled !== false);
       });
     }
 
@@ -277,8 +277,7 @@ export class EnhancedAPIClient {
 
         // Cache result
         if (options.useCache !== false) {
-          const ttl = options.cacheTTL || this.cacheTTL;
-          this.cache.set(cacheKey, result, ttl);
+          this.cache.set(cacheKey, result);
         }
 
         this.logger.debug(`Success with provider ${provider.name}`, {

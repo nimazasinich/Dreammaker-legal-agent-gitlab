@@ -9,7 +9,7 @@ export type SignalRow = {
 };
 
 export async function fetchSignals(symbol: string): Promise<SignalRow[]> {
-  const res = await fetch(`${API_BASE}/signals/${encodeURIComponent(symbol, { mode: "cors", headers: { "Content-Type": "application/json" } })}`, { credentials: 'include' });
+  const res = await fetch(`${API_BASE}/signals/${encodeURIComponent(symbol)}`, { credentials: 'include', mode: "cors", headers: { "Content-Type": "application/json" } });
   if (!res.ok) console.error(`signals ${res.status}`);
   const json = await res.json();
   // Normalize a few known shapes

@@ -213,6 +213,13 @@ export class ImprovedRealTimeDataService extends EventEmitter {
   }
 
   /**
+   * Connect to real-time data (alias for connect method)
+   */
+  async connectToRealTimeData(url?: string): Promise<void> {
+    return this.connect(url);
+  }
+
+  /**
    * Subscribe to a stream
    */
   subscribe(stream: string, callback: SubscriptionCallback): () => void {

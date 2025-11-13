@@ -38,7 +38,7 @@ export class RealBacktestEngine {
     slippageRate: number;
     maxPositionSize: number;
   }): Promise<BacktestResult> {
-    const md: MarketData[] = await RealMarketDataService.getInstance().getHistoricalData(symbol, timeframe, bars);
+    const md: MarketData[] = await RealMarketDataService.getInstance().getHistoricalData(symbol, bars);
     const engine = BacktestEngine.getInstance();
     return await engine.runBacktest(md, config);
   }

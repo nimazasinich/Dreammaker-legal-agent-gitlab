@@ -28,7 +28,7 @@ const testConfig: TestConfig = {
 
 // ===== Test Cases =====
 
-const marketTestCases: TestCase[] = [
+export const marketTestCases: TestCase[] = [
   // Test 1: Health Check
   {
     name: 'Health Check - API is running',

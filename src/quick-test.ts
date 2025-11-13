@@ -1,7 +1,8 @@
 // src/quick-test.ts - سرور ساده برای تست سریع
 import express from 'express';
-
 import { Logger } from './core/Logger.js';
+
+const logger = Logger.getInstance();
 const app = express();
 const PORT = 3001;
 

@@ -93,8 +93,7 @@ export async function whalesLayer(symbol: string): Promise<LayerScore> {
 
     // 3. On-Chain Metrics (20% weight)
     // Rising active addresses = Growing interest = Bullish
-    const activeAddresses = whaleData.onChainMetrics.activeAddresses24h || 0;
-    const holderConcentration = whaleData.onChainMetrics.holderConcentration || 0;
+    const activeAddresses = whaleData.onChainMetrics?.activeAddresses || 0;
 
     if (activeAddresses > 1000) {
       onChainScore = 0.7;
@@ -111,14 +110,22 @@ export async function whalesLayer(symbol: string): Promise<LayerScore> {
       reasons.push('On-chain metrics limited');
     }
 
-    // Holder concentration: Lower is better (more decentralized)
-    if (holderConcentration > 0) {
-      if (holderConcentration < 30) {
-        onChainScore += 0.1; // Bonus for decentralization
-        reasons.push('Well-distributed holders');
-      } else if (holderConcentration > 70) {
-        onChainScore -= 0.1; // Penalty for high concentration
-        reasons.push('High holder concentration (Risky)');
+    // Calculate holder concentration from hodler behavior if available
+    if (whaleData.onChainMetrics?.hodlerBehavior) {
+      const longTerm = whaleData.onChainMetrics.hodlerBehavior.longTermHolders || 0;
+      const shortTerm = whaleData.onChainMetrics.hodlerBehavior.shortTermHolders || 0;
+      const total = longTerm + shortTerm;
+
+      if (total > 0) {
+        // Higher long-term holder ratio is bullish
+        const longTermRatio = longTerm / total;
+        if (longTermRatio > 0.7) {
+          onChainScore += 0.1; // Bonus for strong hands
+          reasons.push('Strong long-term holders');
+        } else if (longTermRatio < 0.3) {
+          onChainScore -= 0.1; // Penalty for weak hands
+          reasons.push('High short-term holder concentration');
+        }
       }
     }
 

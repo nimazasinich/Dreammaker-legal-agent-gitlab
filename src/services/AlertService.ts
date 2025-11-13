@@ -79,11 +79,11 @@ export class AlertService {
     });
     
     // Also create alert in AlertManager (alternative system)
-    const alertSeverity = alert.priority === 'high' ? 'high' : 
-                         alert.priority === 'critical' ? 'critical' : 'medium';
+    const alertSeverity = alert.priority === 'HIGH' ? 'high' :
+                         alert.priority === 'CRITICAL' ? 'critical' : 'medium';
     this.alertManager.createAlert(
       'performance',
-      alertSeverity,
+      alertSeverity as 'low' | 'medium' | 'high' | 'critical',
       `Alert created for ${alert.symbol}: ${alert.type}`,
       { alertId: fullAlert.id, symbol: alert.symbol }
     );

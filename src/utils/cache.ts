@@ -160,6 +160,10 @@ export class AdvancedCache<T> {
       ttl: this.ttl
     };
   }
+
+  get size(): number {
+    return this.cache.size;
+  }
 }
 
 // Export a singleton instance with default settings
@@ -171,7 +175,7 @@ export const globalCache = new AdvancedCache();
  */
 export class TTLCache<T> {
   private cache: AdvancedCache<T>;
-  
+
   constructor(ttlMs: number, maxSize: number = 100) {
     this.cache = new AdvancedCache<T>({
       ttl: ttlMs,
@@ -179,25 +183,29 @@ export class TTLCache<T> {
       staleWhileRevalidate: false
     });
   }
-  
+
   get(key: string): T | null {
     return this.cache.get(key);
   }
-  
+
   set(key: string, value: T): void {
     this.cache.set(key, value);
   }
-  
+
   has(key: string): boolean {
     return this.cache.has(key);
   }
-  
+
   delete(key: string): boolean {
     return this.cache.delete(key);
   }
-  
+
   clear(): void {
     this.cache.clear();
+  }
+
+  get size(): number {
+    return this.cache.size;
   }
 }
 
