@@ -237,27 +237,40 @@ export interface Opportunity {
 export interface TrainingMetrics {
   epoch: number;
   timestamp: number;
-  mse: number;
-  mae: number;
-  r2: number;
+  mse?: number;
+  mae?: number;
+  r2?: number;
   learningRate: number;
   gradientNorm: number;
-  resetEvents: number;
+  resetEvents?: number;
   modelVersion?: string;
   directionalAccuracy?: number;
   seed?: number;
-  // Additional metrics
-  loss?: number;
-  accuracy?: number;
+  // Loss metrics (can be object or number for backward compatibility)
+  loss?: number | {
+    mse: number;
+    mae: number;
+    rSquared: number;
+  };
+  // Accuracy metrics (can be object or number for backward compatibility)
+  accuracy?: number | {
+    directional: number;
+    classification: number;
+  };
   stabilityMetrics?: {
     lossVariance?: number;
     gradientStability?: number;
     predictionConsistency?: number;
+    nanCount?: number;
+    infCount?: number;
+    resetCount?: number;
   };
   explorationStats?: {
     epsilon?: number;
     temperature?: number;
     explorationRate?: number;
+    explorationRatio?: number;
+    exploitationRatio?: number;
   };
 }
 
