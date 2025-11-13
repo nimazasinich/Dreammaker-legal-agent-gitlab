@@ -100,6 +100,18 @@ import { setupProxyRoutes } from './services/ProxyRoutes.js';
 import { SignalVisualizationWebSocketService } from './services/SignalVisualizationWebSocketService.js';
 import { TelegramService } from './services/TelegramService.js';
 import { readVault, writeVault } from './config/secrets.js';
+
+// Security middleware imports
+import { authMiddleware } from './middleware/AuthMiddleware.js';
+import { rateLimitMiddleware } from './middleware/RateLimitMiddleware.js';
+import { validationMiddleware } from './middleware/ValidationMiddleware.js';
+import { loadSecurityConfig } from './config/securityConfig.js';
+import {
+  runPipelineSchema,
+  marketDataQuerySchema,
+  signalAnalysisSchema
+} from './middleware/schemas/strategyPipelineSchemas.js';
+
 import futuresRoutes from './routes/futures.js';
 import offlineRoutes from './routes/offline.js';
 import systemDiagnosticsRoutes from './routes/systemDiagnostics.js';
@@ -305,15 +317,33 @@ app.use(metricsMiddleware);
 app.use((req, res, next) => {
   const correlationId = Math.random().toString(36).substring(2, 15);
   logger.setCorrelationId(correlationId);
-  
+
   logger.info('Incoming request', {
     method: req.method,
     url: req.url,
     userAgent: req.get('User-Agent')
   });
-  
+
   next();
 });
+
+// ============================
+// Security Middleware Layer
+// ============================
+// Load security configuration
+const securityConfig = loadSecurityConfig();
+logger.info('Security configuration loaded', {
+  authEnabled: securityConfig.auth.enabled,
+  authMode: securityConfig.auth.mode,
+  rateLimitEnabled: securityConfig.rateLimit.enabled,
+  validationEnabled: securityConfig.validation.enabled
+});
+
+// Apply rate limiting (if enabled)
+app.use(rateLimitMiddleware.limit());
+
+// Apply authentication (if enabled)
+app.use(authMiddleware.authenticate());
 
 // Setup CORS Proxy Routes for External APIs
 setupProxyRoutes(app);
@@ -1611,12 +1641,15 @@ app.get('/api/market/prices', async (req, res) => {
 });
 
 // Signals analyze endpoint
-app.post('/api/signals/analyze', async (req, res) => {
-  try {
-    const { symbol, timeframe = '1h', bars = 100 } = req.body;
-    
-    if (!symbol) {
-      return res.status(400).json({
+app.post(
+  '/api/signals/analyze',
+  validationMiddleware.validate(signalAnalysisSchema, 'body'),
+  async (req, res) => {
+    try {
+      const { symbol, timeframe = '1h', bars = 100 } = req.body;
+
+      if (!symbol) {
+        return res.status(400).json({
         error: 'Symbol is required'
       });
     }
@@ -1731,10 +1764,14 @@ app.post('/api/scoring/config', async (req, res) => {
 // ============================
 // Strategy Pipeline Routes
 // ============================
-// Run complete Strategy 1 → 2 → 3 pipeline
-app.post('/api/strategies/pipeline/run', async (req, res) => {
-  await strategyPipelineController.runPipeline(req, res);
-});
+// Run complete Strategy 1 → 2 → 3 pipeline (with validation)
+app.post(
+  '/api/strategies/pipeline/run',
+  validationMiddleware.validate(runPipelineSchema, 'body'),
+  async (req, res) => {
+    await strategyPipelineController.runPipeline(req, res);
+  }
+);
 
 // Get pipeline status
 app.get('/api/strategies/pipeline/status', async (req, res) => {

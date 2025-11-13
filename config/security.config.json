@@ -1,0 +1,58 @@
+{
+  "version": "1.0",
+  "updatedAt": "2025-11-13T00:00:00Z",
+  "description": "Security configuration for BOLT AI platform - auth, rate limiting, and validation settings",
+
+  "auth": {
+    "enabled": false,
+    "mode": "apiKey",
+    "apiKeyHeader": "x-api-key",
+    "jwtSecret": "${JWT_SECRET}",
+    "jwtExpiresIn": "24h",
+    "bypassPaths": [
+      "/status",
+      "/health",
+      "/status/health",
+      "/api/health",
+      "/metrics"
+    ]
+  },
+
+  "rateLimit": {
+    "enabled": false,
+    "windowMs": 60000,
+    "maxRequests": 60,
+    "bypassPaths": [
+      "/status",
+      "/health",
+      "/status/health",
+      "/api/health",
+      "/metrics"
+    ],
+    "headers": {
+      "enabled": true,
+      "total": "X-RateLimit-Limit",
+      "remaining": "X-RateLimit-Remaining",
+      "reset": "X-RateLimit-Reset"
+    }
+  },
+
+  "validation": {
+    "enabled": true,
+    "maxBodySize": "10mb",
+    "strictMode": true
+  },
+
+  "cors": {
+    "enabled": true,
+    "origins": ["http://localhost:3000", "http://localhost:3005"],
+    "credentials": true
+  },
+
+  "logging": {
+    "logAuthFailures": true,
+    "logRateLimitHits": true,
+    "logValidationErrors": true,
+    "excludeSensitiveData": true
+  }
+}
