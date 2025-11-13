@@ -8,6 +8,7 @@ import {
   ChevronRight,
   DollarSign,
   Home,
+  Layers,
   Search,
   Settings,
   Shield,
@@ -39,6 +40,7 @@ const NAV_ITEMS: NavigationItem[] = [
   { id: 'professional-risk', label: '🔥 Pro Risk', icon: AlertTriangle },
   { id: 'backtest', label: t('navigation.backtest'), icon: BarChart3 },
   { id: 'strategyBuilder', label: 'Strategy Builder', icon: Sliders },
+  { id: 'strategy-insights', label: 'Strategy Insights', icon: Layers },
   { id: 'health', label: t('navigation.health'), icon: Activity },
   { id: 'settings', label: t('navigation.settings'), icon: Settings },
 ];

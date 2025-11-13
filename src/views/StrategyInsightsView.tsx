@@ -1,0 +1,524 @@
+/**
+ * Strategy Insights View
+ *
+ * Displays the output of Strategy 1 → 2 → 3 pipeline with:
+ * - Global smart scoring overview
+ * - Strategy 1/2/3 tables with category breakdown
+ * - Adaptive weight status
+ */
+
+import React, { useEffect } from 'react';
+import {
+  PlayCircle,
+  TrendingUp,
+  Target,
+  Award,
+  BarChart3,
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  RefreshCw
+} from 'lucide-react';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { useStrategyPipeline } from '../hooks/useStrategyPipeline';
+import {
+  Strategy1Result,
+  Strategy2Result,
+  Strategy3Result
+} from '../types/strategyPipeline';
+import fmt from '../lib/formatNumber';
+
+const StrategyInsightsView: React.FC = () => {
+  const {
+    data,
+    isLoading,
+    error,
+    isAdaptiveEnabled,
+    runDefaultPipeline,
+    reset
+  } = useStrategyPipeline();
+
+  // Auto-load on mount (optional - can be removed if you want user to trigger manually)
+  // useEffect(() => {
+  //   runDefaultPipeline();
+  // }, [runDefaultPipeline]);
+
+  return (
+    <ErrorBoundary>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Strategy Insights
+            </h1>
+            <p className="text-muted">
+              HTS Strategy Pipeline with Smart Scoring Dashboard
+            </p>
+          </div>
+
+          <div className="flex gap-3">
+            {data && (
+              <button
+                onClick={reset}
+                className="px-4 py-2 bg-surface border border-border rounded-lg hover:bg-surface/80 transition-colors"
+              >
+                Clear
+              </button>
+            )}
+            <button
+              onClick={runDefaultPipeline}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-6 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Running Pipeline...
+                </>
+              ) : (
+                <>
+                  <PlayCircle className="w-4 h-4" />
+                  Run Default Pipeline
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Error State */}
+        {error && (
+          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-red-500">Pipeline Error</h3>
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <LoadingSpinner size="lg" />
+            <p className="mt-4 text-muted">
+              Running Strategy 1 → 2 → 3 pipeline...
+            </p>
+            <p className="text-sm text-muted/70 mt-1">
+              This may take 30-60 seconds
+            </p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!data && !isLoading && !error && (
+          <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-lg">
+            <BarChart3 className="w-16 h-16 text-muted/50 mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              No Pipeline Data
+            </h3>
+            <p className="text-muted text-center max-w-md">
+              Click "Run Default Pipeline" to execute Strategy 1 → 2 → 3 and view smart scoring insights
+            </p>
+          </div>
+        )}
+
+        {/* Results */}
+        {data && !isLoading && (
+          <>
+            {/* Global Scoring Overview */}
+            <ScoringOverviewSection
+              scoring={data.scoring}
+              isAdaptiveEnabled={isAdaptiveEnabled}
+            />
+
+            {/* Strategy Tables */}
+            <Strategy1Table data={data.strategy1.symbols} meta={data.strategy1.meta} />
+            <Strategy2Table data={data.strategy2.symbols} meta={data.strategy2.meta} />
+            <Strategy3Table data={data.strategy3.symbols} meta={data.strategy3.meta} />
+          </>
+        )}
+      </div>
+    </ErrorBoundary>
+  );
+};
+
+// ==========================================
+// Scoring Overview Section
+// ==========================================
+interface ScoringOverviewSectionProps {
+  scoring: any;
+  isAdaptiveEnabled: boolean;
+}
+
+const ScoringOverviewSection: React.FC<ScoringOverviewSectionProps> = ({
+  scoring,
+  isAdaptiveEnabled
+}) => {
+  const telemetry = scoring.telemetrySummary;
+  const effectiveWeights = scoring.effectiveWeights;
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+        <Activity className="w-5 h-5 text-accent" />
+        Smart Scoring Overview
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Adaptive Mode Card */}
+        <div className="p-4 bg-surface border border-border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-muted">Adaptive Mode</span>
+            {isAdaptiveEnabled ? (
+              <CheckCircle className="w-4 h-4 text-green-500" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-muted" />
+            )}
+          </div>
+          <div className="text-2xl font-bold text-foreground">
+            {isAdaptiveEnabled ? 'ON' : 'OFF'}
+          </div>
+          <div className="text-xs text-muted mt-1">
+            {effectiveWeights.isAdaptive ? 'Using adaptive weights' : 'Using static weights'}
+          </div>
+        </div>
+
+        {/* Total Signals Card */}
+        {telemetry && (
+          <div className="p-4 bg-surface border border-border rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-muted">Total Signals</span>
+              <BarChart3 className="w-4 h-4 text-accent" />
+            </div>
+            <div className="text-2xl font-bold text-foreground">
+              {telemetry.totalSignals || 0}
+            </div>
+            <div className="text-xs text-muted mt-1">
+              Tracked in telemetry
+            </div>
+          </div>
+        )}
+
+        {/* Win Rate Card */}
+        {telemetry && (
+          <div className="p-4 bg-surface border border-border rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-muted">Win Rate</span>
+              <TrendingUp className="w-4 h-4 text-green-500" />
+            </div>
+            <div className="text-2xl font-bold text-foreground">
+              {fmt((telemetry.winRate || 0) * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
+            </div>
+            <div className="text-xs text-muted mt-1">
+              Overall performance
+            </div>
+          </div>
+        )}
+
+        {/* Best Category Card */}
+        {scoring.bestCategory && (
+          <div className="p-4 bg-surface border border-border rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-muted">Best Category</span>
+              <Award className="w-4 h-4 text-yellow-500" />
+            </div>
+            <div className="text-2xl font-bold text-foreground uppercase">
+              {scoring.bestCategory.name}
+            </div>
+            <div className="text-xs text-muted mt-1">
+              {fmt(scoring.bestCategory.winRate * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% win rate
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Category Weights */}
+      <div className="p-4 bg-surface border border-border rounded-lg">
+        <h3 className="text-sm font-semibold text-foreground mb-3">
+          Category Weights
+        </h3>
+        <div className="grid grid-cols-5 gap-3">
+          {Object.entries(effectiveWeights.categories).map(([name, weight]) => (
+            <div key={name}>
+              <div className="text-xs text-muted uppercase mb-1">{name}</div>
+              <div className="h-2 bg-border rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-accent"
+                  style={{ width: `${(weight as number) * 100}%` }}
+                />
+              </div>
+              <div className="text-xs text-foreground mt-1">
+                {fmt((weight as number) * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// Strategy 1 Table
+// ==========================================
+interface Strategy1TableProps {
+  data: Strategy1Result[];
+  meta: any;
+}
+
+const Strategy1Table: React.FC<Strategy1TableProps> = ({ data, meta }) => {
+  if (data.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+          <Target className="w-5 h-5 text-accent" />
+          Strategy 1 - Wide Universe Scanning
+        </h2>
+        <div className="text-sm text-muted">
+          {data.length} symbols · {meta.processingTimeMs}ms
+        </div>
+      </div>
+
+      <div className="bg-surface border border-border rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted/30 border-b border-border">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase">Rank</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase">Symbol</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">Score</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-foreground uppercase">Action</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">Core</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">SMC</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">Patterns</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">Sentiment</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">ML</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {data.map((row) => (
+                <tr key={row.symbol} className="hover:bg-muted/20 transition-colors">
+                  <td className="px-4 py-3 text-sm text-muted">#{row.rank}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-foreground">{row.symbol}</td>
+                  <td className="px-4 py-3 text-sm text-right">
+                    <span className={getScoreColor(row.finalStrategyScore)}>
+                      {fmt(row.finalStrategyScore, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <ActionBadge action={row.action} />
+                  </td>
+                  <td className="px-4 py-3 text-sm text-right text-muted">{fmt(row.core, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td className="px-4 py-3 text-sm text-right text-muted">{fmt(row.smc, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td className="px-4 py-3 text-sm text-right text-muted">{fmt(row.patterns, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td className="px-4 py-3 text-sm text-right text-muted">{fmt(row.sentiment, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td className="px-4 py-3 text-sm text-right text-muted">{fmt(row.ml, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// Strategy 2 Table
+// ==========================================
+interface Strategy2TableProps {
+  data: Strategy2Result[];
+  meta: any;
+}
+
+const Strategy2Table: React.FC<Strategy2TableProps> = ({ data, meta }) => {
+  if (data.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-accent" />
+          Strategy 2 - Refined Set with ETA
+        </h2>
+        <div className="text-sm text-muted">
+          {data.length} symbols · {meta.processingTimeMs}ms
+        </div>
+      </div>
+
+      <div className="bg-surface border border-border rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted/30 border-b border-border">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase">Rank</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase">Symbol</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">Score</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">ETA (min)</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-foreground uppercase">Action</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">Core</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">SMC</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase">Patterns</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {data.map((row) => (
+                <tr key={row.symbol} className="hover:bg-muted/20 transition-colors">
+                  <td className="px-4 py-3 text-sm text-muted">#{row.rank}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-foreground">{row.symbol}</td>
+                  <td className="px-4 py-3 text-sm text-right">
+                    <span className={getScoreColor(row.finalStrategyScore)}>
+                      {fmt(row.finalStrategyScore, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-right text-accent font-medium">
+                    {row.etaMinutes}m
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <ActionBadge action={row.action} />
+                  </td>
+                  <td className="px-4 py-3 text-sm text-right text-muted">{fmt(row.core, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td className="px-4 py-3 text-sm text-right text-muted">{fmt(row.smc, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td className="px-4 py-3 text-sm text-right text-muted">{fmt(row.patterns, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// Strategy 3 Table
+// ==========================================
+interface Strategy3TableProps {
+  data: Strategy3Result[];
+  meta: any;
+}
+
+const Strategy3Table: React.FC<Strategy3TableProps> = ({ data, meta }) => {
+  if (data.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+          <Award className="w-5 h-5 text-yellow-500" />
+          Strategy 3 - Top Picks with Entry Plans
+        </h2>
+        <div className="text-sm text-muted">
+          {data.length} symbols · {meta.processingTimeMs}ms
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {data.map((row) => (
+          <div key={row.symbol} className="p-4 bg-surface border border-border rounded-lg">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg font-bold text-foreground">#{row.rank}</span>
+                  <span className="text-xl font-semibold text-foreground">{row.symbol}</span>
+                  <ActionBadge action={row.bias} />
+                </div>
+                <div className="mt-1 text-sm text-muted">
+                  Score: <span className={getScoreColor(row.finalStrategyScore)}>
+                    {fmt(row.finalStrategyScore, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-muted">Risk-Reward</div>
+                <div className="text-lg font-semibold text-accent">1:{row.risk.rr}</div>
+              </div>
+            </div>
+
+            {/* Category Breakdown */}
+            <div className="grid grid-cols-5 gap-2 mb-3">
+              <CategoryPill label="Core" value={row.core} />
+              <CategoryPill label="SMC" value={row.smc} />
+              <CategoryPill label="Patterns" value={row.patterns} />
+              <CategoryPill label="Sentiment" value={row.sentiment} />
+              <CategoryPill label="ML" value={row.ml} />
+            </div>
+
+            {/* Entry Levels */}
+            <div className="grid grid-cols-3 gap-3 mb-3 p-3 bg-muted/20 rounded-lg">
+              <div>
+                <div className="text-xs text-muted">Conservative</div>
+                <div className="text-sm font-medium text-foreground">{row.entryLevels.conservative}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted">Base</div>
+                <div className="text-sm font-medium text-accent">{row.entryLevels.base}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted">Aggressive</div>
+                <div className="text-sm font-medium text-foreground">{row.entryLevels.aggressive}</div>
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="text-xs text-muted border-t border-border pt-3">
+              {row.summary}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// Helper Components
+// ==========================================
+
+const ActionBadge: React.FC<{ action: string }> = ({ action }) => {
+  const colors = {
+    BUY: 'bg-green-500/20 text-green-500 border-green-500/30',
+    LONG: 'bg-green-500/20 text-green-500 border-green-500/30',
+    SELL: 'bg-red-500/20 text-red-500 border-red-500/30',
+    SHORT: 'bg-red-500/20 text-red-500 border-red-500/30',
+    HOLD: 'bg-muted/50 text-muted border-border'
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold border ${
+        colors[action as keyof typeof colors] || colors.HOLD
+      }`}
+    >
+      {action}
+    </span>
+  );
+};
+
+const CategoryPill: React.FC<{ label: string; value: number }> = ({ label, value }) => {
+  return (
+    <div className="text-center p-2 bg-muted/30 rounded-lg">
+      <div className="text-xs text-muted uppercase">{label}</div>
+      <div className={`text-sm font-semibold ${getScoreColor(value)}`}>
+        {fmt(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// Helper Functions
+// ==========================================
+
+function getScoreColor(score: number): string {
+  if (score >= 0.7) return 'text-green-500';
+  if (score >= 0.5) return 'text-yellow-500';
+  if (score >= 0.3) return 'text-orange-500';
+  return 'text-red-500';
+}
+
+export default StrategyInsightsView;
