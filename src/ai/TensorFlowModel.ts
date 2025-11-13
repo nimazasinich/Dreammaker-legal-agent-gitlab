@@ -8,10 +8,12 @@ const logger = Logger.getInstance();
 let tf: any = null;
 
 // Conditional import - only load if available
-if (typeof require !== 'undefined') {
+// @ts-ignore - require is only available in Node.js environment
+if (typeof globalThis.require !== 'undefined') {
   try {
     // Try to load TensorFlow.js Node.js version
-    const tfNode = require('@tensorflow/tfjs-node');
+    // @ts-ignore - dynamic require for optional dependency
+    const tfNode = globalThis.require('@tensorflow/tfjs-node');
     tf = tfNode;
     logger.info('TensorFlow.js Node.js backend loaded successfully');
   } catch (error) {
@@ -28,7 +30,7 @@ export interface ModelConfig {
   learningRate: number;
 }
 
-export interface TrainingMetrics {
+export interface TensorFlowTrainingMetrics {
   loss: number;
   accuracy: number;
   epoch: number;
@@ -41,7 +43,7 @@ export class TensorFlowModel {
   private model: any = null;
   private config: ModelConfig;
   private isModelLoaded = false;
-  private trainingHistory: TrainingMetrics[] = [];
+  private trainingHistory: TensorFlowTrainingMetrics[] = [];
   private modelPath = 'models/bullbear-model';
 
   constructor() {
@@ -143,7 +145,7 @@ export class TensorFlowModel {
     epochs: number = 1,
     batchSize: number = 32,
     validationSplit: number = 0.2
-  ): Promise<TrainingMetrics[]> {
+  ): Promise<TensorFlowTrainingMetrics[]> {
     if (!tf || !this.model) {
       this.logger.warn('TensorFlow.js not available, skipping real training');
       return this.generateSimulatedMetrics(epochs);
@@ -324,7 +326,7 @@ export class TensorFlowModel {
   /**
    * Get training history
    */
-  getTrainingHistory(): TrainingMetrics[] {
+  getTrainingHistory(): TensorFlowTrainingMetrics[] {
     return [...this.trainingHistory];
   }
 
@@ -367,8 +369,8 @@ export class TensorFlowModel {
     return [bullProb / total, bearProb / total, neutralProb / total];
   }
 
-  private generateSimulatedMetrics(epochs: number): TrainingMetrics[] {
-    const metrics: TrainingMetrics[] = [];
+  private generateSimulatedMetrics(epochs: number): TensorFlowTrainingMetrics[] {
+    const metrics: TensorFlowTrainingMetrics[] = [];
     let loss = 0.8;
     let accuracy = 0.5;
 

@@ -19,7 +19,7 @@ export class AIController {
     try {
       const { batchSize = 32 } = req.body;
 
-      const bufferStats = this.trainingEngine.experienceBuffer.getStatistics();
+      const bufferStats = this.trainingEngine.getExperienceBufferStatistics();
       if (bufferStats.size < batchSize) {
         res.status(400).json({
           error: 'Insufficient experiences in buffer',
@@ -29,7 +29,7 @@ export class AIController {
         return;
       }
 
-      const batch = this.trainingEngine.experienceBuffer.sampleBatch(batchSize);
+      const batch = this.trainingEngine.sampleExperienceBatch(batchSize);
       const metrics = await this.trainingEngine.trainStep(batch.experiences);
 
       res.json({
