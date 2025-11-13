@@ -259,10 +259,16 @@ export class NetworkArchitectures {
 
     for (let i = 0; i < config.layers.length; i++) {
       const layer = config.layers[i];
-      
+
+      // Map layer type for Xavier initializer (cnn -> conv, attention -> dense)
+      const xavierLayerType: 'dense' | 'lstm' | 'conv' =
+        layer.type === 'cnn' ? 'conv' :
+        layer.type === 'attention' ? 'dense' :
+        layer.type;
+
       // Initialize weights with Xavier
       const layerWeights = this.initializer.initializeLayer(
-        layer.type,
+        xavierLayerType,
         layer.inputSize,
         layer.outputSize,
         this.getGainForActivation(layer.activation)

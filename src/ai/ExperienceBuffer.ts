@@ -1,6 +1,10 @@
 import { Logger } from '../core/Logger.js';
 import { MarketData } from '../types/index.js';
 
+// Utility to convert Date | number to number
+const toTimestamp = (ts: Date | number): number =>
+  typeof ts === 'number' ? ts : ts.getTime();
+
 export interface Experience {
   id: string;
   state: number[]; // Market features at time t
@@ -226,7 +230,7 @@ export class ExperienceBuffer {
         reward: rewards[i],
         nextState,
         terminal: i === marketData.length - 2, // Last transition is terminal
-        timestamp: currentData.timestamp,
+        timestamp: toTimestamp(currentData.timestamp),
         symbol: currentData.symbol,
         metadata: {
           price: currentData.close,

@@ -8,6 +8,10 @@ import { BullBearAgent } from './BullBearAgent.js';
 import { MarketData } from '../types/index.js';
 import { BullBearPrediction } from './BullBearAgent.js';
 
+// Utility to convert Date | number to number
+const toTimestamp = (ts: Date | number): number =>
+  typeof ts === 'number' ? ts : ts.getTime();
+
 export interface AccuracyMetricsResult {
   directionalAccuracy: number;
   classificationAccuracy: number;
@@ -108,7 +112,7 @@ export class AccuracyMetrics {
           actual: actualDirection,
           predicted: predictedDirection,
           confidence: prediction.confidence,
-          timestamp: nextBar.timestamp
+          timestamp: toTimestamp(nextBar.timestamp)
         });
       } catch (error) {
         this.logger.warn('Failed to get prediction for accuracy measurement', {
