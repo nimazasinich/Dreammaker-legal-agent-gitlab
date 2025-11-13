@@ -31,7 +31,13 @@ export async function runStrategy1({
     }
   }
 
-  results.sort((a, b) => b.decision.finalScore - a.decision.finalScore);
+  // Sort by finalStrategyScore (HTS smart score) or fallback to finalScore/score
+  results.sort((a, b) => {
+    const scoreA = a.decision.finalStrategyScore ?? a.decision.finalScore ?? a.decision.score;
+    const scoreB = b.decision.finalStrategyScore ?? b.decision.finalScore ?? b.decision.score;
+    return scoreB - scoreA;
+  });
+
   const top10 = results.slice(0, 10);
   await saveStrategyOutput(1, top10);
   return top10;
