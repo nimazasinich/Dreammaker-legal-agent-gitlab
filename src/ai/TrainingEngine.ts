@@ -50,7 +50,7 @@ export class TrainingEngine {
   private optimizer = AdamWOptimizer.getInstance();
   private scheduler = LearningRateScheduler.getInstance();
   private watchdog = InstabilityWatchdog.getInstance();
-  private experienceBuffer = ExperienceBuffer.getInstance();
+  public experienceBuffer = ExperienceBuffer.getInstance();
   private exploration = ExplorationStrategies.getInstance();
 
   private config: TrainingConfig = {

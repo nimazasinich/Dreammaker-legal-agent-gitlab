@@ -101,7 +101,7 @@ const StrategyInsightsView: React.FC = () => {
         {/* Loading State */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
-            <LoadingSpinner size="lg" />
+            <LoadingSpinner size="large" />
             <p className="mt-4 text-muted">
               Running Strategy 1 → 2 → 3 pipeline...
             </p>

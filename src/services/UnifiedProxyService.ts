@@ -326,29 +326,32 @@ export class UnifiedProxyService {
     if (cacheKey) {
       const entry = this.cache.get(cacheKey);
       if (entry) {
-        return res.json({
+        res.json({
           ...entry.data,
           _cached: true,
           _stale: true,
           _timestamp: Date.now()
         });
+        return;
       }
     }
 
     // خطاهای مختلف
     if (error.code === 'ECONNABORTED') {
-      return res.status(504).json({
+      res.status(504).json({
         error: 'Request timeout',
         message: 'The API did not respond in time'
       });
+      return;
     }
 
     if (error.response) {
-      return res.status(error.response.status).json({
+      res.status(error.response.status).json({
         error: 'API error',
         status: error.response.status,
         message: error.message
       });
+      return;
     }
 
     res.status(500).json({

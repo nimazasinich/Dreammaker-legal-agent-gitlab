@@ -129,5 +129,29 @@ export class SystemController {
       });
     }
   }
+
+  async getConfig(req: Request, res: Response): Promise<void> {
+    try {
+      const config = {
+        realDataMode: this.config.isRealDataMode(),
+        demoMode: this.config.isDemoMode(),
+        exchange: this.config.getExchangeConfig(),
+        marketData: this.config.getMarketDataConfig(),
+        timestamp: Date.now()
+      };
+
+      res.json({
+        success: true,
+        config,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to get config', {}, error as Error);
+      res.status(500).json({
+        error: 'Failed to get config',
+        message: (error as Error).message
+      });
+    }
+  }
 }
 

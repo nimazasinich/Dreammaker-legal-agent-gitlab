@@ -128,11 +128,13 @@ export class DataValidationService {
       const oneYearAgo = now - (365 * 24 * 60 * 60 * 1000);
       const oneHourFromNow = now + (60 * 60 * 1000);
 
-      if (data.timestamp < oneYearAgo) {
+      const timestampMs = typeof data.timestamp === 'number' ? data.timestamp : data.timestamp.getTime();
+
+      if (timestampMs < oneYearAgo) {
         result.warnings.push('Timestamp is more than one year old');
       }
 
-      if (data.timestamp > oneHourFromNow) {
+      if (timestampMs > oneHourFromNow) {
         result.warnings.push('Timestamp is in the future');
       }
     }

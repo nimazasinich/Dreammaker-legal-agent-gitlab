@@ -63,7 +63,7 @@ export class FrontendBackendIntegration {
         try {
           const marketData = await dataManager.fetchData(`market-data/${symbol}?interval=${timeframe}&limit=200`);
           if (Array.isArray(marketData) && (marketData?.length || 0) > 0) {
-            return this.technicalAnalysis.calculateIndicators(marketData);
+            return this.technicalAnalysis.calculateAllIndicators(marketData);
           }
           return null;
         } catch (error) {
@@ -147,7 +147,7 @@ export class FrontendBackendIntegration {
     try {
       const marketData = await dataManager.fetchData(`market-data/${symbol}?interval=${timeframe}&limit=200`);
       if (Array.isArray(marketData) && (marketData?.length || 0) > 0) {
-        return this.technicalAnalysis.calculateIndicators(marketData);
+        return this.technicalAnalysis.calculateAllIndicators(marketData);
       }
       return null;
     } catch (error) {

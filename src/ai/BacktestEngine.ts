@@ -3,12 +3,13 @@ import { MarketData, BacktestResult, BacktestTrade } from '../types/index.js';
 import { BullBearAgent } from './BullBearAgent.js';
 
 export interface BacktestConfig {
+  symbol?: string;
   startDate: number;
   endDate: number;
   initialCapital: number;
-  feeRate: number;
-  slippageRate: number;
-  maxPositionSize: number;
+  feeRate?: number;
+  slippageRate?: number;
+  maxPositionSize?: number;
 }
 
 export interface Trade {
@@ -62,7 +63,12 @@ export class BacktestEngine {
     const trades: Trade[] = [];
     let currentCapital = config.initialCapital;
     let currentPosition: { symbol: string; quantity: number; entryPrice: number; entryTime: number } | null = null;
-    
+
+    // Set defaults for optional config parameters
+    const feeRate = config.feeRate ?? 0.001;
+    const slippageRate = config.slippageRate ?? 0.001;
+    const maxPositionSize = config.maxPositionSize ?? 0.95;
+
     this.logger.info('Starting backtest', {
       dataPoints: marketData.length,
       startDate: new Date(config.startDate).toISOString(),
@@ -82,31 +88,31 @@ export class BacktestEngine {
         if (!currentPosition && prediction.action !== 'HOLD') {
           // Enter position
           const positionSize = Math.min(
-            currentCapital * config.maxPositionSize,
+            currentCapital * maxPositionSize,
             currentCapital * 0.1 // Max 10% per trade
           );
-          
+
           const quantity = positionSize / currentBar.close;
-          const fees = positionSize * config.feeRate;
-          const slippage = positionSize * config.slippageRate;
-          
+          const fees = positionSize * feeRate;
+          const slippage = positionSize * slippageRate;
+
           currentPosition = {
             symbol: currentBar.symbol,
             quantity: prediction.action === 'LONG' ? quantity : -quantity,
-            entryPrice: currentBar.close * (1 + (prediction.action === 'LONG' ? config.slippageRate : -config.slippageRate)),
+            entryPrice: currentBar.close * (1 + (prediction.action === 'LONG' ? slippageRate : -slippageRate)),
             entryTime: typeof currentBar.timestamp === 'number' ? currentBar.timestamp : currentBar.timestamp.getTime()
           };
-          
+
           currentCapital -= fees + slippage;
-          
-        } else if (currentPosition && (prediction.action === 'HOLD' || 
+
+        } else if (currentPosition && (prediction.action === 'HOLD' ||
                    (currentPosition.quantity > 0 && prediction.action === 'SHORT') ||
                    (currentPosition.quantity < 0 && prediction.action === 'LONG'))) {
           // Exit position
-          const exitPrice = currentBar.close * (1 + (currentPosition.quantity > 0 ? -config.slippageRate : config.slippageRate));
+          const exitPrice = currentBar.close * (1 + (currentPosition.quantity > 0 ? -slippageRate : slippageRate));
           const positionValue = Math.abs(currentPosition.quantity) * exitPrice;
-          const fees = positionValue * config.feeRate;
-          const slippage = positionValue * config.slippageRate;
+          const fees = positionValue * feeRate;
+          const slippage = positionValue * slippageRate;
           
           const pnl = currentPosition.quantity > 0 
             ? (exitPrice - currentPosition.entryPrice) * currentPosition.quantity

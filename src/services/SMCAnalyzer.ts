@@ -120,7 +120,7 @@ export class SMCAnalyzer {
         blocks.push({
           high: current.high,
           low: current.low,
-          timestamp: current.timestamp,
+          timestamp: typeof current.timestamp === 'number' ? current.timestamp : current.timestamp.getTime(),
           type: current.close > current.open ? 'BULLISH' : 'BEARISH'
         });
       }
@@ -160,7 +160,7 @@ export class SMCAnalyzer {
           gaps.push({
             upper: current.low,
             lower: prev.high,
-            timestamp: current.timestamp,
+            timestamp: typeof current.timestamp === 'number' ? current.timestamp : current.timestamp.getTime(),
             filled,
             fillProbability
           });
@@ -182,7 +182,7 @@ export class SMCAnalyzer {
           gaps.push({
             upper: prev.low,
             lower: current.high,
-            timestamp: current.timestamp,
+            timestamp: typeof current.timestamp === 'number' ? current.timestamp : current.timestamp.getTime(),
             filled,
             fillProbability
           });

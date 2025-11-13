@@ -28,9 +28,9 @@ export async function sentimentLayer(symbol: string): Promise<LayerScore> {
     // Fetch real sentiment data from multiple sources
     const sentimentData = await sentimentService.analyzeSentiment(symbol);
 
-    // Safety check: ensure score is defined
-    if (sentimentData.score === undefined || sentimentData.score === null) {
-      logger.warn('Sentiment data missing score, using neutral', { symbol, sentimentData });
+    // Safety check: ensure overallScore is defined
+    if (sentimentData.overallScore === undefined || sentimentData.overallScore === null) {
+      logger.warn('Sentiment data missing overallScore, using neutral', { symbol, sentimentData });
       return {
         score: 0.5,
         reasons: ['Sentiment data incomplete', 'Using neutral baseline', 'API errors occurred']
@@ -41,17 +41,23 @@ export async function sentimentLayer(symbol: string): Promise<LayerScore> {
     // -100 (extreme bearish) -> 0
     // 0 (neutral) -> 0.5
     // +100 (extreme bullish) -> 1.0
-    const normalizedScore = (sentimentData.score + 100) / 200;
+    const normalizedScore = (sentimentData.overallScore + 100) / 200;
 
     // Build reasoning from sentiment breakdown
     const reasons: string[] = [];
 
-    // Main sentiment classification
-    reasons.push(`Overall: ${sentimentData.classification || 'Unknown'} (${sentimentData.score.toFixed(0)})`);
+    // Main sentiment classification - determine from overallScore
+    let classification = 'Neutral';
+    if (sentimentData.overallScore < -50) classification = 'Extreme Fear';
+    else if (sentimentData.overallScore < -20) classification = 'Fear';
+    else if (sentimentData.overallScore > 50) classification = 'Extreme Greed';
+    else if (sentimentData.overallScore > 20) classification = 'Greed';
+
+    reasons.push(`Overall: ${classification} (${sentimentData.overallScore.toFixed(0)})`);
 
     // Fear & Greed Index
-    if (sentimentData.breakdown.fearGreed !== undefined) {
-      const fgValue = sentimentData.breakdown.fearGreed;
+    if (sentimentData.sources?.fearGreedIndex !== undefined) {
+      const fgValue = sentimentData.sources.fearGreedIndex;
       let fgLabel = 'Neutral';
       if (fgValue < -50) fgLabel = 'Extreme Fear';
       else if (fgValue < -20) fgLabel = 'Fear';
@@ -62,15 +68,17 @@ export async function sentimentLayer(symbol: string): Promise<LayerScore> {
     }
 
     // News sentiment
-    if (sentimentData.breakdown.news !== undefined) {
-      const newsValue = sentimentData.breakdown.news;
+    if (sentimentData.sources?.news !== undefined) {
+      const newsValue = sentimentData.sources.news;
       const newsLabel = newsValue > 20 ? 'Positive' : newsValue < -20 ? 'Negative' : 'Neutral';
       reasons.push(`News: ${newsLabel} (${newsValue.toFixed(0)})`);
     }
 
     // Social sentiment (Reddit, Twitter, etc.)
-    if (sentimentData.breakdown.social !== undefined) {
-      const socialValue = sentimentData.breakdown.social;
+    if (sentimentData.sources?.reddit !== undefined || sentimentData.sources?.twitter !== undefined) {
+      const redditValue = sentimentData.sources.reddit || 0;
+      const twitterValue = sentimentData.sources.twitter || 0;
+      const socialValue = (redditValue + twitterValue) / 2;
       const socialLabel = socialValue > 20 ? 'Bullish' : socialValue < -20 ? 'Bearish' : 'Neutral';
       reasons.push(`Social: ${socialLabel} (${socialValue.toFixed(0)})`);
     }
@@ -78,8 +86,8 @@ export async function sentimentLayer(symbol: string): Promise<LayerScore> {
     logger.info('Sentiment analyzed successfully', {
       symbol,
       score: normalizedScore.toFixed(3),
-      classification: sentimentData.classification,
-      sources: Object.keys(sentimentData.breakdown).length
+      classification: classification,
+      sources: Object.keys(sentimentData.sources || {}).length
     });
 
     return {

@@ -128,9 +128,9 @@ ${signal.reasoning.slice(0, 5).map(r => `• ${r}`).join('\n')}
     symbol: signal.symbol,
     side: signal.action === 'BUY' ? 'LONG' : 'SHORT',
     score: Number(signal.score.toFixed(2)),
-    timeframe: signal.timeframes.join(','),
-    price: signal.metadata?.price || 0,
-    riskPct: signal.risk?.atr || undefined
+    timeframe: (signal as any).timeframes?.join(',') || 'unknown',
+    price: (signal as any).metadata?.price || 0,
+    riskPct: (signal as any).risk?.atr || undefined
   });
 }
 

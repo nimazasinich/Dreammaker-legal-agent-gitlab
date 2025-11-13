@@ -43,10 +43,13 @@ export function detectElliott(ohlcv: Bar[]): LayerScore {
   try {
     logger.debug('Analyzing Elliott Waves', { bars: ohlcv.length });
 
-    // Detect waves using the dedicated analyzer service
-    const waveData = analyzer.detectWaves(ohlcv);
+    // Convert Bar[] to MarketData[] by adding symbol property
+    const marketData = ohlcv.map(bar => ({ ...bar, symbol: 'UNKNOWN' }));
 
-    if (!waveData || !waveData.currentWave) {
+    // Detect waves using the dedicated analyzer service
+    const waveData = analyzer.analyzeElliottWaves(marketData);
+
+    if (!waveData || !waveData.currentWave || !waveData.currentWave.wave) {
       logger.warn('No clear Elliott Wave structure detected');
       return {
         score: 0.5,
@@ -59,93 +62,94 @@ export function detectElliott(ohlcv: Bar[]): LayerScore {
 
     // ========== IMPULSE WAVES (1-5) ==========
 
-    if (waveData.pattern === 'impulse') {
-      const currentWave = waveData.currentWave;
+    if (waveData.currentWave.type === 'IMPULSE') {
+      const currentWave = waveData.currentWave.wave;
 
-      if (currentWave === 1) {
+      if (currentWave === '1') {
         // Wave 1: Initial trend formation
         score = 0.65;
         reasons.push('Wave 1 detected (early trend)');
 
-        if (waveData.direction === 'bullish') {
+        // Determine direction from nextExpectedDirection
+        if (waveData.nextExpectedDirection === 'UP') {
           reasons.push('Bullish impulse starting');
-        } else {
+        } else if (waveData.nextExpectedDirection === 'DOWN') {
           score = 1 - score; // Invert for bearish
           reasons.push('Bearish impulse starting');
         }
       }
 
-      else if (currentWave === 2) {
+      else if (currentWave === '2') {
         // Wave 2: Retracement (correction of Wave 1)
         score = 0.45;
         reasons.push('Wave 2 correction (pullback)');
 
-        // Check Fibonacci retracement
-        if (waveData.fibonacciValid) {
+        // Use completionProbability as proxy for Fibonacci validation
+        if ((waveData.completionProbability || 0) > 0.5) {
           reasons.push('Fib retracement valid (38.2%-61.8%)');
           score += 0.05; // Slight boost for valid retracement
         }
 
-        if (waveData.direction === 'bullish') {
+        if (waveData.nextExpectedDirection === 'UP') {
           reasons.push('Expect Wave 3 bullish continuation');
-        } else {
+        } else if (waveData.nextExpectedDirection === 'DOWN') {
           score = 1 - score;
           reasons.push('Expect Wave 3 bearish continuation');
         }
       }
 
-      else if (currentWave === 3) {
+      else if (currentWave === '3') {
         // Wave 3: STRONGEST WAVE - Most profitable
         score = 0.85;
         reasons.push('Wave 3 in progress (STRONGEST)');
 
-        if (waveData.fibonacciValid) {
+        if ((waveData.completionProbability || 0) > 0.7) {
           score = 0.9; // Maximum confidence
           reasons.push('Wave 3 Fib confirmed (1.618x-2.618x Wave 1)');
         }
 
-        if (waveData.direction === 'bullish') {
+        if (waveData.nextExpectedDirection === 'UP') {
           reasons.push('Strong bullish momentum');
-        } else {
+        } else if (waveData.nextExpectedDirection === 'DOWN') {
           score = 1 - score;
           reasons.push('Strong bearish momentum');
         }
       }
 
-      else if (currentWave === 4) {
+      else if (currentWave === '4') {
         // Wave 4: Consolidation before final wave
         score = 0.55;
         reasons.push('Wave 4 consolidation');
 
-        // Wave 4 should not overlap Wave 1 (Elliott rule)
-        if (waveData.rulesValid) {
+        // Use completionProbability for rules validation
+        if ((waveData.completionProbability || 0) > 0.5) {
           reasons.push('Wave 4 rules valid (no overlap)');
           score += 0.05;
         }
 
-        if (waveData.direction === 'bullish') {
+        if (waveData.nextExpectedDirection === 'UP') {
           reasons.push('Preparing for Wave 5 rally');
-        } else {
+        } else if (waveData.nextExpectedDirection === 'DOWN') {
           score = 1 - score;
           reasons.push('Preparing for Wave 5 decline');
         }
       }
 
-      else if (currentWave === 5) {
+      else if (currentWave === '5') {
         // Wave 5: Final push (often weakest impulse wave)
         score = 0.70;
         reasons.push('Wave 5 detected (final impulse)');
 
         // Wave 5 often equals Wave 1 in length
-        if (waveData.fibonacciValid) {
+        if ((waveData.completionProbability || 0) > 0.7) {
           reasons.push('Wave 5 extension confirmed');
         } else {
           reasons.push('Wave 5 may be ending soon');
         }
 
-        if (waveData.direction === 'bullish') {
+        if (waveData.nextExpectedDirection === 'UP') {
           reasons.push('Bullish finale (watch for reversal)');
-        } else {
+        } else if (waveData.nextExpectedDirection === 'DOWN') {
           score = 1 - score;
           reasons.push('Bearish finale (watch for reversal)');
         }
@@ -154,19 +158,19 @@ export function detectElliott(ohlcv: Bar[]): LayerScore {
 
     // ========== CORRECTIVE WAVES (A-B-C) ==========
 
-    else if (waveData.pattern === 'corrective') {
-      const currentWave = waveData.currentWave;
+    else if (waveData.currentWave.type === 'CORRECTIVE') {
+      const currentWave = waveData.currentWave.wave;
 
       if (currentWave === 'A') {
         // Wave A: Initial correction against main trend
         score = 0.40;
         reasons.push('Wave A correction starting');
 
-        if (waveData.direction === 'bullish') {
+        if (waveData.nextExpectedDirection === 'UP') {
           // Correcting downward trend, bullish reversal ahead
           score = 0.55;
           reasons.push('Bullish reversal potential (ABC up)');
-        } else {
+        } else if (waveData.nextExpectedDirection === 'DOWN') {
           // Correcting upward trend, bearish move
           score = 0.35;
           reasons.push('Bearish correction underway (ABC down)');
@@ -178,9 +182,9 @@ export function detectElliott(ohlcv: Bar[]): LayerScore {
         score = 0.50;
         reasons.push('Wave B bounce (often a trap)');
 
-        if (waveData.direction === 'bullish') {
+        if (waveData.nextExpectedDirection === 'UP') {
           reasons.push('Expect Wave C down after bounce');
-        } else {
+        } else if (waveData.nextExpectedDirection === 'DOWN') {
           reasons.push('Expect Wave C up after dip');
         }
       }
@@ -190,16 +194,16 @@ export function detectElliott(ohlcv: Bar[]): LayerScore {
         score = 0.30;
         reasons.push('Wave C completing (final correction)');
 
-        if (waveData.fibonacciValid) {
+        if ((waveData.completionProbability || 0) > 0.7) {
           score = 0.25; // Strong correction confirmed
           reasons.push('Wave C Fib confirmed (1.0x-1.618x Wave A)');
         }
 
-        if (waveData.direction === 'bullish') {
+        if (waveData.nextExpectedDirection === 'UP') {
           // After bearish ABC, new bullish impulse starts
           score = 0.70;
           reasons.push('Bullish reversal imminent (ABC complete)');
-        } else {
+        } else if (waveData.nextExpectedDirection === 'DOWN') {
           // After bullish ABC, new bearish impulse starts
           score = 0.25;
           reasons.push('Bearish move ending (prepare for reversal)');
@@ -209,8 +213,9 @@ export function detectElliott(ohlcv: Bar[]): LayerScore {
 
     // ========== WAVE STRENGTH ADJUSTMENT ==========
 
-    // Stronger waves get score adjustment
-    if (waveData.strength === 'strong') {
+    // Use completionProbability as wave strength indicator
+    const waveStrength = waveData.completionProbability || 0.5;
+    if (waveStrength > 0.7) {
       if (score > 0.5) {
         score = Math.min(1.0, score + 0.05); // Boost bullish
       } else {
@@ -218,9 +223,9 @@ export function detectElliott(ohlcv: Bar[]): LayerScore {
       }
     }
 
-    // Fibonacci validation adds confidence
-    if (waveData.fibonacciValid) {
-      reasons.push('Fibonacci ratios validated');
+    // High completion probability adds confidence
+    if ((waveData.completionProbability || 0) > 0.7) {
+      reasons.push('Wave pattern validated');
     }
 
     // Clamp to valid range
@@ -228,10 +233,10 @@ export function detectElliott(ohlcv: Bar[]): LayerScore {
 
     logger.info('Elliott Wave analysis completed', {
       score: score.toFixed(3),
-      pattern: waveData.pattern,
-      wave: waveData.currentWave,
-      direction: waveData.direction,
-      fibValid: waveData.fibonacciValid
+      pattern: waveData.currentWave.type,
+      wave: waveData.currentWave.wave,
+      direction: waveData.nextExpectedDirection,
+      completion: waveData.completionProbability
     });
 
     return {

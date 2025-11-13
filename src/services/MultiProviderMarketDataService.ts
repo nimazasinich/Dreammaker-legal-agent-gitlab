@@ -17,7 +17,7 @@ export interface PriceData {
   volume24h: number;
   change24h: number;
   changePercent24h: number;
-  marketCap?: number;
+  marketCap: number | undefined;
   source: string;
   timestamp: number;
 }
@@ -62,7 +62,7 @@ export class MultiProviderMarketDataService {
   private readonly coincapLimiter = new TokenBucket(200, 1); // 200 calls per minute
   
   // Caches - افزایش TTL برای کاهش فشار بر API ها
-  private readonly priceCache = new TTLCache<PriceData>(15000); // افزایش از 5 به 15 ثانیه
+  private readonly priceCache = new TTLCache<PriceData[]>(15000); // افزایش از 5 به 15 ثانیه
   private readonly ohlcvCache = new TTLCache<OHLCVData[]>(120000); // افزایش از 1 به 2 دقیقه
   
   // Symbol to CoinGecko ID mapping
@@ -220,6 +220,8 @@ export class MultiProviderMarketDataService {
    */
   private async fetchRealTimePrices(symbols: string[]): Promise<PriceData[]> {
     this.logger.info(`Fetching prices for symbols: ${symbols.join(',')}`, { count: symbols.length });
+
+    const cacheKey = symbols.sort().join(',');
 
     // Use resource monitor to get recommended providers (smart prioritization)
     const recommendedProviders = this.resourceMonitor.getRecommendedProviders('market');
@@ -653,7 +655,7 @@ export class MultiProviderMarketDataService {
           };
         }
       } catch (error) {
-        this.logger.debug(`CoinCap failed for ${symbol}`, {}, error as Error);
+        this.logger.debug(`CoinCap failed for ${symbol}`, { error: (error as Error).message });
       }
       return null;
     });
@@ -706,7 +708,7 @@ export class MultiProviderMarketDataService {
           };
         }
       } catch (error) {
-        this.logger.debug(`CoinPaprika failed for ${symbol}`, {}, error as Error);
+        this.logger.debug(`CoinPaprika failed for ${symbol}`, { error: (error as Error).message });
       }
       return null;
     });
@@ -764,7 +766,7 @@ export class MultiProviderMarketDataService {
         }
       }
     } catch (error) {
-      this.logger.debug(`CoinLore failed`, {}, error as Error);
+      this.logger.debug(`CoinLore failed`, { error: (error as Error).message });
     }
 
     return results;

@@ -1,7 +1,18 @@
 import { useState, useCallback, FormEvent, ChangeEvent } from 'react';
 import { Logger } from '../core/Logger.js';
 import { validateForm, ValidationRule, hasErrors } from '../utils/validation';
-import { FormState } from '../types';
+
+// Local FormState interface specific to form handling (different from global FormState in types)
+interface FormState<T> {
+  values: T;
+  errors: Record<keyof T, string | null>;
+  touched: Record<keyof T, boolean>;
+  isSubmitting: boolean;
+  submitCount: number;
+  setFieldValue: (name: keyof T, value: any) => void;
+  setFieldError: (name: keyof T, error: string | null) => void;
+  resetForm: () => void;
+}
 
 interface UseFormOptions<T> {
   initialValues: T;
