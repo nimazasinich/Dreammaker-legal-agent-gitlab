@@ -123,7 +123,7 @@ export class EnhancedMarketDataService {
   private readonly redditLimiter = new TokenBucket(10, 1); // Be nice to Reddit
 
   // Caches
-  private readonly priceCache = new TTLCache<PriceData>(5000); // 5 seconds
+  private readonly priceCache = new TTLCache<PriceData[]>(5000); // 5 seconds
   private readonly ohlcvCache = new TTLCache<OHLCVData[]>(60000); // 1 minute
   private readonly fearGreedCache = new TTLCache<FearGreedData>(300000); // 5 minutes
   private readonly redditCache = new TTLCache<RedditPost[]>(60000); // 1 minute

@@ -17,6 +17,7 @@ interface ConnectionHealth {
   isConnected: boolean;
   lastPingTime: number;
   latency: number;
+  averageLatency: number;
   reconnectAttempts: number;
   clockSkew: number;
 }
@@ -60,6 +61,7 @@ export class BinanceService {
       isConnected: false,
       lastPingTime: 0,
       latency: 0,
+      averageLatency: 0,
       reconnectAttempts: 0,
       clockSkew: 0
     };

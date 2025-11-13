@@ -4,6 +4,7 @@ import { Logger } from './core/Logger.js';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 
+const logger = Logger.getInstance();
 const app = express();
 const server = createServer(app);
 const PORT = process.env.PORT || 3001;
@@ -350,6 +351,7 @@ process.on('uncaughtException', (error) => {
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-    logger.error('❌ Unhandled Rejection at:', {}, reason);
+    const errorObj = reason instanceof Error ? reason : new Error(String(reason));
+    logger.error('❌ Unhandled Rejection at:', {}, errorObj);
 });
 

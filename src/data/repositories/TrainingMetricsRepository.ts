@@ -57,23 +57,27 @@ export class TrainingMetricsRepository extends BaseRepository<TrainingMetrics> {
   }
 
   protected mapEntityToRow(entity: TrainingMetrics): any {
+    // Type-safe access to loss metrics (handle both object and number types)
+    const loss = typeof entity.loss === 'object' && entity.loss !== null ? entity.loss : { mse: entity.mse || 0, mae: entity.mae || 0, rSquared: entity.r2 || 0 };
+    const accuracy = typeof entity.accuracy === 'object' && entity.accuracy !== null ? entity.accuracy : { directional: entity.directionalAccuracy || 0, classification: 0 };
+
     return {
       epoch: entity.epoch,
       timestamp: entity.timestamp,
       model_version: 'v1.0', // Default version
-      mse: entity.loss.mse,
-      mae: entity.loss.mae,
-      r_squared: entity.loss.rSquared,
-      directional_accuracy: entity.accuracy.directional,
-      classification_accuracy: entity.accuracy.classification,
+      mse: loss.mse,
+      mae: loss.mae,
+      r_squared: loss.rSquared,
+      directional_accuracy: accuracy.directional,
+      classification_accuracy: accuracy.classification,
       gradient_norm: entity.gradientNorm,
       learning_rate: entity.learningRate,
-      nan_count: entity.stabilityMetrics.nanCount,
-      inf_count: entity.stabilityMetrics.infCount,
-      reset_count: entity.stabilityMetrics.resetCount,
-      epsilon: entity.explorationStats.epsilon,
-      exploration_ratio: entity.explorationStats.explorationRatio,
-      exploitation_ratio: entity.explorationStats.exploitationRatio
+      nan_count: entity.stabilityMetrics?.nanCount || 0,
+      inf_count: entity.stabilityMetrics?.infCount || 0,
+      reset_count: entity.stabilityMetrics?.resetCount || 0,
+      epsilon: entity.explorationStats?.epsilon || 0,
+      exploration_ratio: entity.explorationStats?.explorationRatio || 0,
+      exploitation_ratio: entity.explorationStats?.exploitationRatio || 0
     };
   }
 
@@ -87,23 +91,27 @@ export class TrainingMetricsRepository extends BaseRepository<TrainingMetrics> {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
       
+      // Type-safe access to metrics (handle both object and number types)
+      const loss = typeof metrics.loss === 'object' && metrics.loss !== null ? metrics.loss : { mse: metrics.mse || 0, mae: metrics.mae || 0, rSquared: metrics.r2 || 0 };
+      const accuracy = typeof metrics.accuracy === 'object' && metrics.accuracy !== null ? metrics.accuracy : { directional: metrics.directionalAccuracy || 0, classification: 0 };
+
       const params = [
         metrics.epoch,
         metrics.timestamp,
         modelVersion,
-        metrics.loss.mse,
-        metrics.loss.mae,
-        metrics.loss.rSquared,
-        metrics.accuracy.directional,
-        metrics.accuracy.classification,
+        loss.mse,
+        loss.mae,
+        loss.rSquared,
+        accuracy.directional,
+        accuracy.classification,
         metrics.gradientNorm,
         metrics.learningRate,
-        metrics.stabilityMetrics.nanCount,
-        metrics.stabilityMetrics.infCount,
-        metrics.stabilityMetrics.resetCount,
-        metrics.explorationStats.epsilon,
-        metrics.explorationStats.explorationRatio,
-        metrics.explorationStats.exploitationRatio
+        metrics.stabilityMetrics?.nanCount || 0,
+        metrics.stabilityMetrics?.infCount || 0,
+        metrics.stabilityMetrics?.resetCount || 0,
+        metrics.explorationStats?.epsilon || 0,
+        metrics.explorationStats?.explorationRatio || 0,
+        metrics.explorationStats?.exploitationRatio || 0
       ];
 
       this.executeStatement(query, params);
@@ -111,8 +119,8 @@ export class TrainingMetricsRepository extends BaseRepository<TrainingMetrics> {
       this.logger.info('Training metrics inserted', {
         epoch: metrics.epoch,
         modelVersion,
-        mse: metrics.loss.mse,
-        directionalAccuracy: metrics.accuracy.directional
+        mse: loss.mse,
+        directionalAccuracy: accuracy.directional
       });
 
       return metrics;

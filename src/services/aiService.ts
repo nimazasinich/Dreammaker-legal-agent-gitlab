@@ -53,6 +53,7 @@ interface TrainingStatus {
 }
 
 class NeuralNetwork {
+  private readonly logger = Logger.getInstance();
   private weights: number[][];
   private biases: number[][];
   private config: NeuralNetworkConfig;
@@ -196,9 +197,9 @@ class NeuralNetwork {
       const epochAccuracy = epochCorrect / trainInputs.length;
 
       const valLoss = this.validateModel(valInputs, valTargets);
-      
+
       if (!isFinite(epochLoss) || !isFinite(valLoss) || epochLoss > this.bestLoss * 3) {
-        logger.warn('Training instability detected, resetting...');
+        this.logger.warn('Training instability detected, resetting...');
         this.resetToStableState();
         this.resetCount++;
         continue;
@@ -213,7 +214,7 @@ class NeuralNetwork {
       }
 
       if (patience >= config.earlyStopping.patience) {
-        logger.info(`Early stopping at epoch ${epoch}`);
+        this.logger.info(`Early stopping at epoch ${epoch}`);
         break;
       }
 
@@ -222,20 +223,20 @@ class NeuralNetwork {
       correctPredictions = epochCorrect;
     }
 
-    const rSquared = Math.max(0, 1 - totalLoss);
-    
+    const r2 = Math.max(0, 1 - totalLoss);
+
     return {
       modelVersion: '1.0.0',
       epoch: config.epochs,
       mse: totalLoss,
       mae: totalMae,
-      rSquared,
+      r2,
       directionalAccuracy: correctPredictions / trainInputs.length,
       learningRate: this.optimizer.learningRate,
       resetEvents: this.resetCount,
       seed: this.seed,
-      timestamp: new Date()
-    };
+      timestamp: Date.now()
+    } as TrainingMetrics;
   }
 
   private trainBatch(inputs: number[][], targets: number[][]): { loss: number; mae: number; correct: number } {

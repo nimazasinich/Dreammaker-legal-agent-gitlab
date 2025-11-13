@@ -32,8 +32,7 @@ export interface BatchSentimentResult {
  * Uses CryptoBERT models for cryptocurrency sentiment analysis
  */
 export class HFSentimentService extends HuggingFaceService {
-  private static instance: HFSentimentService;
-  private logger = Logger.getInstance();
+  protected static instance: HFSentimentService;
 
   // Primary and fallback models
   private readonly PRIMARY_MODEL = 'ElKulako/cryptobert';

@@ -60,7 +60,7 @@ export class MarketDataController {
 
               return {
                 symbol: symbol.trim().toUpperCase(),
-                price: parseFloat(price),
+                price: price,
                 change24h: parseFloat(ticker.priceChange || '0'),
                 changePercent24h: parseFloat(ticker.priceChangePercent || '0'),
                 volume: parseFloat(ticker.volume || '0'),

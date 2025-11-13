@@ -161,12 +161,11 @@ export class AIController {
         return;
       }
 
-      const result = await this.backtestEngine.runBacktest({
+      const result = await this.backtestEngine.runBacktest(marketData, {
         symbol: symbol.toUpperCase(),
-        marketData,
         initialCapital,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate)
+        startDate: new Date(startDate).getTime(),
+        endDate: new Date(endDate).getTime()
       });
 
       res.json({

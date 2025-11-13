@@ -5,7 +5,7 @@ import { ValidationError } from '../types';
 
 // Validation rules
 export type ValidationRule = {
-  test: (value: any) => boolean;
+  test: (value: any, formValues?: Record<string, any>) => boolean;
   message: string;
 };
 
@@ -157,17 +157,16 @@ export function validateData(
   schema: Record<string, ValidationRule[]>
 ): ValidationError[] {
   const errors: ValidationError[] = [];
-  
+
   Object.entries(schema).forEach(([field, rules]) => {
     const error = validateValue(data[field], rules);
     if (error) {
       errors.push({
         field,
-        message: error,
-        value: data[field]
+        message: error
       });
     }
   });
-  
+
   return errors;
 }

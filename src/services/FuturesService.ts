@@ -4,8 +4,9 @@
  */
 import { Logger } from '../core/Logger.js';
 import { FEATURE_FUTURES, EXCHANGE_KUCOIN } from '../config/flags.js';
-import { IFuturesExchange } from '../providers/futures/IFuturesExchange.js';
-import { KucoinFuturesAdapter } from '../providers/futures/KucoinFuturesAdapter.js';
+// COMMENTED OUT: Missing futures provider files - need to be created or removed
+// import { IFuturesExchange } from '../providers/futures/IFuturesExchange.js';
+// import { KucoinFuturesAdapter } from '../providers/futures/KucoinFuturesAdapter.js';
 import { FuturesPositionRepository } from '../data/repositories/FuturesPositionRepository.js';
 import { FuturesOrderRepository } from '../data/repositories/FuturesOrderRepository.js';
 import { EncryptedDatabase } from '../data/EncryptedDatabase.js';
@@ -21,15 +22,16 @@ import {
 export class FuturesService {
   private static instance: FuturesService;
   private logger = Logger.getInstance();
-  private exchange: IFuturesExchange | null = null;
+  private exchange: any | null = null; // Type commented out due to missing IFuturesExchange
   private positionRepo: FuturesPositionRepository | null = null;
   private orderRepo: FuturesOrderRepository | null = null;
 
   private constructor() {
     if (FEATURE_FUTURES && EXCHANGE_KUCOIN) {
       try {
-        this.exchange = KucoinFuturesAdapter.getInstance();
-        this.logger.info('Futures service initialized with KuCoin adapter');
+        // COMMENTED OUT: Missing KucoinFuturesAdapter
+        // this.exchange = KucoinFuturesAdapter.getInstance();
+        this.logger.info('Futures service initialization skipped - adapter not available');
       } catch (error) {
         this.logger.error('Failed to initialize futures exchange adapter', {}, error as Error);
       }

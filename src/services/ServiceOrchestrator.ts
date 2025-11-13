@@ -221,15 +221,16 @@ export class ServiceOrchestrator {
 
       // Create alert for order execution
       await this.alertService.createAlert({
-        type: 'SIGNAL_EXECUTED',
+        type: 'AI_SIGNAL',
         symbol: signal.symbol,
+        condition: 'signal_executed',
+        threshold: signal.confidence,
+        currentValue: signal.confidence,
+        triggered: true,
+        priority: 'LOW',
         message: `Signal ${signal.id} executed as ${orderSide} order ${order.id}`,
-        severity: 'INFO',
-        metadata: {
-          signalId: signal.id,
-          orderId: order.id,
-          confidence: signal.confidence
-        }
+        actions: ['NOTIFICATION'],
+        cooldownPeriod: 60
       });
     } catch (error) {
       this.logger.error('Failed to execute signal as order', {
@@ -255,30 +256,32 @@ export class ServiceOrchestrator {
           // Alert on rollback
           if (lastCycle.modelRolledBack) {
             await this.alertService.createAlert({
-              type: 'MODEL_ROLLBACK',
+              type: 'AI_SIGNAL',
               symbol: 'ALL',
+              condition: 'model_rollback',
+              threshold: lastCycle.accuracyBefore,
+              currentValue: lastCycle.accuracyAfter,
+              triggered: true,
+              priority: 'MEDIUM',
               message: `Model rolled back in learning cycle ${lastCycle.cycle}. Accuracy dropped from ${lastCycle.accuracyBefore.toFixed(3)} to ${lastCycle.accuracyAfter.toFixed(3)}`,
-              severity: 'WARNING',
-              metadata: {
-                cycle: lastCycle.cycle,
-                accuracyBefore: lastCycle.accuracyBefore,
-                accuracyAfter: lastCycle.accuracyAfter
-              }
+              actions: ['NOTIFICATION'],
+              cooldownPeriod: 60
             });
           }
 
           // Alert on significant accuracy improvement
           if (lastCycle.accuracyAfter > lastCycle.accuracyBefore + 0.1) {
             await this.alertService.createAlert({
-              type: 'MODEL_IMPROVEMENT',
+              type: 'AI_SIGNAL',
               symbol: 'ALL',
+              condition: 'model_improvement',
+              threshold: lastCycle.accuracyBefore + 0.1,
+              currentValue: lastCycle.accuracyAfter,
+              triggered: true,
+              priority: 'LOW',
               message: `Model improved significantly in cycle ${lastCycle.cycle}. Accuracy increased from ${lastCycle.accuracyBefore.toFixed(3)} to ${lastCycle.accuracyAfter.toFixed(3)}`,
-              severity: 'INFO',
-              metadata: {
-                cycle: lastCycle.cycle,
-                accuracyBefore: lastCycle.accuracyBefore,
-                accuracyAfter: lastCycle.accuracyAfter
-              }
+              actions: ['NOTIFICATION'],
+              cooldownPeriod: 60
             });
           }
         }

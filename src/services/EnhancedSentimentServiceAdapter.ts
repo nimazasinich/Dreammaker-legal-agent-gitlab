@@ -63,14 +63,26 @@ export class EnhancedSentimentServiceAdapter {
       });
 
       return {
+        symbol,
         score: aggregatedScore,
+        overallScore: aggregatedScore,
         confidence: this.calculateConfidence(fearGreed, news.length),
         sources: {
-          fearGreed: fearGreed.value,
+          fearGreedIndex: fearGreed.value,
           news: newsSentiment,
-          social: 0, // Can be enhanced with social data
-          technical: 0 // Can be enhanced with technical indicators
+          twitter: 0,
+          reddit: 0,
+          googleTrends: 0
         },
+        velocity: 0,
+        momentum: aggregatedScore,
+        newsImpact: news.slice(0, 5).map(item => ({
+          headline: item.title,
+          source: item.source || 'Unknown',
+          impact: (item as any).sentimentScore || 0,
+          timestamp: item.published?.getTime() || Date.now(),
+          category: 'MARKET_ANALYSIS' as const
+        })),
         timestamp: Date.now()
       };
 
@@ -79,14 +91,20 @@ export class EnhancedSentimentServiceAdapter {
 
       // Return neutral sentiment on error
       return {
+        symbol,
         score: 0,
+        overallScore: 0,
         confidence: 0,
         sources: {
-          fearGreed: 0,
+          fearGreedIndex: 0,
           news: 0,
-          social: 0,
-          technical: 0
+          twitter: 0,
+          reddit: 0,
+          googleTrends: 0
         },
+        velocity: 0,
+        momentum: 0,
+        newsImpact: [],
         timestamp: Date.now()
       };
     }

@@ -96,7 +96,7 @@ Message: ${alert.message}`;
 
   private async sendDesktopNotification(message: string, priority: string): Promise<void> {
     // In a real desktop app, this would use Windows Toast notifications
-    logger.info(`Desktop Notification [${priority}]: ${message}`);
+    this.logger.info(`Desktop Notification [${priority}]: ${message}`);
   }
 
   private async sendTelegramMessage(message: string): Promise<void> {

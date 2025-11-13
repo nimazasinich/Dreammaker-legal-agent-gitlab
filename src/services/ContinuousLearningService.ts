@@ -374,7 +374,10 @@ export class ContinuousLearningService {
         // Filter for data we haven't seen yet (rough heuristic based on timestamp)
         const now = Date.now();
         const hourAgo = now - (60 * 60 * 1000);
-        const newData = recentData.filter(d => d.timestamp > hourAgo);
+        const newData = recentData.filter(d => {
+          const timestampMs = typeof d.timestamp === 'number' ? d.timestamp : d.timestamp.getTime();
+          return timestampMs > hourAgo;
+        });
         
         allData.push(...newData);
       } catch (error) {

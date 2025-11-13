@@ -94,13 +94,13 @@ export class ElliottWaveAnalyzer {
       if (isFractalHigh && !isFractalLow) {
         fractals.push({
           price: center.high,
-          timestamp: center.timestamp,
+          timestamp: typeof center.timestamp === 'number' ? center.timestamp : center.timestamp.getTime(),
           type: 'HIGH'
         });
       } else if (isFractalLow && !isFractalHigh) {
         fractals.push({
           price: center.low,
-          timestamp: center.timestamp,
+          timestamp: typeof center.timestamp === 'number' ? center.timestamp : center.timestamp.getTime(),
           type: 'LOW'
         });
       }

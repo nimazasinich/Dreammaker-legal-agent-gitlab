@@ -77,6 +77,7 @@ export interface PortfolioSummary {
   positions: Position[];
   cashBalance: number;
   marginBalance?: number;
+  balances?: Record<string, number>;
 }
 
 interface OrderConfig {
@@ -549,6 +550,69 @@ export class OrderManagementService {
 
   getAllOrders(): Order[] {
     return Array.from(this.orders.values());
+  }
+
+  /**
+   * Generic createOrder method (type-safe wrapper)
+   * Routes to appropriate specific order creation method
+   */
+  async createOrder(params: {
+    symbol: string;
+    side: OrderSide;
+    quantity: number;
+    price?: number;
+    type?: OrderType;
+    clientOrderId?: string;
+  }): Promise<Order> {
+    const orderType = params.type || 'MARKET';
+
+    if (orderType === 'MARKET') {
+      return this.createMarketOrder({
+        symbol: params.symbol,
+        side: params.side,
+        quantity: params.quantity,
+        clientOrderId: params.clientOrderId
+      });
+    } else if (orderType === 'LIMIT' && params.price) {
+      return this.createLimitOrder({
+        symbol: params.symbol,
+        side: params.side,
+        quantity: params.quantity,
+        price: params.price,
+        clientOrderId: params.clientOrderId
+      });
+    } else {
+      throw new Error(`Unsupported order type: ${orderType}`);
+    }
+  }
+
+  /**
+   * Generic getOrders method (type-safe wrapper)
+   * Returns filtered orders based on status and symbol
+   */
+  async getOrders(filters?: {
+    status?: string;
+    symbol?: string;
+  }): Promise<Order[]> {
+    let orders = this.getAllOrders();
+
+    if (filters?.symbol) {
+      orders = orders.filter(order => order.symbol === filters.symbol);
+    }
+
+    if (filters?.status) {
+      orders = orders.filter(order => order.status === filters.status);
+    }
+
+    return orders.sort((a, b) => b.timestamp - a.timestamp);
+  }
+
+  /**
+   * Generic getPositions method (type-safe wrapper)
+   * Alias for getAllPositions
+   */
+  async getPositions(): Promise<Position[]> {
+    return this.getAllPositions();
   }
 
   // ===== POSITION MANAGEMENT =====

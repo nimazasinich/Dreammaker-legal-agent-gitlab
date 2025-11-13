@@ -7,7 +7,8 @@
  * Solution: Single refresh cycle that all components subscribe to, reducing duplicate requests.
  */
 
-import { logger } from './logger';
+import { Logger } from '../core/Logger.js';
+const logger = Logger.getInstance();
 
 type DataType = 'signals' | 'portfolio' | 'marketData' | 'health';
 type CallbackFunction = () => Promise<void> | void;

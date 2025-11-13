@@ -20,7 +20,7 @@ export class RealTradingService {
     // تحلیل تکنیکال با داده‌های واقعی
     const analysis = {
       symbol,
-      currentPrice: marketData.price,
+      currentPrice: marketData,
       trend: this.calculateTrend(historicalData),
       support: this.calculateSupportResistance(historicalData),
       rsi: this.calculateRSI(historicalData),
@@ -41,7 +41,7 @@ export class RealTradingService {
       symbol,
       side,
       amount,
-      entryPrice: marketData.price,
+      entryPrice: marketData,
       timestamp: Date.now(),
       status: 'EXECUTED',
       simulated: true,
@@ -124,7 +124,7 @@ export class RealTradingService {
     for (const position of positionsArray) {
       try {
         const currentData = await this.marketDataService.getRealTimePrice(position.symbol);
-        const currentValue = position.amount * currentData.price;
+        const currentValue = position.amount * currentData;
         const entryValue = position.amount * position.entryPrice;
         const pnl = currentValue - entryValue;
 

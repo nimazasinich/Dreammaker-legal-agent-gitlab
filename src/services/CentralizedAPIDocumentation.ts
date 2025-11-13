@@ -11,6 +11,8 @@ import { Logger } from '../core/Logger.js';
 import { APIIntegrationHelper } from './APIIntegrationHelper.js';
 import { CentralizedAPIConfig } from '../config/CentralizedAPIConfig.js';
 
+const logger = Logger.getInstance();
+
 /**
  * ============================================================================
  * راهنمای استفاده از سیستم مدیریت متمرکز API
@@ -148,10 +150,10 @@ export function exampleManageCacheAndHealth() {
   
   // پاک کردن cache خاص
   APIIntegrationHelper.clearCache('marketData');
-  
-  // پاک کردن همه cache ها
-  APIIntegrationHelper.clearAllCaches();
-  
+
+  // Note: clearAllCaches is not available, use clearCache for each category
+  // APIIntegrationHelper.clearAllCaches();
+
   // Reset health برای API خاص
   APIIntegrationHelper.resetAPIHealth('coingecko');
 }

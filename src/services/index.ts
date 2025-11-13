@@ -24,7 +24,7 @@ export * from './HFOHLCVService';
 // Trading Services
 export * from './RealTradingService';
 export * from './OrderManagementService';
-export * from './SignalGeneratorService';
+export { SignalGeneratorService } from './SignalGeneratorService';
 
 // Learning Services
 export * from './ContinuousLearningService';
@@ -41,10 +41,10 @@ export * from './DataValidationService';
 export * from './EmergencyDataFallbackService';
 
 // Sentiment Services
-export * from './SentimentNewsService';
+export { SentimentNewsService } from './SentimentNewsService';
 export * from './HFSentimentService';
 export * from './SocialAggregationService';
-export * from './FearGreedService';
+export { FearGreedService } from './FearGreedService';
 
 // Backtest Services
 export * from './backtestService';

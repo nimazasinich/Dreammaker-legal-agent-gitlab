@@ -217,11 +217,11 @@ export class SupremeJudicialCombiner {
     const absScore = Math.abs(weightedScore);
     let action: 'STRONG_BUY' | 'BUY' | 'HOLD' | 'SELL' | 'STRONG_SELL';
 
-    if (absScore > this.STRONG_SIGNAL_OVERRIDE) {
+    if (absScore > SupremeJudicialCombiner.STRONG_SIGNAL_OVERRIDE) {
       action = direction === 'BULLISH' ? 'STRONG_BUY' : 'STRONG_SELL';
-    } else if (absScore > this.MAJORITY_CONSENSUS) {
+    } else if (absScore > SupremeJudicialCombiner.MAJORITY_CONSENSUS) {
       action = direction === 'BULLISH' ? 'BUY' : 'SELL';
-    } else if (absScore > this.NEUTRAL_TERRITORY) {
+    } else if (absScore > SupremeJudicialCombiner.NEUTRAL_TERRITORY) {
       action = 'HOLD';
     } else {
       action = 'HOLD'; // Neutral territory
@@ -248,7 +248,7 @@ export class SupremeJudicialCombiner {
    * Determine direction from score
    */
   private determineDirection(score: QuantumScore): 'BULLISH' | 'BEARISH' | 'NEUTRAL' {
-    if (Math.abs(score) < this.NEUTRAL_TERRITORY) {
+    if (Math.abs(score) < SupremeJudicialCombiner.NEUTRAL_TERRITORY) {
       return 'NEUTRAL';
     }
     return score > 0 ? 'BULLISH' : 'BEARISH';

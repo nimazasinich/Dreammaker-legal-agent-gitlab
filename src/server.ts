@@ -100,26 +100,27 @@ import { setupProxyRoutes } from './services/ProxyRoutes.js';
 import { SignalVisualizationWebSocketService } from './services/SignalVisualizationWebSocketService.js';
 import { TelegramService } from './services/TelegramService.js';
 import { readVault, writeVault } from './config/secrets.js';
-import futuresRoutes from './routes/futures.js';
-import offlineRoutes from './routes/offline.js';
-import systemDiagnosticsRoutes from './routes/systemDiagnostics.js';
-import systemMetricsRoutes from './routes/system.metrics.js';
-import marketUniverseRoutes from './routes/market.universe.js';
-import { mountCryptoAPI } from './api/crypto.js';
-import marketReadinessRoutes from './routes/market.readiness.js';
-import mlRoutes from './routes/ml.js';
-import newsRoutes from './routes/news.js';
-import strategyTemplatesRoutes from './routes/strategyTemplates.js';
-import strategyApplyRoutes from './routes/strategy.apply.js';
-import backtestRoutes from './routes/backtest.js';
-import { hfRouter } from './routes/hf.js';
-import { resourceMonitorRouter } from './routes/resource-monitor.js';
-import diagnosticsMarketRoutes from './routes/diagnostics.market.js';
-import serverInfoRoutes from './routes/server-info.js';
-import { optionalPublicRouter } from './routes/optional-public.js';
-import { optionalNewsRouter } from './routes/optional-news.js';
-import { optionalMarketRouter } from './routes/optional-market.js';
-import { optionalOnchainRouter } from './routes/optional-onchain.js';
+// COMMENTED OUT: Missing route files - need to be created or removed
+// import futuresRoutes from './routes/futures.js';
+// import offlineRoutes from './routes/offline.js';
+// import systemDiagnosticsRoutes from './routes/systemDiagnostics.js';
+// import systemMetricsRoutes from './routes/system.metrics.js';
+// import marketUniverseRoutes from './routes/market.universe.js';
+// import { mountCryptoAPI } from './api/crypto.js';
+// import marketReadinessRoutes from './routes/market.readiness.js';
+// import mlRoutes from './routes/ml.js';
+// import newsRoutes from './routes/news.js';
+// import strategyTemplatesRoutes from './routes/strategyTemplates.js';
+// import strategyApplyRoutes from './routes/strategy.apply.js';
+// import backtestRoutes from './routes/backtest.js';
+// import { hfRouter } from './routes/hf.js';
+// import { resourceMonitorRouter } from './routes/resource-monitor.js';
+// import diagnosticsMarketRoutes from './routes/diagnostics.market.js';
+// import serverInfoRoutes from './routes/server-info.js';
+// import { optionalPublicRouter } from './routes/optional-public.js';
+// import { optionalNewsRouter } from './routes/optional-news.js';
+// import { optionalMarketRouter } from './routes/optional-market.js';
+// import { optionalOnchainRouter } from './routes/optional-onchain.js';
 import { FuturesWebSocketChannel } from './ws/futuresChannel.js';
 import { FEATURE_FUTURES } from './config/flags.js';
 import { attachHeartbeat } from './server/wsHeartbeat.js';
@@ -325,7 +326,8 @@ app.get('/status/health', health);
 app.get('/metrics', metricsRoute());
 
 // Server info endpoint (useful for auto-detecting port in dev)
-app.use('/.well-known', serverInfoRoutes);
+// COMMENTED OUT: Missing route file
+// app.use('/.well-known', serverInfoRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
@@ -808,11 +810,9 @@ app.post('/api/ai/backtest', async (req, res) => {
     const { symbol, startDate, endDate, initialCapital = 10000 } = req.body;
     
     const marketData = await database.getMarketData(
-      symbol.toUpperCase(), 
-      '1h', 
-      10000,
-      startDate,
-      endDate
+      symbol.toUpperCase(),
+      '1h',
+      10000
     );
     
     const config = {
@@ -955,15 +955,15 @@ app.post('/api/alerts/:id/false-positive', (req, res) => {
 app.get('/api/telegram/config', async (req, res) => {
   try {
     const vault = await readVault();
-    const telegramConfig = vault.telegram || {};
+    const telegramConfig = vault.telegram || { enabled: false };
     const telegramService = TelegramService.getInstance();
-    
+
     let chatIdPreview = null;
     if (telegramConfig.chat_id) {
       const cid = String(telegramConfig.chat_id);
       chatIdPreview = (cid?.length || 0) > 4 ? `${cid.slice(0, 2)}***${cid.slice(-2)}` : '***';
     }
-    
+
     res.json({
       enabled: telegramConfig.enabled || false,
       configured: telegramService.isConfigured(),
@@ -1578,9 +1578,9 @@ app.get('/api/market/prices', async (req, res) => {
             
             return {
               symbol: symbol.trim().toUpperCase(),
-              price: parseFloat(price),
+              price: price,
               change24h: parseFloat(ticker.priceChange || '0'),
-              changePercent24h: parseFloat(ticker.priceChangePercent || '0'),
+              changePercent24h: parseFloat(String(ticker.priceChangePercent || '0')),
               volume: parseFloat(ticker.volume || '0'),
               timestamp: Date.now()
             };
@@ -1741,45 +1741,46 @@ app.get('/api/strategies/pipeline/status', async (req, res) => {
   await strategyPipelineController.getStatus(req, res);
 });
 
+// COMMENTED OUT: Missing route files - need to be created or removed
 // Futures Trading Routes
-app.use('/api/futures', futuresRoutes);
+// app.use('/api/futures', futuresRoutes);
 
 // Offline/Fallback Data Routes
-app.use('/api/offline', offlineRoutes);
+// app.use('/api/offline', offlineRoutes);
 
 // System Diagnostics Routes
-app.use('/api/system/diagnostics', systemDiagnosticsRoutes);
+// app.use('/api/system/diagnostics', systemDiagnosticsRoutes);
 
 // System Metrics Routes
-app.use('/api/system/metrics', systemMetricsRoutes);
+// app.use('/api/system/metrics', systemMetricsRoutes);
 
 // Market Universe Routes
-app.use('/api/market', marketUniverseRoutes);
-app.use('/api/market', marketReadinessRoutes);
+// app.use('/api/market', marketUniverseRoutes);
+// app.use('/api/market', marketReadinessRoutes);
 
 // ML Training & Backtesting Routes
-app.use('/api/ml', mlRoutes);
+// app.use('/api/ml', mlRoutes);
 
 // News Proxy Routes
-app.use('/api', newsRoutes);
+// app.use('/api', newsRoutes);
 
 // Market Diagnostics Routes
-app.use('/api', diagnosticsMarketRoutes);
+// app.use('/api', diagnosticsMarketRoutes);
 
 // Strategy Templates & Backtest Routes
-app.use('/api', strategyTemplatesRoutes);
-app.use('/api', strategyApplyRoutes);
-app.use('/api', backtestRoutes);
+// app.use('/api', strategyTemplatesRoutes);
+// app.use('/api', strategyApplyRoutes);
+// app.use('/api', backtestRoutes);
 
 // HuggingFace Routes
-app.use('/api/hf', hfRouter);
-app.use('/api/resources', resourceMonitorRouter);
+// app.use('/api/hf', hfRouter);
+// app.use('/api/resources', resourceMonitorRouter);
 
 // Optional Provider Routes (keyless & key-based alternatives)
-app.use('/api/optional/public', optionalPublicRouter);
-app.use('/api/optional', optionalNewsRouter);
-app.use('/api/optional', optionalMarketRouter);
-app.use('/api/optional', optionalOnchainRouter);
+// app.use('/api/optional/public', optionalPublicRouter);
+// app.use('/api/optional', optionalNewsRouter);
+// app.use('/api/optional', optionalMarketRouter);
+// app.use('/api/optional', optionalOnchainRouter);
 
 // Unified Proxy Routes (handles all external API calls with caching and fallback)
 app.use('/api/proxy', unifiedProxyService.getRouter());
@@ -2358,8 +2359,8 @@ app.get('/api/test/real-data', async (req, res) => {
           timestamp: btcPrice.timestamp
         },
         sentiment: {
-          value: sentiment.value,
-          classification: sentiment.classification,
+          overallScore: sentiment.overallScore,
+          overallSentiment: sentiment.overallSentiment,
           timestamp: sentiment.timestamp
         }
       },
@@ -2423,10 +2424,9 @@ app.get('/api/ticker/:symbol?', async (req, res) => {
 // Training metrics endpoint
 app.get('/api/training-metrics', async (req, res) => {
   try {
-    const { limit = 100 } = req.query;
-    const metrics = await database.getLatestTrainingMetrics(Number(limit));
-    
-    logger.info('Fetched training metrics', { count: metrics.length });
+    const metrics = await database.getLatestTrainingMetrics();
+
+    logger.info('Fetched training metrics');
     res.json(metrics);
   } catch (error) {
     logger.error('Failed to fetch training metrics', {}, error as Error);
@@ -3216,26 +3216,23 @@ app.post('/api/blockchain/balances', async (req, res) => {
     if (addresses.eth) {
       balancePromises.push(
         blockchainService.getETHBalance(addresses.eth)
-          .then(balance => ({ chain: 'ethereum', balance }
-  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; })))
+          .then(balance => ({ chain: 'ethereum', balance }))
           .catch(error => ({ chain: 'ethereum', error: error.message }))
       );
     }
-    
+
     if (addresses.bsc) {
       balancePromises.push(
         blockchainService.getBSCBalance(addresses.bsc)
-          .then(balance => ({ chain: 'bsc', balance }
-  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; })))
+          .then(balance => ({ chain: 'bsc', balance }))
           .catch(error => ({ chain: 'bsc', error: error.message }))
       );
     }
-    
+
     if (addresses.trx) {
       balancePromises.push(
         blockchainService.getTRXBalance(addresses.trx)
-          .then(balance => ({ chain: 'tron', balance }
-  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; })))
+          .then(balance => ({ chain: 'tron', balance }))
           .catch(error => ({ chain: 'tron', error: error.message }))
       );
     }
@@ -3281,7 +3278,7 @@ app.get('/api/portfolio', async (req, res) => {
     if (addresses) {
       try {
         const addressesObj = typeof addresses === 'string' ? JSON.parse(addresses) : addresses;
-        const blockchainResponse = await fetch(`${req.protocol}://${req.get('host', { mode: "cors", headers: { "Content-Type": "application/json" } })}/api/blockchain/balances`, {
+        const blockchainResponse = await fetch(`${req.protocol}://${req.get('host')}/api/blockchain/balances`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ addresses: addressesObj })
@@ -3413,13 +3410,14 @@ app.get('/api/risk/metrics', async (req, res) => {
   }
 });
 
+// COMMENTED OUT: Missing crypto API module
 // Crypto API (guarded) - Unified crypto resources with health-aware fallbacks
-try {
-  mountCryptoAPI(app);
-  logger.info('[crypto] API mounted at /api/crypto');
-} catch (e) {
-  logger.info('[crypto] skip mounting (no express app or file missing).', (e as Error)?.message || e);
-}
+// try {
+//   mountCryptoAPI(app);
+//   logger.info('[crypto] API mounted at /api/crypto');
+// } catch (e) {
+//   logger.info('[crypto] skip mounting (no express app or file missing).', (e as Error)?.message || e);
+// }
 
 // WebSocket connection handling at /ws
 wsServer.on('connection', (ws, req) => {
