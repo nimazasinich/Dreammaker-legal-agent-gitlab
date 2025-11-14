@@ -240,6 +240,7 @@ export const ExchangeSettings: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
     </>
   );
 };

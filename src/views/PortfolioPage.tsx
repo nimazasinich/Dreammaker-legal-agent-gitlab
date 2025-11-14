@@ -245,6 +245,7 @@ export const PortfolioPage: React.FC = () => {
           </div>
         </section>
       </div>
+    </div>
     </>
   );
 };
