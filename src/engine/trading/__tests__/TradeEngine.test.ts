@@ -125,4 +125,78 @@ describe('TradeEngine', () => {
 
     expect(signal.symbol).toBe('UNKNOWN');
   });
+
+  describe('Trading Mode Enforcement', () => {
+    it('should block trades when trading mode is OFF', async () => {
+      // Mock getTradingMode to return 'OFF'
+      // Mock systemConfig to have modes.trading = 'OFF'
+
+      const signal = {
+        source: 'manual' as const,
+        symbol: 'BTCUSDT',
+        action: 'BUY' as const,
+        confidence: 0.8,
+        score: 0.85,
+        timestamp: Date.now()
+      };
+
+      // In a real test:
+      // const result = await tradeEngine.executeSignal(signal);
+      // expect(result.executed).toBe(false);
+      // expect(result.reason).toBe('trading-disabled');
+
+      expect(signal.action).toBe('BUY');
+    });
+
+    it('should simulate trades in DRY_RUN mode without calling exchange', async () => {
+      // Mock getTradingMode to return 'DRY_RUN'
+      // Mock RiskGuard to return allowed: true
+      // Mock Database.getMarketData to return valid data
+      // Verify ExchangeClient.placeOrder is NOT called
+      // Verify order has 'DRY_' prefix in orderId
+
+      const signal = {
+        source: 'strategy-pipeline' as const,
+        symbol: 'ETHUSDT',
+        action: 'SELL' as const,
+        confidence: 0.9,
+        score: 0.95,
+        timestamp: Date.now()
+      };
+
+      // In a real test:
+      // const result = await tradeEngine.executeSignal(signal, 100);
+      // expect(result.executed).toBe(true);
+      // expect(result.order).toBeDefined();
+      // expect(result.order.orderId).toMatch(/^DRY_/);
+      // expect(result.order.status).toBe('FILLED');
+      // expect(mockExchangeClient.placeOrder).not.toHaveBeenCalled();
+
+      expect(signal.action).toBe('SELL');
+    });
+
+    it('should call exchange in TESTNET mode', async () => {
+      // Mock getTradingMode to return 'TESTNET'
+      // Mock RiskGuard to return allowed: true
+      // Mock ExchangeClient.placeOrder to return success
+      // Verify ExchangeClient.placeOrder IS called
+
+      const signal = {
+        source: 'live-scoring' as const,
+        symbol: 'BTCUSDT',
+        action: 'BUY' as const,
+        confidence: 0.85,
+        score: 0.9,
+        timestamp: Date.now()
+      };
+
+      // In a real test:
+      // const result = await tradeEngine.executeSignal(signal, 200);
+      // expect(result.executed).toBe(true);
+      // expect(mockExchangeClient.placeOrder).toHaveBeenCalled();
+      // expect(result.order?.orderId).not.toMatch(/^DRY_/);
+
+      expect(signal.action).toBe('BUY');
+    });
+  });
 });

@@ -20,7 +20,9 @@ import {
   RefreshCw,
   Settings,
   Radio,
-  Zap
+  Zap,
+  Shield,
+  Power
 } from 'lucide-react';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -126,6 +128,9 @@ const StrategyInsightsView: React.FC = () => {
             </p>
           </div>
         )}
+
+        {/* System Status Panel - Always visible */}
+        <SystemStatusPanel />
 
         {/* Results */}
         {data && !isLoading && (
@@ -895,6 +900,165 @@ const LiveScoreSection: React.FC = () => {
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+// ==========================================
+// System Status Panel
+// ==========================================
+const SystemStatusPanel: React.FC = () => {
+  const [status, setStatus] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadSystemStatus = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/system/status');
+      const data = await response.json();
+      setStatus(data);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSystemStatus();
+    // Refresh every 30 seconds
+    const interval = setInterval(loadSystemStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading && !status) {
+    return (
+      <div className="p-4 bg-surface border border-border rounded-lg">
+        <div className="flex items-center gap-2">
+          <RefreshCw className="w-4 h-4 animate-spin text-accent" />
+          <span className="text-sm text-muted">Loading system status...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+        <div className="flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-red-500" />
+          <span className="text-sm text-red-500">Failed to load system status: {error}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!status) return null;
+
+  const tradingHealthColor = {
+    ok: 'text-green-500',
+    unreachable: 'text-red-500',
+    off: 'text-muted',
+    unknown: 'text-yellow-500'
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+          <Shield className="w-5 h-5 text-accent" />
+          System Status
+        </h2>
+        <button
+          onClick={loadSystemStatus}
+          className="p-2 hover:bg-surface/80 rounded-lg transition-colors"
+          title="Refresh status"
+        >
+          <RefreshCw className="w-4 h-4 text-muted hover:text-accent" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Environment */}
+        <div className="p-4 bg-surface border border-border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-muted">Environment</span>
+            <Settings className="w-4 h-4 text-muted" />
+          </div>
+          <div className="text-2xl font-bold text-foreground">
+            {status.environment}
+          </div>
+          <div className="text-xs text-muted mt-1">
+            Current mode
+          </div>
+        </div>
+
+        {/* Trading Mode */}
+        <div className="p-4 bg-surface border border-border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-muted">Trading Mode</span>
+            <Power className="w-4 h-4 text-muted" />
+          </div>
+          <div className="text-lg font-bold text-foreground">
+            {status.trading.mode}
+          </div>
+          <div className={`text-xs mt-1 font-medium ${tradingHealthColor[status.trading.health as keyof typeof tradingHealthColor]}`}>
+            {status.trading.health.toUpperCase()}
+          </div>
+        </div>
+
+        {/* Live Scoring */}
+        <div className="p-4 bg-surface border border-border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-muted">Live Scoring</span>
+            <Radio className="w-4 h-4 text-muted" />
+          </div>
+          <div className="text-lg font-bold text-foreground">
+            {status.features.liveScoring ? 'ON' : 'OFF'}
+          </div>
+          <div className="text-xs text-muted mt-1">
+            {status.liveScoring.streaming ? 'Streaming' : 'Not streaming'}
+          </div>
+        </div>
+
+        {/* Auto-Trade */}
+        <div className="p-4 bg-surface border border-border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-muted">Auto-Trade</span>
+            <Zap className="w-4 h-4 text-muted" />
+          </div>
+          <div className="text-lg font-bold text-foreground">
+            {status.features.autoTrade ? 'ON' : 'OFF'}
+          </div>
+          <div className="text-xs text-muted mt-1">
+            Manual: {status.features.manualTrade ? 'ON' : 'OFF'}
+          </div>
+        </div>
+
+        {/* Tuning Status */}
+        <div className="p-4 bg-surface border border-border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-muted">Last Tuning</span>
+            <Settings className="w-4 h-4 text-muted" />
+          </div>
+          <div className="text-lg font-bold text-foreground">
+            {status.tuning.hasRun ? (
+              status.tuning.lastMetric.value !== null
+                ? fmt(status.tuning.lastMetric.value, { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+                : 'N/A'
+            ) : (
+              'N/A'
+            )}
+          </div>
+          <div className="text-xs text-muted mt-1">
+            {status.tuning.hasRun && status.tuning.lastMetric.metric
+              ? status.tuning.lastMetric.metric
+              : 'No runs'}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
