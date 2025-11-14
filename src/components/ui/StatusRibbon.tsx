@@ -15,35 +15,38 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export function StatusRibbon() {
-  const { status, error, providers } = useHealthCheck(15000, 4000);
+  const { state: healthState, refresh: refreshHealth } = useHealthCheck(15000, 4000);
   const { state: { dataMode, tradingMode, dataSource: contextDataSource }, setDataMode, setTradingMode, setDataSource } = useMode();
   const { dataSource } = useData();
   const { isConnected } = useLiveData();
   const [systemTradingMode, setSystemTradingMode] = useState<TradingMode>('OFF');
   const [systemTradingMarket, setSystemTradingMarket] = useState<TradingMarket>('FUTURES');
-  const [primaryDataSource, setPrimaryDataSource] = useState<string>('huggingface');
 
-  // Use context data source or default to 'huggingface'
+  // Extract data from health state
+  const status = healthState.status === 'success' ? healthState.data.status :
+                 healthState.status === 'error' ? 'down' : 'unknown';
+  const providers = healthState.status === 'success' ? healthState.data.providers : undefined;
+  const primaryDataSource = healthState.status === 'success'
+    ? (healthState.data.primaryDataSource || 'huggingface')
+    : 'huggingface';
+  const error = healthState.status === 'error' ? healthState.error : null;
+
+  // Use context data source or primary from health
   const activeDataSource = contextDataSource || primaryDataSource;
 
-  // Fetch system trading config and primary data source from API
+  // Fetch system trading config from API
   useEffect(() => {
     const fetchSystemStatus = async () => {
       try {
         const response = await fetch('/api/system/health');
         const data = await response.json();
 
-        // Get primary data source from health response
-        if (data.primaryDataSource) {
-          setPrimaryDataSource(data.primaryDataSource);
-        }
-
         if (data.trading) {
           setSystemTradingMode(data.trading.mode || 'OFF');
           setSystemTradingMarket(data.trading.market || 'FUTURES');
         }
       } catch (error) {
-        console.error('Failed to fetch system status:', error);
+        console.error('Failed to fetch system trading status:', error);
       }
     };
 
@@ -67,9 +70,18 @@ export function StatusRibbon() {
     >
       <div className="flex items-center gap-3">
         <span>
-          <strong>{t('layout.healthLabel')}:</strong> {status}
+          <strong>{t('layout.healthLabel')}:</strong>{' '}
+          {healthState.status === 'loading' ? (
+            <span className="text-slate-500">checking...</span>
+          ) : (
+            status
+          )}
         </span>
-        {error ? <span className="truncate max-w-xs">{error}</span> : null}
+        {error && (
+          <span className="truncate max-w-xs text-red-700" title={error}>
+            {error}
+          </span>
+        )}
 
         {/* Provider Status - Show HF engine and exchange statuses */}
         {providers && (

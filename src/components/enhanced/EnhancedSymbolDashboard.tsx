@@ -6,6 +6,7 @@ import { fetchSentimentCompact } from '../../services/enhanced/sentimentProvider
 import { fetchSignals } from '../../services/enhanced/signalsClient';
 import NewsPanel from '../news/NewsPanel';
 import { PriceChart } from '../market/PriceChart';
+import ErrorStateCard from '../ui/ErrorStateCard';
 
 type Props = { symbol: string; timeframe: string; hideBottomDuplicateSignals?: boolean };
 
@@ -92,15 +93,11 @@ export default function EnhancedSymbolDashboard({ symbol, timeframe, hideBottomD
 
         {!loading && err && (
           <div className="p-6">
-            <div
-              className="rounded-xl p-4 text-center"
-              style={{
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)'
-              }}
-            >
-              <p className="text-rose-400 text-sm">Chart data unavailable: {err}</p>
-            </div>
+            <ErrorStateCard
+              title="Chart data unavailable"
+              message={err}
+              onRetry={fetchOnce}
+            />
           </div>
         )}
 
