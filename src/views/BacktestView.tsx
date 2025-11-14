@@ -287,6 +287,22 @@ const BacktestView: React.FC = () => {
   return (
     <ErrorBoundary>
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 pb-12">
+        {/* Warning Banner: Demo Mode */}
+        <div className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4 shadow-md">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-6 w-6 flex-shrink-0 text-amber-600" aria-hidden="true" />
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-amber-900">⚠️ DEMO MODE: Simulated Results</h2>
+              <p className="mt-1 text-sm text-amber-800">
+                Results are generated using deterministic pseudo-random algorithms for demonstration purposes only.
+                This is <strong>NOT</strong> real historical backtesting. Metrics shown do not reflect actual trading performance.
+              </p>
+              <p className="mt-2 text-xs text-amber-700">
+                Real backtesting with historical data integration is planned for a future release.
+              </p>
+            </div>
+          </div>
+        </div>
         <section className="rounded-2xl border border-border bg-surface shadow-card-soft">
           <div className="flex flex-col gap-6 p-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3">
