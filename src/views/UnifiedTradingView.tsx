@@ -72,7 +72,7 @@ export default function UnifiedTradingView({ initialTab = 'futures' }: Props) {
 
       {/* SPOT Trading Warning */}
       {tab === 'spot' && (
-        <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+        <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
@@ -80,7 +80,7 @@ export default function UnifiedTradingView({ initialTab = 'futures' }: Props) {
               <p className="text-sm text-red-800 leading-relaxed">
                 SPOT trading is not implemented in this build. KuCoin SPOT testnet API integration is not complete.
                 The interface below is disabled and for reference only.
-                For live trading, please use the <strong>Leverage</strong> tab which supports real Futures trading on testnet.
+                For live trading functionality, please use the <strong>Leverage</strong> tab, which supports real Futures trading on KuCoin testnet.
               </p>
             </div>
           </div>

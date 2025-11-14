@@ -252,7 +252,7 @@ export const PositionsView: React.FC = () => {
       <ModalComponent />
       <div className="min-h-screen bg-surface p-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Positions & Orders</h1>
+          <h1 className="text-3xl font-bold text-[color:var(--text-primary)] mb-6">Positions & Orders</h1>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
