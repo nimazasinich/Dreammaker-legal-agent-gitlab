@@ -145,30 +145,30 @@ export const SignalVisualizationSection: React.FC<SignalVisualizationSectionProp
       <div className="space-y-6" role="region" aria-label="Signal Visualization Dashboard">
         {/* Connection Status */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-slate-800/50 gap-3">
-        <div className="flex items-center gap-2">
-          <div 
-            className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}
-            role="status"
-            aria-label={isConnected ? 'Connected to signal stream' : 'Disconnected from signal stream'}
-          />
-          <span className="text-sm text-slate-300">
-            {isConnected ? 'Connected to Signal Stream' : 'Disconnected'}
-          </span>
-          {wsError && (
-            <span className="text-xs text-red-400" role="alert">
-              ({wsError})
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}
+              role="status"
+              aria-label={isConnected ? 'Connected to signal stream' : 'Disconnected from signal stream'}
+            />
+            <span className="text-sm text-slate-300">
+              {isConnected ? 'Connected to Signal Stream' : 'Disconnected'}
             </span>
-          )}
+            {wsError && (
+              <span className="text-xs text-red-400" role="alert">
+                ({wsError})
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => setShowExamples(!showExamples)}
+            className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+            aria-expanded={showExamples}
+            aria-controls="examples-panel"
+          >
+            {showExamples ? 'Hide Examples' : 'Show Examples'}
+          </button>
         </div>
-        <button
-          onClick={() => setShowExamples(!showExamples)}
-          className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900"
-          aria-expanded={showExamples}
-          aria-controls="examples-panel"
-        >
-          {showExamples ? 'Hide Examples' : 'Show Examples'}
-        </button>
-      </div>
 
       {/* Main Layout - Responsive Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

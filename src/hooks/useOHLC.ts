@@ -14,6 +14,7 @@ import { fetchWithRetry } from '../lib/fetchWithRetry';
 import { API_BASE, requiresRealData } from '../config/env';
 import { MIN_BARS } from '../config/risk';
 import { Logger } from '../core/Logger';
+import { LoadState } from '../types/loadState';
 
 const logger = Logger.getInstance();
 
@@ -26,11 +27,13 @@ export interface OHLCBar {
   v: number;  // volume
 }
 
+export interface OHLCData {
+  bars: OHLCBar[];
+  updatedAt: number;
+}
+
 export interface UseOHLCResult {
-  data: OHLCBar[] | null;
-  loading: boolean;
-  error: string | null;
-  updatedAt: number | null;
+  state: LoadState<OHLCData>;
   reload: () => void;
 }
 
@@ -50,11 +53,8 @@ export function useOHLC(
   timeframe: string,
   limit: number = 500
 ): UseOHLCResult {
-  const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState<OHLCBar[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
+  const [state, setState] = useState<LoadState<OHLCData>>({ status: 'loading' });
+  const [retryCount, setRetryCount] = useState(0);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -64,8 +64,7 @@ export function useOHLC(
     }
 
     abortControllerRef.current = new AbortController();
-    setLoading(true);
-    setError(null);
+    setState({ status: 'loading' });
 
     try {
       // Convert symbol to Binance format (BTC/USDT -> BTCUSDT)
@@ -82,14 +81,25 @@ export function useOHLC(
       });
 
       if (!response.ok) {
-        console.error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorMsg = `HTTP ${response.status}: ${response.statusText}`;
+        console.error(errorMsg);
+        setState({ status: 'error', error: errorMsg });
+        return;
       }
 
       const json = await response.json();
 
+      // Check for structured error response
+      if (json.ok === false) {
+        const errorMsg = json.message || json.reason || 'Data source error';
+        setState({ status: 'error', error: errorMsg });
+        return;
+      }
+
       // Validate response structure
       if (!Array.isArray(json)) {
-        console.error('Invalid response: expected array of OHLC bars');
+        setState({ status: 'error', error: 'Invalid response: expected array of OHLC bars' });
+        return;
       }
 
       // Transform to consistent format
@@ -104,24 +114,31 @@ export function useOHLC(
 
       // Validate minimum data requirement
       if (bars.length < MIN_BARS) {
-        console.error(`Insufficient data: got ${bars.length} bars, need at least ${MIN_BARS}`);
+        const warnMsg = `Insufficient data: got ${bars.length} bars, need at least ${MIN_BARS}`;
+        console.warn(warnMsg);
+        // Still return data but with warning in console
       }
 
-      setData(bars);
-      setUpdatedAt(Date.now());
-      setError(null);
+      setState({
+        status: 'success',
+        data: {
+          bars,
+          updatedAt: Date.now()
+        }
+      });
+      setRetryCount(0); // Reset retry count on success
 
       logger.info('OHLC data loaded successfully:', {
         symbol: binanceSymbol,
         bars: bars.length,
       });
     } catch (err: any) {
-      // Don't overwrite data on error (keep last good data visible)
+      // Handle errors
       const errorMessage = err.name === 'AbortError'
         ? 'Request cancelled'
         : err.message || 'Failed to fetch OHLC data';
 
-      setError(errorMessage);
+      setState({ status: 'error', error: errorMessage });
 
       logger.error('Failed to fetch OHLC data:', { symbol, timeframe, limit }, err);
 
@@ -130,7 +147,6 @@ export function useOHLC(
         logger.warn('Online mode: no fallback to mock data');
       }
     } finally {
-      setLoading(false);
       abortControllerRef.current = null;
     }
   }, [symbol, timeframe, limit]);
@@ -149,14 +165,12 @@ export function useOHLC(
 
   // Explicit reload function
   const reload = useCallback(() => {
+    setRetryCount((prev) => prev + 1);
     fetchData();
   }, [fetchData]);
 
   return {
-    data,
-    loading,
-    error,
-    updatedAt,
+    state,
     reload,
   };
 }
