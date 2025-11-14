@@ -1,0 +1,13 @@
+{
+  "features": {
+    "liveScoring": true,
+    "backtest": true,
+    "autoTuning": false,
+    "autoTrade": false,
+    "manualTrade": true
+  },
+  "modes": {
+    "environment": "DEV",
+    "trading": "DRY_RUN"
+  }
+}

@@ -15,6 +15,7 @@ import { Logger } from '../core/Logger.js';
 import { ScoringTuner } from '../engine/tuning/ScoringTuner.js';
 import { TuningStorage } from '../engine/tuning/TuningStorage.js';
 import { TuningConfig } from '../types/index.js';
+import { isFeatureEnabled } from '../config/systemConfig.js';
 
 export class TuningController {
   private logger = Logger.getInstance();
@@ -37,6 +38,15 @@ export class TuningController {
    */
   async runTuning(req: Request, res: Response): Promise<void> {
     try {
+      // Check system-level feature flag first
+      if (!isFeatureEnabled('autoTuning')) {
+        res.status(403).json({
+          success: false,
+          error: 'Auto-tuning is disabled in system configuration. Set features.autoTuning = true in system.config.json'
+        });
+        return;
+      }
+
       // Load base tuning config
       const baseTuningConfig = this.tuner.loadTuningConfig();
 
