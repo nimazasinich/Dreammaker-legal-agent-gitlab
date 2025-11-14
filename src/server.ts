@@ -101,6 +101,7 @@ import { SystemStatusController } from './controllers/SystemStatusController.js'
 import { HFDataEngineController } from './controllers/HFDataEngineController.js';
 import { setupProxyRoutes } from './services/ProxyRoutes.js';
 import dataSourceRoutes from './routes/dataSource.js';
+import diagnosticsRoutes from './routes/diagnosticsRoute.js';
 import { SignalVisualizationWebSocketService } from './services/SignalVisualizationWebSocketService.js';
 import { TelegramService } from './services/TelegramService.js';
 import { readVault, writeVault } from './config/secrets.js';
@@ -825,6 +826,7 @@ app.get('/api/system/config', async (req, res) => {
 // Data Source Configuration Routes
 // ============================================================================
 app.use('/api/config', dataSourceRoutes);
+app.use('/diagnostics', diagnosticsRoutes);
 
 // ============================================================================
 // HuggingFace Data Engine Routes
@@ -1879,12 +1881,49 @@ app.get('/market/ohlcv/ready', async (req, res) => {
   res.json({ ready: true, timestamp: Date.now() });
 });
 
-// Real candlestick data using database cache or historical service
+// Real candlestick data using HF adapter, database cache, or historical service
 app.get('/market/candlestick/:symbol', async (req, res) => {
   const { symbol } = req.params;
   const { interval = '1h', limit = '200' } = req.query;
 
   try {
+    // Try HuggingFace adapter first if it's the primary source
+    const { getPrimarySource } = await import('./config/dataSource.js');
+    const { hfMarketAdapter } = await import('./services/hf/HFMarketAdapter.js');
+    const primarySource = getPrimarySource();
+
+    if (primarySource === 'huggingface' || primarySource === 'mixed') {
+      const hfResult = await hfMarketAdapter.getCandlestick(
+        symbol,
+        String(interval),
+        Number(limit)
+      );
+
+      if (hfResult.ok) {
+        // Map HF format to API format
+        const data = hfResult.data.map((k: any) => ({
+          t: k.timestamp,
+          o: Number(k.open),
+          h: Number(k.high),
+          l: Number(k.low),
+          c: Number(k.close),
+          v: Number(k.volume)
+        }));
+        return res.json(data);
+      } else if (primarySource === 'huggingface') {
+        // If HF is the only source and it failed, return error
+        logger.warn('HF candlestick request failed', { symbol, error: hfResult.message });
+        return res.status(hfResult.status).json({
+          ok: false,
+          provider: hfResult.provider,
+          reason: hfResult.reason,
+          error: hfResult.message
+        });
+      }
+      // If mixed mode, fall through to database/fallback
+      logger.debug('HF failed in mixed mode, falling back', { symbol });
+    }
+
     // First try database cache
     const cachedData = await database.getMarketData(
       symbol.toUpperCase(),
@@ -1933,13 +1972,47 @@ app.get('/market/candlestick/:symbol', async (req, res) => {
 // Alias for /market/candlestick/:symbol - OHLCV endpoint (query-based)
 app.get('/market/ohlcv', async (req, res) => {
   const { symbol, timeframe = '1h', limit = '200' } = req.query;
-  
+
   if (!symbol) {
     return res.status(400).json({ error: 'Missing symbol parameter' });
   }
 
-  // Use the same logic as candlestick endpoint
   try {
+    // Try HuggingFace adapter first if it's the primary source
+    const { getPrimarySource } = await import('./config/dataSource.js');
+    const { hfMarketAdapter } = await import('./services/hf/HFMarketAdapter.js');
+    const primarySource = getPrimarySource();
+
+    if (primarySource === 'huggingface' || primarySource === 'mixed') {
+      const hfResult = await hfMarketAdapter.getOHLCV(
+        String(symbol),
+        String(timeframe),
+        Number(limit)
+      );
+
+      if (hfResult.ok) {
+        // Map HF format to API format
+        const data = hfResult.data.map((k: any) => ({
+          t: k.timestamp,
+          o: Number(k.open),
+          h: Number(k.high),
+          l: Number(k.low),
+          c: Number(k.close),
+          v: Number(k.volume)
+        }));
+        return res.json(data);
+      } else if (primarySource === 'huggingface') {
+        logger.warn('HF OHLCV request failed', { symbol, error: hfResult.message });
+        return res.status(hfResult.status).json({
+          ok: false,
+          provider: hfResult.provider,
+          reason: hfResult.reason,
+          error: hfResult.message
+        });
+      }
+      logger.debug('HF failed in mixed mode, falling back', { symbol });
+    }
+
     const cachedData = await database.getMarketData(
       String(symbol).toUpperCase(),
       mapInterval(String(timeframe)),
@@ -1987,6 +2060,42 @@ app.get('/market/prices', async (req, res) => {
   const symbolList = (symbols || '').split(',').filter(Boolean);
 
   try {
+    // Try HuggingFace adapter first if it's the primary source
+    const { getPrimarySource } = await import('./config/dataSource.js');
+    const { hfMarketAdapter } = await import('./services/hf/HFMarketAdapter.js');
+    const primarySource = getPrimarySource();
+
+    if (primarySource === 'huggingface' || primarySource === 'mixed') {
+      const hfResult = await hfMarketAdapter.getMarketPrices(100);
+
+      if (hfResult.ok) {
+        // Map HF prices to requested symbols
+        const prices: Record<string, number> = {};
+        const hfPrices = hfResult.data;
+
+        for (const symbol of symbolList) {
+          const symbolUpper = symbol.toUpperCase().replace('USDT', '').replace('USD', '');
+          const hfPrice = hfPrices.find((p: any) =>
+            p.symbol.toUpperCase().includes(symbolUpper) ||
+            symbolUpper.includes(p.symbol.toUpperCase())
+          );
+          prices[symbol] = hfPrice ? hfPrice.price : NaN;
+        }
+
+        return res.json(prices);
+      } else if (primarySource === 'mixed') {
+        logger.debug('HF failed in mixed mode, falling back to local');
+      } else {
+        logger.warn('HF prices request failed', { error: hfResult.message });
+        return res.status(hfResult.status).json({
+          ok: false,
+          provider: hfResult.provider,
+          reason: hfResult.reason,
+          error: hfResult.message
+        });
+      }
+    }
+
     const prices: Record<string, number> = {};
     const port = PORT || 8000;
 
