@@ -133,6 +133,16 @@ export type ScoringOverview = {
 };
 
 /**
+ * Auto-trade execution result
+ */
+export type AutoTradeResult = {
+  attempted: boolean;
+  executed?: boolean;
+  reason?: string | null;
+  order?: any | null;
+};
+
+/**
  * Complete pipeline result
  */
 export type StrategyPipelineResult = {
@@ -152,6 +162,8 @@ export type StrategyPipelineResult = {
   };
 
   scoring: ScoringOverview;
+
+  autoTrade?: AutoTradeResult | null;
 
   timestamp: number;
 };

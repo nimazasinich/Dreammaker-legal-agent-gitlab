@@ -114,5 +114,12 @@
       "autoPromote": false,
       "tunedConfigPath": "config/scoring.tuned.json"
     }
+  },
+  "autoTrade": {
+    "enabled": false,
+    "minScore": 0.80,
+    "allowedActions": ["BUY", "SELL"],
+    "quantityUSDT": 100,
+    "description": "Automatic trade execution for Strategy 3 results. Enable with caution - testnet only."
   }
 }
