@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useHealthCheck from '../../lib/useHealthCheck';
 import { t } from '../../i18n';
 import { useMode } from '../../contexts/ModeContext';
 import { useData } from '../../contexts/DataContext';
 import { useLiveData } from '../LiveDataContext';
 import { DataSourceIndicator } from './DataSourceBadge';
+import { TradingMode, TradingMarket } from '../../types/index';
 
 const STATUS_STYLES: Record<string, string> = {
   healthy: 'bg-green-100 text-green-800 border-green-300',
@@ -18,6 +19,28 @@ export function StatusRibbon() {
   const { state: { dataMode, tradingMode }, setDataMode, setTradingMode } = useMode();
   const { dataSource } = useData();
   const { isConnected } = useLiveData();
+  const [systemTradingMode, setSystemTradingMode] = useState<TradingMode>('OFF');
+  const [systemTradingMarket, setSystemTradingMarket] = useState<TradingMarket>('FUTURES');
+
+  // Fetch system trading config from API
+  useEffect(() => {
+    const fetchSystemStatus = async () => {
+      try {
+        const response = await fetch('/api/system/status');
+        const data = await response.json();
+        if (data.trading) {
+          setSystemTradingMode(data.trading.mode || 'OFF');
+          setSystemTradingMarket(data.trading.market || 'FUTURES');
+        }
+      } catch (error) {
+        console.error('Failed to fetch system status:', error);
+      }
+    };
+
+    fetchSystemStatus();
+    const interval = setInterval(fetchSystemStatus, 30000); // Refresh every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   if (import.meta?.env?.VITE_SHOW_STATUS_RIBBON === 'false') {
     return null;
@@ -42,6 +65,16 @@ export function StatusRibbon() {
       <div className="flex items-center gap-3">
         {/* Data Source Indicator */}
         <DataSourceIndicator source={dataSource} />
+
+        {/* System Trading Mode & Market Indicator */}
+        <div
+          className="px-2 py-1 rounded text-xs font-medium flex items-center gap-1 bg-blue-100 text-blue-800 border border-blue-300"
+          title={`Trading Mode: ${systemTradingMode}, Market: ${systemTradingMarket}`}
+        >
+          <span className="font-semibold">{systemTradingMode}</span>
+          <span className="text-blue-600">|</span>
+          <span>{systemTradingMarket}</span>
+        </div>
 
         {/* WebSocket Status Indicator */}
         <div
