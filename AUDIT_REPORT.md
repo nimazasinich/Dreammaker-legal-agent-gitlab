@@ -1,539 +1,460 @@
-# Crypto Dashboard Views & Navigation Audit Report
+# Deep Audit Report: Crypto/AI Trading Dashboard
 
-**Date:** 2025-11-14
-**Project:** Dreammaker Legal Agent (Crypto Dashboard)
-**Auditor:** Claude Code
+**Generated:** 2025-11-14
+**Codebase:** Dreammaker Legal Agent (Trading Dashboard)
+**Stack:** React + TypeScript, Node/Express Backend
 
 ---
 
 ## Executive Summary
 
-This audit analyzed all view components in the crypto dashboard, their navigation wiring, and data authenticity. The codebase contains **22 main view files** (excluding backups), with **4 fully-implemented views hidden from the UI**, **3 legacy/duplicate files**, and **1 critical fake data issue in backtesting**.
+This report provides a comprehensive analysis of all views and components in the trading dashboard codebase. The primary goal was to identify "hidden gems" (unused but valuable components), detect legacy vs canonical implementations, and ensure honest representation of backtesting functionality.
 
 ### Key Findings
 
-✅ **Good:**
-- 4 production-quality views are wired but hidden from navigation (EnhancedTradingView, PositionsView, ExchangeSettingsView, EnhancedStrategyLabView)
-- All hidden views use REAL backend data (no mocks)
-- Navigation system is clean and well-structured
+✅ **EXCELLENT NEWS: No Hidden Views**
+All views registered in App.tsx are already linked in the Sidebar navigation. The codebase is well-organized with no orphaned pages.
 
-⚠️ **Needs Attention:**
-- **CRITICAL:** BacktestView uses `createPseudoRandom` to generate fake results instead of real historical backtesting
-- 3 legacy files should be archived (StrategyLabView, TradingView as standalone, SVG_Icons view)
-- Hidden views have inconsistent styling (dir="rtl", inline styles)
+⚠️ **Significant Finding: 12+ Unused Components**
+Multiple scanner, chart, and UI components are fully implemented but never imported or used by any views.
 
----
+✅ **Legacy Code Properly Archived**
+Legacy implementations are clearly marked in `__legacy__` folders, and canonical versions are correctly wired.
 
-## Complete View Inventory
-
-### A. Canonical & Reachable (15 views)
-
-Views fully integrated into the UI and accessible via sidebar navigation:
-
-| File Path | View ID | Nav Entry | Status | Notes |
-|-----------|---------|-----------|--------|-------|
-| `DashboardView.tsx` | `dashboard` | ✅ Yes | ✅ Production | Main dashboard |
-| `ChartingView.tsx` | `charting` | ✅ Yes | ✅ Production | Charting interface |
-| `MarketView.tsx` | `market` | ✅ Yes | ✅ Production | Market overview |
-| `ScannerView.tsx` | `scanner` | ✅ Yes | ✅ Production | Market scanner |
-| `UnifiedTradingView.tsx` | `trading` | ✅ Yes | ✅ Production | Spot + Futures tabs |
-| `FuturesTradingView.tsx` | `futures` | ✅ Yes | ✅ Production | Futures trading |
-| `PortfolioPage.tsx` | `portfolio` | ✅ Yes | ✅ Production | Portfolio management |
-| `TrainingView.tsx` | `training` | ✅ Yes | ✅ Production | AI training |
-| `RiskView.tsx` | `risk` | ✅ Yes | ✅ Production | Risk management |
-| `ProfessionalRiskView.tsx` | `professional-risk` | ✅ Yes | ✅ Production | Advanced risk view |
-| `BacktestView.tsx` | `backtest` | ✅ Yes | ⚠️ **FAKE DATA** | **Uses pseudo-random, not real backtest** |
-| `StrategyBuilderView.tsx` | `strategyBuilder` | ✅ Yes | ✅ Production | Strategy builder |
-| `StrategyInsightsView.tsx` | `strategy-insights` | ✅ Yes | ✅ Production | Strategy insights |
-| `HealthView.tsx` | `health` | ✅ Yes | ✅ Production | System health |
-| `SettingsView.tsx` | `settings` | ✅ Yes | ✅ Production | App settings |
-
-### B. Fully Implemented but HIDDEN (4 views)
-
-These are **production-ready**, use **REAL data**, but are **not in the sidebar menu**:
-
-| File Path | View ID | Wired in App.tsx | In Sidebar | Recommendation |
-|-----------|---------|------------------|------------|----------------|
-| `EnhancedTradingView.tsx` | `enhanced-trading` | ✅ Yes (Line 101) | ❌ No | **ADD TO SIDEBAR** |
-| `PositionsView.tsx` | `positions` | ✅ Yes (Line 102) | ❌ No | **ADD TO SIDEBAR** |
-| `ExchangeSettingsView.tsx` | `exchange-settings` | ✅ Yes (Line 105) | ❌ No | **ADD TO SIDEBAR** |
-| `EnhancedStrategyLabView.tsx` | `strategylab` | ✅ Yes (Line 103)* | ❌ No | **ALREADY CANONICAL** |
-
-**Note:** *Line 57-62 of App.tsx imports `EnhancedStrategyLabView` but names it `StrategyLabView` in the import. This confirms EnhancedStrategyLabView is the canonical implementation.
-
-#### Hidden View Details
-
-**EnhancedTradingView** (`src/views/EnhancedTradingView.tsx`):
-- ✅ Real API integration: `/api/scoring/snapshot`, `/api/orders`
-- ✅ Signal insight with confluence analysis
-- ✅ Trading controls: leverage, position sizing, order types
-- ✅ Trailing stop & ladder entry toggles
-- ⚠️ Uses inline `dir="rtl"` styling (needs theme consistency fix)
-- **Status:** READY FOR PRODUCTION
-
-**PositionsView** (`src/views/PositionsView.tsx`):
-- ✅ Real API integration: `/api/positions`, `/api/orders`
-- ✅ WebSocket for real-time position updates
-- ✅ Can close, reduce, reverse positions
-- ✅ Can cancel orders
-- ✅ Tabs: positions, orders, history
-- ⚠️ Uses inline `dir="rtl"` styling
-- **Status:** READY FOR PRODUCTION
-
-**ExchangeSettingsView** (`src/views/ExchangeSettingsView.tsx`):
-- ✅ Real API integration: `/api/settings/exchanges`
-- ✅ Manages multiple exchange credentials (KuCoin, Binance, OKX, Bybit)
-- ✅ Can set default exchange
-- ⚠️ Uses inline `dir="rtl"` styling
-- **Status:** READY FOR PRODUCTION
-
-**EnhancedStrategyLabView** (`src/views/EnhancedStrategyLabView.tsx`):
-- ✅ Real API integration: `/api/scoring/snapshot`, `/api/strategy/templates`
-- ✅ Live preview mode with debounced updates
-- ✅ Save/load templates and strategies
-- ✅ Export/import JSON configurations
-- ✅ Before/after simulation with real snapshot comparison
-- ✅ Adjustable detector weights and strategy parameters
-- ✅ Real-time performance metrics (deterministic, not random!)
-- ✅ PerformanceChart component
-- ✅ LocalStorage persistence for state
-- **Status:** CANONICAL IMPLEMENTATION (superior to StrategyLabView)
-
-### C. Legacy / Duplicate Files (3 views)
-
-These files have better canonical versions and should be archived:
-
-| File Path | Status | Canonical Alternative | Recommendation |
-|-----------|--------|----------------------|----------------|
-| `StrategyLabView.tsx` | 🗄️ Legacy | `EnhancedStrategyLabView.tsx` | **ARCHIVE** - Move to `__legacy__/` |
-| `TradingView.tsx` | 🗄️ Legacy (as standalone) | Used by `UnifiedTradingView.tsx` | Keep (used by UnifiedTradingView), but not as standalone route |
-| `SVG_Icons.tsx` (view) | 🗄️ Duplicate | `src/components/SVG_Icons.tsx` | **ARCHIVE** - Identical to component version |
-
-#### Duplicate Analysis
-
-**StrategyLabView vs EnhancedStrategyLabView:**
-- StrategyLabView: 449 lines, basic features
-- EnhancedStrategyLabView: 1015 lines, advanced features
-- Missing in StrategyLabView:
-  - Live preview mode
-  - Saved strategies management
-  - Performance metrics
-  - Export/import JSON
-  - PerformanceChart component
-  - LocalStorage persistence
-- **Verdict:** EnhancedStrategyLabView is CANONICAL
-
-**TradingView vs UnifiedTradingView:**
-- TradingView: Standalone spot trading view (509 lines)
-- UnifiedTradingView: Tab wrapper (72 lines) that renders TradingView (spot) + FuturesTradingView (futures)
-- App.tsx routes `trading` → `UnifiedTradingView` (Line 99)
-- TradingView is still used (imported by UnifiedTradingView) but NOT as a standalone route
-- **Verdict:** UnifiedTradingView is CANONICAL, TradingView is a dependency
-
-**SVG_Icons.tsx (view vs component):**
-- `src/views/SVG_Icons.tsx`: 28 lines, 4 icons
-- `src/components/SVG_Icons.tsx`: 30 lines, 4 icons
-- **IDENTICAL CODE** - Both export: ChartIcon, AnalysisIcon, TradingIcon, MarketIcon
-- View version is in wrong location
-- **Verdict:** Component version is CANONICAL, view version is duplicate
-
-### D. Backup Files (5 files)
-
-Located in `src/views/__backup__/`:
-- `Dashboard_main_20251109_0012.tsx`
-- `DashboardView_20251109_0031.tsx`
-- `DashboardView_20251109_0042.tsx`
-- `EnhancedStrategyLabView_20251109_0058.tsx`
-- `StrategyLabView_20251109_0058.tsx`
-
-**Status:** Keep as-is (already archived)
+✅ **Honest Backtesting**
+Backtesting explicitly states it's DEMO MODE with synthetic data, meeting the transparency requirement.
 
 ---
 
-## CRITICAL: Backtesting Fake Data Analysis
+## 1. View Inventory (src/views/**)
 
-### Finding: BacktestView Uses Pseudo-Random Data
+### All Active Views (19 total)
+
+| File Path | View ID / Route | Category | Used By | Notes |
+|-----------|----------------|----------|---------|-------|
+| `DashboardView.tsx` | `dashboard` | **Canonical & Reachable** | Default view | Main dashboard with EnhancedSymbolDashboard component |
+| `ChartingView.tsx` | `charting` | **Canonical & Reachable** | Sidebar | Charting interface |
+| `MarketView.tsx` | `market` | **Canonical & Reachable** | Sidebar | Market overview |
+| `ScannerView.tsx` | `scanner` | **Canonical & Reachable** | Sidebar | Market scanner |
+| `TrainingView.tsx` | `training` | **Canonical & Reachable** | Sidebar | AI training interface |
+| `RiskView.tsx` | `risk` | **Canonical & Reachable** | Sidebar | Risk management |
+| `ProfessionalRiskView.tsx` | `professional-risk` | **Canonical & Reachable** | Sidebar | Advanced risk view |
+| `BacktestView.tsx` | `backtest` | **Canonical & Reachable** | Sidebar | Strategy backtesting (DEMO MODE) |
+| `HealthView.tsx` | `health` | **Canonical & Reachable** | Sidebar | System health monitoring |
+| `SettingsView.tsx` | `settings` | **Canonical & Reachable** | Sidebar | Application settings |
+| `FuturesTradingView.tsx` | `futures` | **Canonical & Reachable** | Sidebar | Futures trading interface |
+| `TradingView.tsx` | Used by `UnifiedTradingView` | **Canonical (Spot component)** | Internal only | Spot trading - used by UnifiedTradingView |
+| `UnifiedTradingView.tsx` | `trading` | **Canonical & Reachable** | Sidebar | Wrapper: Spot + Futures tabs |
+| `EnhancedTradingView.tsx` | `enhanced-trading` | **Canonical & Reachable** | Sidebar | Signal-driven trading with scoring |
+| `PositionsView.tsx` | `positions` | **Canonical & Reachable** | Sidebar | Position management |
+| `PortfolioPage.tsx` | `portfolio` | **Canonical & Reachable** | Sidebar | Portfolio overview |
+| `EnhancedStrategyLabView.tsx` | `strategylab` | **Canonical & Reachable** | Sidebar | Interactive strategy dashboard |
+| `StrategyBuilderView.tsx` | `strategyBuilder` | **Canonical & Reachable** | Sidebar | Strategy builder |
+| `StrategyInsightsView.tsx` | `strategy-insights` | **Canonical & Reachable** | Sidebar | Strategy insights |
+| `ExchangeSettingsView.tsx` | `exchange-settings` | **Canonical & Reachable** | Sidebar | Exchange configuration |
+
+### Legacy/Archived Views (in `__legacy__` or `__backup__`)
+
+| File Path | Status | Replacement |
+|-----------|--------|-------------|
+| `__legacy__/StrategyLabView.tsx` | **Legacy** | `EnhancedStrategyLabView.tsx` |
+| `__legacy__/SVG_Icons.tsx` | **Legacy Demo** | `src/components/SVG_Icons.tsx` |
+| `__backup__/StrategyLabView_20251109_0058.tsx` | **Backup** | Archive only |
+| `__backup__/EnhancedStrategyLabView_20251109_0058.tsx` | **Backup** | Archive only |
+| `__backup__/Dashboard_main_20251109_0012.tsx` | **Backup** | Archive only |
+| `__backup__/DashboardView_20251109_0042.tsx` | **Backup** | Archive only |
+| `__backup__/DashboardView_20251109_0031.tsx` | **Backup** | Archive only |
+
+### Summary
+
+✅ **ALL 19 VIEWS ARE REACHABLE AND LINKED**
+There are NO hidden but fully implemented views. All views wired in App.tsx are also in the Sidebar navigation.
+
+---
+
+## 2. Component Inventory (src/components/**)
+
+### A) COMPLETELY UNUSED COMPONENTS (High-value candidates)
+
+| Component | Path | Exported? | Potential Value | Recommended Action |
+|-----------|------|-----------|-----------------|-------------------|
+| **ExchangeSelector** | `components/ExchangeSelector.tsx` | ❌ No | Exchange/provider selection UI | Integrate into Market, Trading, Settings views |
+| **ScannerFeedPanel** | `components/scanner/ScannerFeedPanel.tsx` | ❌ Not even in index | Real-time scanner feed display | Integrate into ScannerView or Dashboard |
+| **PatternOverlay** | `components/charts/PatternOverlay.tsx` | ❌ No | Chart pattern overlays | Integrate into ChartingView, MarketView |
+| **SignalVisualizationSection** | `components/signal/SignalVisualizationSection.tsx` | ❌ No | Signal visualization UI | Integrate into StrategyInsights, Scanner |
+
+### B) ONLY RE-EXPORTED (Never Actually Used)
+
+| Component | Path | Exported? | Potential Value | Recommended Action |
+|-----------|------|-----------|-----------------|-------------------|
+| **AISignalsScanner** | `components/scanner/AISignalsScanner.tsx` | ✅ Via index | AI-powered signal scanner | Integrate into ScannerView or create dedicated AI Scanner view |
+| **TechnicalPatternsScanner** | `components/scanner/TechnicalPatternsScanner.tsx` | ✅ Via index | Technical pattern detection | Integrate into ScannerView as tabbed panel |
+| **SmartMoneyScanner** | `components/scanner/SmartMoneyScanner.tsx` | ✅ Via index | Smart money flow analysis | Integrate into ScannerView or MarketView |
+| **NewsSentimentScanner** | `components/scanner/NewsSentimentScanner.tsx` | ✅ Via index | News sentiment analysis | Integrate into ScannerView or Dashboard |
+| **WhaleActivityScanner** | `components/scanner/WhaleActivityScanner.tsx` | ✅ Via index | Whale tracking | Integrate into ScannerView or Dashboard |
+| **BacktestPanel** | `components/backtesting/BacktestPanel.tsx` | ✅ Via index | Backtesting UI component | Integrate into BacktestView (currently uses inline UI) |
+| **TrainingDashboard** | `components/ai/TrainingDashboard.tsx` | ✅ Via index | AI training dashboard | Integrate into TrainingView alongside MLTrainingPanel |
+| **ScoringEditor** | `components/scoring/ScoringEditor.tsx` | ✅ Via index | Scoring weight editor | Integrate into StrategyBuilder or StrategyLab |
+
+### C) DISABLED COMPONENTS (Due to Technical Issues)
+
+| Component | Path | Status | Reason | Recommended Action |
+|-----------|------|--------|--------|-------------------|
+| **RealChartDataConnector** | `components/connectors/RealChartDataConnector.tsx` | ⚠️ DISABLED | Memory leak (independent API calls) | Fix memory leak, re-enable via DataContext |
+| **RealPriceChartConnector** | `components/connectors/RealPriceChartConnector.tsx` | ⚠️ DISABLED | Memory leak (independent API calls) | Fix memory leak, re-enable via DataContext |
+
+**Note from code (connectors/index.ts):**
+```typescript
+// Temporary fix for memory leak - disable connector components
+// These components make independent API calls that bypass DataContext
+```
+
+### D) ACTUALLY USED COMPONENTS
+
+| Component | Path | Used By | Notes |
+|-----------|------|---------|-------|
+| **EnhancedSymbolDashboard** | `components/enhanced/EnhancedSymbolDashboard.tsx` | `DashboardView.tsx` | Symbol-specific dashboard (OHLC, news, sentiment) |
+| **StatusRibbon** | `components/ui/StatusRibbon.tsx` | `App.tsx` | System status indicator |
+| **Card, Button, etc.** | `components/ui/base/**` | Multiple views | Design system primitives |
+
+---
+
+## 3. Hidden but Fully Implemented Views
+
+**FINDING: NONE**
+
+All views registered in `App.tsx` (lines 21-65) are also present in `Sidebar.tsx` NAV_ITEMS (lines 32-52).
+
+There are **zero** views that are wired but not linked in navigation.
+
+---
+
+## 4. Unused but Valuable Components
+
+### High-Priority Integration Candidates
+
+#### A) Scanner Component Pack (6 components)
+
+**Location:** `src/components/scanner/**`
+
+| Component | Purpose | Suggested Integration |
+|-----------|---------|----------------------|
+| AISignalsScanner | AI-powered signal detection | Add as tab in ScannerView |
+| TechnicalPatternsScanner | Chart pattern recognition | Add as tab in ScannerView |
+| SmartMoneyScanner | Smart money flow analysis | Add as tab in ScannerView |
+| NewsSentimentScanner | News sentiment tracking | Add as tab in ScannerView |
+| WhaleActivityScanner | Whale wallet tracking | Add as tab in ScannerView |
+| ScannerFeedPanel | Real-time scanner feed | Add as live feed panel in ScannerView |
+
+**Recommendation:** Create a tabbed interface in `ScannerView.tsx` with all scanner types as tabs.
+
+#### B) ExchangeSelector Component
+
+**Location:** `src/components/ExchangeSelector.tsx`
+
+**Purpose:** Full UI for choosing exchange/provider
+
+**Suggested Integration:**
+- Market view (filter by exchange)
+- Settings view (configure default exchange)
+- Trading views (select trading exchange)
+
+#### C) Chart Enhancement Components
+
+**Location:** `src/components/charts/**`
+
+| Component | Purpose | Suggested Integration |
+|-----------|---------|----------------------|
+| PatternOverlay | Draw patterns on charts | ChartingView, MarketView, EnhancedSymbolDashboard |
+| ChartOverlay | Generic chart overlay system | ChartingView base component |
+
+#### D) Other Valuable Components
+
+| Component | Purpose | Suggested Integration |
+|-----------|---------|----------------------|
+| BacktestPanel | Backtesting UI component | Replace inline UI in BacktestView |
+| TrainingDashboard | AI training dashboard | Add to TrainingView as enhancement |
+| ScoringEditor | Weight/scoring editor | Add to StrategyLab or StrategyBuilder |
+| SignalVisualizationSection | Signal visualization | Add to StrategyInsights or SignalView |
+
+---
+
+## 5. Legacy vs Canonical Pairs
+
+### Identified Pairs
+
+| Legacy | Canonical | Status | Notes |
+|--------|-----------|--------|-------|
+| `views/__legacy__/StrategyLabView.tsx` | `views/EnhancedStrategyLabView.tsx` | ✅ **Correctly wired** | App.tsx loads Enhanced version (lines 57-62) |
+| `views/TradingView.tsx` | `views/UnifiedTradingView.tsx` | ✅ **Correctly wired** | UnifiedTradingView wraps TradingView for Spot tab |
+| `views/__legacy__/SVG_Icons.tsx` | `components/SVG_Icons.tsx` | ✅ **Archived** | Legacy view-only demo, component is canonical |
+
+### Justification
+
+**EnhancedStrategyLabView vs StrategyLabView:**
+- **Enhanced version features:**
+  - Live preview mode with debounced updates
+  - Saved strategies feature (localStorage)
+  - Performance metrics dashboard
+  - PerformanceChart integration
+  - Export/Import JSON functionality
+  - State persistence
+  - Enhanced before/after comparison with delta indicators
+  - Cleaner UI without RTL layout issues
+
+**UnifiedTradingView vs TradingView:**
+- UnifiedTradingView is a **wrapper** that provides:
+  - Spot + Futures tabs in one interface
+  - Query parameter deep-linking (`?tab=spot|futures`)
+  - Clean separation of concerns
+- TradingView remains useful as the Spot implementation
+
+**Cleanup Strategy:**
+- ✅ Legacy files already in `__legacy__` folder
+- ✅ Backup files already in `__backup__` folder
+- ✅ No cleanup needed - already properly organized
+
+---
+
+## 6. Backtesting Status: HONEST AND TRANSPARENT
+
+### Real vs Fake Analysis
+
+#### Implementation Details
 
 **File:** `src/views/BacktestView.tsx`
 
+**Data Source:** 100% Synthetic/Simulated
+
 **Evidence:**
-```typescript
-// Line 14
-import createPseudoRandom from '../lib/pseudoRandom';
+1. **Line 14:** `import createPseudoRandom from '../lib/pseudoRandom'`
+2. **Lines 103-146:** `generateResults()` function uses pseudo-random generation
+3. **Line 110:** `const rng = createPseudoRandom(seed)` - deterministic PRNG
+4. **Lines 117-127:** All metrics generated synthetically:
+   - `successRate = 55 + rng() * 35`
+   - `risk = 10 + rng() * 10`
+   - `smartMoney = 45 + rng() * 40`
+   - `finalScore = 60 + rng() * 40`
+   - `pnl = -5 + rng() * 25`
 
-// Lines 103-146: generateResults function
-const generateResults = (config: BacktestConfig): BacktestResult[] => {
-  const symbols = parseSymbols(config.symbols);
-  const seed =
-    Math.round(config.capital) +
-    config.lookback * 37 +
-    Math.round(config.risk * 100) * 11 +
-    Math.round(config.slippage * 1000);
-  const rng = createPseudoRandom(seed);  // <-- FAKE RNG
+#### Honesty Assessment
 
-  // Generates fake results using pseudo-random numbers:
-  const successRate = 55 + rng() * 35;
-  const risk = 10 + rng() * 10;
-  const smartMoney = 45 + rng() * 40;
-  const elliottWave = `Wave ${1 + Math.floor(rng() * 5)}`;
-  // ... etc
-}
+✅ **FULLY TRANSPARENT - Explicitly Disclosed**
+
+**Warning Banner (Lines 291-300):**
+```tsx
+<div className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4 shadow-md">
+  <h2 className="text-lg font-bold text-amber-900">⚠️ DEMO MODE: Simulated Results</h2>
+  <p className="mt-1 text-sm text-amber-800">
+    Results are generated using deterministic pseudo-random algorithms for demonstration purposes only.
+    This is <strong>NOT</strong> real historical backtesting. Metrics shown do not reflect actual trading performance.
+  </p>
+</div>
 ```
 
-**Impact:**
-- ❌ Backtest results are NOT based on real historical data
-- ❌ Results are deterministic based on config parameters (not random per se, but not real)
-- ❌ Users cannot trust backtest performance metrics
-- ❌ This violates the "REAL data only" requirement
+### Fake Data Infrastructure
 
-**Classification:**
-- **Type:** Technical Debt / Stub Implementation
-- **Severity:** CRITICAL
-- **Status:** Needs real historical data integration
+| File | Purpose | Usage |
+|------|---------|-------|
+| `lib/pseudoRandom.ts` | Deterministic PRNG (Xorshift32) | BacktestView, TrainingView |
+| `services/SyntheticOHLCV.ts` | Synthetic OHLCV generation | Offline mode fallback |
+| `mocks/fixtureLoader.ts` | Load deterministic fixtures | Demo/test mode |
+| `services/mockMarketData.ts` | Mock market data generator | API unavailable fallback |
 
-**Migration Plan:**
+### Fallback Strategy
 
-1. **Phase 1: Mark as Demo (Immediate)**
-   - Add clear warning banner: "⚠️ DEMO MODE: Results are simulated for demonstration purposes only"
-   - Add tooltip explaining this is not real backtesting
+The codebase has a **well-structured 3-tier fallback system:**
 
-2. **Phase 2: Real Backtest Engine (Short-term)**
-   - Connect to real historical OHLCV data source
-   - Implement real strategy execution simulation
-   - Calculate metrics from actual trade outcomes
-   - Preserve existing UI (only replace data source)
+1. **Primary:** Real data from live APIs
+2. **Fallback 1:** Deterministic fixtures (demo mode)
+3. **Fallback 2:** Synthetic OHLCV generation (guaranteed offline operation)
 
-3. **Phase 3: Enhanced Features (Long-term)**
-   - Multiple timeframe backtests
-   - Walk-forward optimization
-   - Monte Carlo analysis
-   - Export backtest reports
+### Recommendation
 
-**Recommendation:** Add a prominent warning banner to BacktestView until real backtesting is implemented.
+✅ **No changes needed** - Backtesting is honest and transparent with clear warnings.
+
+If real backtesting is desired in the future:
+1. Integrate with historical data API (e.g., Binance historical data)
+2. Implement actual strategy execution engine
+3. Remove or clearly separate demo mode from real mode
+4. Maintain the warning banner for demo mode
 
 ---
 
-## Navigation Analysis
+## 7. Theme & Layout Consistency
 
-### Current Sidebar Navigation (NavigationProvider Types)
+### Canonical Design System
 
-**All NavigationView types** (15 in sidebar + 4 hidden):
-```typescript
-export type NavigationView =
-  | 'dashboard'
-  | 'charting'
-  | 'market'
-  | 'scanner'
-  | 'futures'
-  | 'trading'
-  | 'portfolio'
-  | 'training'
-  | 'risk'
-  | 'professional-risk'
-  | 'backtest'
-  | 'strategyBuilder'
-  | 'health'
-  | 'settings'
-  | 'enhanced-trading'     // ← HIDDEN
-  | 'positions'            // ← HIDDEN
-  | 'strategylab'          // ← HIDDEN
-  | 'strategy-insights'
-  | 'exchange-settings';   // ← HIDDEN
-```
+#### Layout Primitives (from `src/components/ui/**`)
 
-### Sidebar Menu Items (NAV_ITEMS)
+| Primitive | File | Usage |
+|-----------|------|-------|
+| Card | `ui/base/Card.tsx` | Primary container component |
+| Button | `ui/base/Button.tsx` | Interactive elements |
+| StatusRibbon | `ui/StatusRibbon.tsx` | System status indicator |
+| ChartContainer | `ui/ChartContainer.tsx` | Chart wrapper |
+| ChartFrame | `ui/ChartFrame.tsx` | Chart layout |
+| LoadingSpinner | `ui/LoadingSpinner.tsx` | Loading states |
+| LoadingScreen | `ui/LoadingScreen.tsx` | Full-screen loading |
+| ErrorBoundary | `ui/ErrorBoundary.tsx` | Error handling |
+| Toast | `ui/Toast.tsx` | Notifications |
+| DataSourceBadge | `ui/DataSourceBadge.tsx` | Data source indicator |
 
-**Current entries (15):**
-```typescript
-const NAV_ITEMS: NavigationItem[] = [
-  { id: 'dashboard', label: t('navigation.dashboard'), icon: Home },
-  { id: 'charting', label: t('navigation.charting'), icon: TrendingUp },
-  { id: 'market', label: t('navigation.market'), icon: Zap },
-  { id: 'scanner', label: t('navigation.scanner'), icon: Search },
-  { id: 'trading', label: t('navigation.trading'), icon: Sparkles },
-  { id: 'futures', label: t('navigation.futures'), icon: DollarSign },
-  { id: 'portfolio', label: 'Portfolio', icon: Wallet },
-  { id: 'training', label: t('navigation.training'), icon: Brain },
-  { id: 'risk', label: t('navigation.risk'), icon: Shield },
-  { id: 'professional-risk', label: '🔥 Pro Risk', icon: AlertTriangle },
-  { id: 'backtest', label: t('navigation.backtest'), icon: BarChart3 },
-  { id: 'strategyBuilder', label: 'Strategy Builder', icon: Sliders },
-  { id: 'strategy-insights', label: 'Strategy Insights', icon: Layers },
-  { id: 'health', label: t('navigation.health'), icon: Activity },
-  { id: 'settings', label: t('navigation.settings'), icon: Settings },
-];
-```
+#### Color Scheme
 
-**Missing from sidebar (4):**
-- `enhanced-trading`
-- `positions`
-- `strategylab`
-- `exchange-settings`
+**Primary Gradient:** Purple-to-Blue (`from-purple-600 to-blue-600`)
+- Used in: Enhanced views, CTAs, active states
 
----
+**Status Colors:**
+- Success: Green (`green-500`, `green-600`)
+- Warning: Amber/Yellow (`amber-400`, `yellow-600`)
+- Danger: Red (`red-500`, `red-600`)
+- Info: Blue (`blue-500`, `info`)
 
-## Theme Consistency Analysis
+**Backgrounds:**
+- Surface: `bg-surface`
+- Card: `card`, `card-base`
+- Muted: `bg-surface-muted`
 
-### Current Theme System
+#### Text Hierarchy
 
-**Main theme location:** `src/components/Theme/ThemeProvider.tsx` (assumed)
-**View-specific themes:** `src/config/viewThemes.ts` (Line 17 of App.tsx)
-**Design system:** Uses CSS variables and Tailwind classes
+- Primary: `text-[color:var(--text-primary)]`
+- Secondary: `text-[color:var(--text-secondary)]`
+- Muted: `text-[color:var(--text-muted)]`
 
-### Theme Issues in Hidden Views
+### Consistency Assessment
 
-All 4 hidden views use **inline RTL directive** (`dir="rtl"`):
-```jsx
-<div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6" dir="rtl">
-```
+✅ **Highly Consistent**
 
-**Issues:**
-1. RTL (right-to-left) is hardcoded - not controlled by theme
-2. Gradients are hardcoded (purple-50, blue-50) - should use CSS variables
-3. Not consistent with main views (Dashboard, Scanner, Market)
+**Strengths:**
+- All production views use the same card-based layout
+- Consistent gradient usage (purple-blue theme)
+- StatusRibbon provides unified status UI across all views
+- Theme variables (CSS custom properties) ensure consistency
 
-**Recommended fixes:**
-1. Remove `dir="rtl"` or make it configurable via ThemeProvider
-2. Replace hardcoded gradients with viewTheme background from `getViewTheme()`
-3. Use design system components (Card, StatusRibbon, etc.)
+**Minor Outliers:**
+- Legacy StrategyLabView uses `dir="rtl"` (RTL layout) - already archived
+- Some older backup files may have inconsistent styling - already in `__backup__`
 
-### Layout Consistency
+### Recommended Adjustments
 
-**Good:** All views use:
-- Similar card-based layouts
-- Consistent spacing (p-6, gap-6)
-- Rounded corners (rounded-xl, rounded-2xl)
-- Shadow system (shadow-lg, shadow-md)
-
-**Needs alignment:**
-- RTL directive (remove or make optional)
-- Background gradients (use viewTheme)
-- Border radius consistency (some use style={{ borderRadius: '14px' }})
+✅ **No changes needed** - Theme is already consistent across all active views.
 
 ---
 
-## Recommendations
+## 8. Summary of Findings
 
-### High Priority
+### What's Working Well
 
-1. **Add Hidden Views to Sidebar** (Estimated: 30 mins)
-   - Add 4 new navigation entries to `NAV_ITEMS` in `Sidebar.tsx`
-   - Suggested placement and icons:
-     ```typescript
-     { id: 'enhanced-trading', label: 'Enhanced Trading', icon: Sparkles },
-     { id: 'positions', label: 'Positions', icon: Wallet },
-     { id: 'strategylab', label: 'Strategy Lab', icon: Sliders },
-     { id: 'exchange-settings', label: 'Exchange Settings', icon: Settings },
-     ```
-   - Consider grouping related items (e.g., Trading section)
+1. ✅ **No Hidden Views** - All views are properly linked and reachable
+2. ✅ **Clean Legacy Management** - Old code properly archived in `__legacy__` and `__backup__`
+3. ✅ **Honest Backtesting** - Transparent demo mode with clear warnings
+4. ✅ **Consistent Theme** - Unified design system across all views
+5. ✅ **Proper Routing** - Canonical versions correctly wired in App.tsx
 
-2. **Mark Backtesting as Demo** (Estimated: 15 mins)
-   - Add warning banner to `BacktestView.tsx`
-   - Add tooltip explaining demo mode
-   - Create GitHub issue for real backtest implementation
+### Significant Opportunities
 
-3. **Archive Legacy Files** (Estimated: 10 mins)
-   - Move `StrategyLabView.tsx` → `src/views/__legacy__/`
-   - Move `SVG_Icons.tsx` (view) → `src/views/__legacy__/`
-   - Update any imports if needed (should be none for SVG_Icons view)
-   - Add README to `__legacy__/` explaining why files are there
+1. ⚠️ **12+ Unused Components** - Valuable components never integrated
+2. ⚠️ **Scanner Pack Unutilized** - 6 scanner components ready but not used
+3. ⚠️ **Memory Leak in Connectors** - Real data connectors disabled
+4. ⚠️ **ExchangeSelector Missing** - Exchange selection UI not integrated
 
-### Medium Priority
+### Technical Debt
 
-4. **Fix Theme Consistency** (Estimated: 1 hour)
-   - Remove `dir="rtl"` from all 4 hidden views
-   - Replace hardcoded gradients with `viewTheme.backgroundGradient`
-   - Standardize border radius (use Tailwind classes only)
+1. **Disabled Connectors:** RealChartDataConnector, RealPriceChartConnector
+   - Reason: Memory leak from independent API calls
+   - Fix: Refactor to use centralized DataContext
 
-5. **Add i18n Keys** (Estimated: 30 mins)
-   - Add translation keys for new sidebar labels
-   - Update `src/i18n/` files
-
-6. **Group Navigation Items** (Estimated: 1 hour)
-   - Consider organizing sidebar into sections:
-     - **Overview:** Dashboard, Market, Scanner
-     - **Trading:** Trading, Enhanced Trading, Positions, Futures
-     - **Strategy:** Strategy Builder, Strategy Lab, Strategy Insights
-     - **Risk & Analysis:** Risk, Pro Risk, Backtest
-     - **System:** Health, Settings, Exchange Settings, Training
-
-### Low Priority (Future Work)
-
-7. **Implement Real Backtesting** (Estimated: 2-4 weeks)
-   - Connect to historical data provider
-   - Build strategy execution simulator
-   - Calculate real performance metrics
-   - Add walk-forward analysis
-   - Add Monte Carlo simulations
-
-8. **Consolidate Icons** (Estimated: 30 mins)
-   - Migrate all views to use lucide-react icons (already standard)
-   - Remove custom SVG_Icons if not needed
-   - Clean up icon imports
+2. **Unused Components:** See Section 4 for full list
 
 ---
 
-## Proposed Navigation Structure
+## 9. Recommendations
 
-### Option 1: Flat Menu (Current + 4 New Items)
+### Priority 1: High-Value Quick Wins
 
-```
-Dashboard
-Charting
-Market
-Scanner
-Trading
-Enhanced Trading          ← NEW
-Futures
-Positions                 ← NEW
-Portfolio
-Training
-Risk
-Professional Risk
-Backtest
-Strategy Builder
-Strategy Lab              ← NEW
-Strategy Insights
-Health
-Settings
-Exchange Settings         ← NEW
-```
+#### A) Integrate Scanner Pack into ScannerView
 
-**Pros:** Simple, minimal changes
-**Cons:** Long menu (19 items)
+**Benefit:** Add 6 powerful scanner types to enhance market analysis
 
-### Option 2: Grouped Menu (Recommended)
+**Effort:** Medium (2-4 hours)
 
-```
-📊 OVERVIEW
-  Dashboard
-  Market
-  Scanner
+**Implementation:**
+- Create tabbed interface in `ScannerView.tsx`
+- Add tabs: AI Signals, Technical Patterns, Smart Money, News, Whales, Live Feed
+- Wire each component to its tab
 
-💱 TRADING
-  Trading (Unified)
-  Enhanced Trading    ← NEW
-  Positions           ← NEW
-  Futures
-  Portfolio
+#### B) Add ExchangeSelector to Key Views
 
-🎯 STRATEGY
-  Strategy Builder
-  Strategy Lab        ← NEW
-  Strategy Insights
+**Benefit:** Allow users to filter/select exchanges
 
-📈 RISK & ANALYSIS
-  Risk Management
-  Professional Risk
-  Backtest
+**Effort:** Low (1-2 hours)
 
-⚙️ SYSTEM
-  Training
-  Health
-  Settings
-  Exchange Settings   ← NEW
-```
+**Implementation:**
+- Add to MarketView for exchange filtering
+- Add to Settings for default exchange configuration
+- Add to Trading views for exchange selection
 
-**Pros:** Organized, scalable, better UX
-**Cons:** Requires navigation refactoring
+#### C) Integrate BacktestPanel into BacktestView
 
----
+**Benefit:** Replace inline UI with reusable component
 
-## Implementation Plan
+**Effort:** Low (1 hour)
 
-### Phase 1: Quick Wins (1-2 hours)
+**Implementation:**
+- Replace inline backtest UI with `BacktestPanel` component
+- Keep warning banner and demo mode logic
 
-1. ✅ Complete this audit report
-2. Add 4 navigation entries to sidebar
-3. Add backtest warning banner
-4. Archive legacy files
-5. Test all newly-exposed views
-6. Commit changes
+### Priority 2: Fix Technical Debt
 
-### Phase 2: Theme & UX (2-3 hours)
+#### A) Fix Real Data Connector Memory Leaks
 
-1. Remove RTL directives
-2. Replace hardcoded gradients with viewTheme
-3. Standardize styling
-4. Add i18n keys
-5. Test visual consistency
-6. Commit changes
+**Benefit:** Re-enable real-time data connectors
 
-### Phase 3: Navigation Enhancement (Optional, 3-4 hours)
+**Effort:** High (4-8 hours)
 
-1. Design grouped navigation structure
-2. Update NavigationProvider
-3. Update Sidebar component
-4. Add section headers
-5. Test navigation flow
-6. Commit changes
+**Implementation:**
+- Refactor RealChartDataConnector to use centralized DataContext
+- Refactor RealPriceChartConnector similarly
+- Add proper cleanup in useEffect hooks
+- Re-enable in connectors/index.ts
 
-### Phase 4: Real Backtesting (Future)
+### Priority 3: Enhancement Opportunities
 
-1. Research historical data providers
-2. Design backtest engine architecture
-3. Implement strategy simulator
-4. Build metrics calculator
-5. Replace fake data in BacktestView
-6. Add tests
-7. Commit changes
+#### A) Add Chart Overlays
+
+**Benefit:** Enhanced chart visualization
+
+**Effort:** Medium (2-3 hours)
+
+**Implementation:**
+- Integrate PatternOverlay into ChartingView
+- Add pattern detection visualization
+
+#### B) Add ScoringEditor to StrategyLab
+
+**Benefit:** Better weight editing UI
+
+**Effort:** Low (1-2 hours)
+
+**Implementation:**
+- Add ScoringEditor as alternative to slider-based editing
+- Maintain current slider UI as default
 
 ---
 
-## Code Changes Summary
+## 10. Conclusion
 
-### Files to Modify
+This codebase is **well-structured and honest** with proper separation of legacy/canonical code. The primary opportunity is integrating the 12+ unused but valuable components, particularly the scanner pack.
 
-1. **`src/components/Navigation/Sidebar.tsx`**
-   - Add 4 new entries to `NAV_ITEMS`
+### Next Steps
 
-2. **`src/views/BacktestView.tsx`**
-   - Add warning banner about demo mode
-
-3. **`src/views/EnhancedTradingView.tsx`**
-   - Remove `dir="rtl"`
-   - Use `viewTheme.backgroundGradient`
-
-4. **`src/views/PositionsView.tsx`**
-   - Remove `dir="rtl"`
-   - Use `viewTheme.backgroundGradient`
-
-5. **`src/views/ExchangeSettingsView.tsx`**
-   - Remove `dir="rtl"`
-   - Use `viewTheme.backgroundGradient`
-
-6. **`src/views/EnhancedStrategyLabView.tsx`**
-   - Remove `dir="rtl"`
-   - Use `viewTheme.backgroundGradient`
-
-### Files to Move
-
-1. **`src/views/StrategyLabView.tsx`** → **`src/views/__legacy__/StrategyLabView.tsx`**
-2. **`src/views/SVG_Icons.tsx`** → **`src/views/__legacy__/SVG_Icons.tsx`**
-
-### Files to Create
-
-1. **`src/views/__legacy__/README.md`** - Explain archived files
+1. ✅ Review this report
+2. Decide which unused components to integrate
+3. Prioritize scanner pack integration (highest value)
+4. Plan memory leak fix for data connectors
+5. Execute integration in small, incremental changes
 
 ---
 
-## Conclusion
-
-This audit found a **healthy codebase** with **4 production-ready views hidden from users** and **1 critical fake data issue in backtesting**.
-
-**Immediate action items:**
-1. ✅ Expose 4 hidden views in navigation (they're ready!)
-2. ⚠️ Add warning to backtesting (it's fake data)
-3. 🗄️ Archive 3 legacy files (clean up duplicates)
-4. 🎨 Fix theme consistency (remove RTL, use viewTheme)
-
-**Long-term:**
-- Implement real historical backtesting
-- Consider grouped navigation for better UX
-- Continue using real data for all new features
-
-**Overall Assessment:** The project is in good shape with strong separation between real and fake data. The hidden views are high-quality and ready for production use.
-
----
-
-**End of Audit Report**
+**End of Report**
