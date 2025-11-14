@@ -166,19 +166,20 @@ export class TradingController {
   // ===== TESTNET TRADING ENGINE ENDPOINTS =====
 
   /**
-   * Execute a manual trade on testnet
+   * Execute a manual trade on testnet (SPOT or FUTURES)
    * POST /api/trade/execute
    *
    * Body:
    * {
    *   symbol: string (e.g., "BTCUSDT"),
    *   action: "BUY" | "SELL",
-   *   quantityUSDT?: number (optional, defaults to 100)
+   *   quantityUSDT?: number (optional, defaults to 100),
+   *   market?: "SPOT" | "FUTURES" | "BOTH" (optional, defaults to system config)
    * }
    */
   async executeTrade(req: Request, res: Response): Promise<void> {
     try {
-      const { symbol, action, quantityUSDT } = req.body;
+      const { symbol, action, quantityUSDT, market } = req.body;
 
       // Validate required fields
       if (!symbol || !action) {
@@ -198,6 +199,15 @@ export class TradingController {
         return;
       }
 
+      // Validate market (optional)
+      if (market && !['SPOT', 'FUTURES', 'BOTH'].includes(market)) {
+        res.status(400).json({
+          success: false,
+          error: 'Invalid market. Must be SPOT, FUTURES, or BOTH'
+        });
+        return;
+      }
+
       // Build trade signal
       const signal: TradeSignal = {
         source: 'manual',
@@ -205,7 +215,8 @@ export class TradingController {
         action: action,
         confidence: null,
         score: null,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        market: market // Optional - will default to system config if not provided
       };
 
       // Execute trade
@@ -229,16 +240,38 @@ export class TradingController {
 
   /**
    * Get open positions from testnet
-   * GET /api/trade/open-positions
+   * GET /api/trade/open-positions?market=spot|futures
+   *
+   * Query params:
+   * - market: "spot" | "futures" (optional, defaults to futures)
+   *
+   * NOTE: SPOT positions are not applicable (spot has balances, not positions)
+   * This endpoint only returns FUTURES positions
    */
   async getOpenPositions(req: Request, res: Response): Promise<void> {
     try {
+      const { market } = req.query;
+
+      // For now, only FUTURES positions are supported
+      // SPOT doesn't have positions (it has balances)
+      if (market === 'spot') {
+        res.json({
+          success: true,
+          data: [],
+          count: 0,
+          message: 'SPOT positions not applicable - SPOT trading uses balances instead of positions',
+          timestamp: Date.now()
+        });
+        return;
+      }
+
       const positions = await this.exchangeClient.getOpenPositions();
 
       res.json({
         success: true,
         data: positions,
         count: positions.length,
+        market: 'FUTURES',
         timestamp: Date.now()
       });
 
