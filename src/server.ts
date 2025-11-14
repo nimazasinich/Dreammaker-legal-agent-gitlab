@@ -98,6 +98,7 @@ import { ScoringController } from './controllers/ScoringController.js';
 import { StrategyPipelineController } from './controllers/StrategyPipelineController.js';
 import { TuningController } from './controllers/TuningController.js';
 import { SystemStatusController } from './controllers/SystemStatusController.js';
+import { HFDataEngineController } from './controllers/HFDataEngineController.js';
 import { setupProxyRoutes } from './services/ProxyRoutes.js';
 import { SignalVisualizationWebSocketService } from './services/SignalVisualizationWebSocketService.js';
 import { TelegramService } from './services/TelegramService.js';
@@ -224,6 +225,7 @@ const scoringController = new ScoringController();
 const strategyPipelineController = new StrategyPipelineController();
 const tuningController = new TuningController();
 const systemStatusController = new SystemStatusController();
+const hfDataEngineController = HFDataEngineController.getInstance();
 
 // Initialize AI Core and Training Systems
 const { XavierInitializer, StableActivations, NetworkArchitectures } = AICore;
@@ -817,6 +819,70 @@ app.get('/api/system/health', async (req, res) => {
 app.get('/api/system/config', async (req, res) => {
   await systemController.getConfig(req, res);
 });
+
+// ============================================================================
+// HuggingFace Data Engine Routes
+// ============================================================================
+
+// Health & Status
+app.get('/api/hf-engine/health', async (req, res) => {
+  await hfDataEngineController.getHealth(req, res);
+});
+
+app.get('/api/hf-engine/status', async (req, res) => {
+  await hfDataEngineController.getStatus(req, res);
+});
+
+app.get('/api/hf-engine/providers', async (req, res) => {
+  await hfDataEngineController.getProviders(req, res);
+});
+
+// Market Data
+app.get('/api/hf-engine/prices', async (req, res) => {
+  await hfDataEngineController.getPrices(req, res);
+});
+
+app.get('/api/hf-engine/market/overview', async (req, res) => {
+  await hfDataEngineController.getMarketOverview(req, res);
+});
+
+app.get('/api/hf-engine/categories', async (req, res) => {
+  await hfDataEngineController.getCategories(req, res);
+});
+
+// Observability
+app.get('/api/hf-engine/rate-limits', async (req, res) => {
+  await hfDataEngineController.getRateLimits(req, res);
+});
+
+app.get('/api/hf-engine/logs', async (req, res) => {
+  await hfDataEngineController.getLogs(req, res);
+});
+
+app.get('/api/hf-engine/alerts', async (req, res) => {
+  await hfDataEngineController.getAlerts(req, res);
+});
+
+// HuggingFace Integration
+app.get('/api/hf-engine/hf/health', async (req, res) => {
+  await hfDataEngineController.getHfHealth(req, res);
+});
+
+app.post('/api/hf-engine/hf/refresh', async (req, res) => {
+  await hfDataEngineController.refreshHfData(req, res);
+});
+
+app.get('/api/hf-engine/hf/registry', async (req, res) => {
+  await hfDataEngineController.getHfRegistry(req, res);
+});
+
+app.post('/api/hf-engine/hf/sentiment', async (req, res) => {
+  await hfDataEngineController.runSentiment(req, res);
+});
+
+// ============================================================================
+// End of HuggingFace Data Engine Routes
+// ============================================================================
 
 // Backtesting endpoint
 app.post('/api/ai/backtest', async (req, res) => {
