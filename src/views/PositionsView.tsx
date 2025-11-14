@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import WebSocket from 'isomorphic-ws';
 import { Logger } from '../core/Logger';
 import { API_BASE, buildWebSocketUrl } from '../config/env';
+import { showToast } from '../components/ui/Toast';
+import { useConfirmModal } from '../components/ui/ConfirmModal';
 
 interface Position {
   id: string;
@@ -30,7 +32,8 @@ interface Order {
 
 export const PositionsView: React.FC = () => {
   const logger = Logger.getInstance();
-    const [isLoading, setIsLoading] = useState(false);
+  const { confirm, ModalComponent } = useConfirmModal();
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [positions, setPositions] = useState<Position[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -101,7 +104,12 @@ export const PositionsView: React.FC = () => {
   };
 
   const handleClosePosition = async (id: string) => {
-    if (!confirm(`Close this position?`)) return;
+    const confirmed = await confirm(
+      'Close Position',
+      'Are you sure you want to close this position?',
+      'danger'
+    );
+    if (!confirmed) return;
 
     setLoading(true);
     try {
@@ -115,22 +123,27 @@ export const PositionsView: React.FC = () => {
       const data = await response.json();
       if (data.success) {
         await loadData();
-        alert(data.message || 'Position closed successfully');
+        showToast('success', 'Position Closed', data.message || 'Position closed successfully');
       } else {
-        alert(`Failed to close position: ${data.error}`);
+        showToast('error', 'Failed to Close', data.error || 'Failed to close position');
       }
     } catch (error: any) {
-      alert(`Failed to close position: ${error.message}`);
+      showToast('error', 'Failed to Close', error.message || 'Failed to close position');
     }
     setLoading(false);
   };
 
   const handleReducePosition = async (id: string) => {
     const position = positions.find(p => p.id === id);
-    if (!position) { console.warn("Missing data"); }
+    if (!position) { logger.warn("Position not found"); return; }
 
     const reduceBy = position.size / 2;
-    if (!confirm(`Reduce position by ${reduceBy}?`)) return;
+    const confirmed = await confirm(
+      'Reduce Position',
+      `Reduce position by ${reduceBy}?`,
+      'warning'
+    );
+    if (!confirmed) return;
 
     setLoading(true);
     try {
@@ -144,21 +157,26 @@ export const PositionsView: React.FC = () => {
       const data = await response.json();
       if (data.success) {
         await loadData();
-        alert(data.message || 'Position reduced successfully');
+        showToast('success', 'Position Reduced', data.message || 'Position reduced successfully');
       } else {
-        alert(`Failed to reduce position: ${data.error}`);
+        showToast('error', 'Failed to Reduce', data.error || 'Failed to reduce position');
       }
     } catch (error: any) {
-      alert(`Failed to reduce position: ${error.message}`);
+      showToast('error', 'Failed to Reduce', error.message || 'Failed to reduce position');
     }
     setLoading(false);
   };
 
   const handleReversePosition = async (id: string) => {
     const position = positions.find(p => p.id === id);
-    if (!position) { console.warn("Missing data"); }
+    if (!position) { logger.warn("Position not found"); return; }
 
-    if (!confirm(`Reverse position for ${position.symbol}?`)) return;
+    const confirmed = await confirm(
+      'Reverse Position',
+      `Reverse position for ${position.symbol}?`,
+      'warning'
+    );
+    if (!confirmed) return;
 
     setLoading(true);
     try {
@@ -186,15 +204,20 @@ export const PositionsView: React.FC = () => {
       });
 
       await loadData();
-      alert('Position reversed successfully');
+      showToast('success', 'Position Reversed', 'Position reversed successfully');
     } catch (error: any) {
-      alert(`Failed to reverse position: ${error.message}`);
+      showToast('error', 'Failed to Reverse', error.message || 'Failed to reverse position');
     }
     setLoading(false);
   };
 
   const handleCancelOrder = async (orderId: string) => {
-    if (!confirm('Cancel this order?')) return;
+    const confirmed = await confirm(
+      'Cancel Order',
+      'Are you sure you want to cancel this order?',
+      'warning'
+    );
+    if (!confirmed) return;
 
     setLoading(true);
     try {
@@ -206,12 +229,12 @@ export const PositionsView: React.FC = () => {
       const data = await response.json();
       if (data.success) {
         await loadData();
-        alert(data.message || 'Order cancelled successfully');
+        showToast('success', 'Order Cancelled', data.message || 'Order cancelled successfully');
       } else {
-        alert(`Failed to cancel order: ${data.error}`);
+        showToast('error', 'Failed to Cancel', data.error || 'Failed to cancel order');
       }
     } catch (error: any) {
-      alert(`Failed to cancel order: ${error.message}`);
+      showToast('error', 'Failed to Cancel', error.message || 'Failed to cancel order');
     }
     setLoading(false);
   };
@@ -225,9 +248,11 @@ export const PositionsView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Positions & Orders</h1>
+    <>
+      <ModalComponent />
+      <div className="min-h-screen bg-surface p-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">Positions & Orders</h1>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
@@ -416,6 +441,7 @@ export const PositionsView: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { KuCoinFuturesService } from '../services/KuCoinFuturesService.js';
 import { Logger } from '../core/Logger.js';
+import { showToast } from '../components/ui/Toast';
+import { useConfirmModal } from '../components/ui/ConfirmModal';
 
 const logger = Logger.getInstance();
 
 export const FuturesTradingView: React.FC = () => {
   const futuresService = KuCoinFuturesService.getInstance();
+  const { confirm, ModalComponent } = useConfirmModal();
 
   // Trading mode state
     const [isLoading, setIsLoading] = useState(false);
@@ -169,7 +172,7 @@ export const FuturesTradingView: React.FC = () => {
   };
 
   const handlePlaceOrder = async () => {
-    if (!orderSize) { console.warn("Missing data"); }
+    if (!orderSize) { logger.warn("Missing order size"); }
     setLoading(true);
     try {
       await fetch(`${API_BASE}/futures/orders`, {
@@ -187,10 +190,10 @@ export const FuturesTradingView: React.FC = () => {
         }),
         credentials: 'include'
       });
-      alert('Order placed successfully!');
+      showToast('success', 'Order Placed', 'Your futures order has been placed successfully!');
       loadData();
     } catch (error: any) {
-      alert(`Failed to place order: ${error.message}`);
+      showToast('error', 'Order Failed', error.message || 'Failed to place order');
     } finally {
       setLoading(false);
     }
@@ -198,11 +201,16 @@ export const FuturesTradingView: React.FC = () => {
 
   const handlePlaceSuggestedOrder = async () => {
     if (!snapshot || !snapshot.entryPlan) {
-      alert('No entry plan available');
+      showToast('warning', 'No Entry Plan', 'Entry plan is not available for this symbol');
       return;
     }
 
-    if (!confirm(`Place ${snapshot.action} order for ${selectedSymbol}?`)) return;
+    const confirmed = await confirm(
+      'Place Suggested Order',
+      `Place ${snapshot.action} order for ${selectedSymbol}?`,
+      'info'
+    );
+    if (!confirmed) return;
 
     setLoading(true);
     try {
@@ -223,14 +231,14 @@ export const FuturesTradingView: React.FC = () => {
 
       const data = await response.json();
       if (data.success) {
-        alert('Order placed successfully!');
+        showToast('success', 'Order Placed', 'Suggested order has been placed successfully!');
         setOrderSize('0.1');
         loadData();
       } else {
-        alert(`Order failed: ${data.error}`);
+        showToast('error', 'Order Failed', data.error || 'Failed to place suggested order');
       }
     } catch (error: any) {
-      alert(`Order failed: ${error.message}`);
+      showToast('error', 'Order Failed', error.message || 'Failed to place suggested order');
     }
     setLoading(false);
   };
@@ -242,30 +250,36 @@ export const FuturesTradingView: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol: selectedSymbol, leverage })
       });
-      alert('Leverage set successfully!');
+      showToast('success', 'Leverage Updated', `Leverage set to ${leverage}x successfully!`);
     } catch (error: any) {
-      alert(`Failed to set leverage: ${error.message}`);
+      showToast('error', 'Leverage Update Failed', error.message || 'Failed to set leverage');
     }
   };
 
   const handleClosePosition = async (symbol: string) => {
-    if (!confirm(`Close position for ${symbol}?`)) return;
+    const confirmed = await confirm(
+      'Close Position',
+      `Are you sure you want to close your position for ${symbol}?`,
+      'danger'
+    );
+    if (!confirmed) return;
+
     try {
       await fetch(`${API_BASE}/futures/positions/${symbol}`, { method: 'DELETE' });
-      alert('Position closed!');
+      showToast('success', 'Position Closed', `Position for ${symbol} has been closed successfully!`);
       loadData();
     } catch (error: any) {
-      alert(`Failed to close position: ${error.message}`);
+      showToast('error', 'Failed to Close', error.message || 'Failed to close position');
     }
   };
 
   const handleCancelOrder = async (orderId: string) => {
     try {
       await fetch(`${API_BASE}/futures/orders/${orderId}`, { method: 'DELETE' });
-      alert('Order cancelled!');
+      showToast('success', 'Order Cancelled', 'Order has been cancelled successfully');
       loadData();
     } catch (error: any) {
-      alert(`Failed to cancel order: ${error.message}`);
+      showToast('error', 'Cancellation Failed', error.message || 'Failed to cancel order');
     }
   };
 
@@ -282,9 +296,11 @@ export const FuturesTradingView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[color:var(--surface-page)] p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-[color:var(--text-primary)] mb-6">Futures Trading</h1>
+    <>
+      <ModalComponent />
+      <div className="min-h-screen bg-[color:var(--surface-page)] p-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-[color:var(--text-primary)] mb-6">Futures Trading</h1>
 
         {/* Balance Display */}
         {balance && (
@@ -817,6 +833,7 @@ export const FuturesTradingView: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
