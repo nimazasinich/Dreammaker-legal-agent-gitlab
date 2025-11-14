@@ -734,6 +734,7 @@ export interface TradeSignal {
   confidence?: number | null;
   score?: number | null;
   timestamp: number;
+  market?: TradingMarket;
 }
 
 /** Trade execution result */
@@ -741,6 +742,7 @@ export interface TradeExecutionResult {
   executed: boolean;
   reason?: string;
   order?: PlaceOrderResult | null;
+  market?: TradingMarket;
 }
 
 /** Order placement parameters */
@@ -751,6 +753,7 @@ export interface PlaceOrderParams {
   type?: 'MARKET';
   leverage?: number;
   reduceOnly?: boolean;
+  market?: TradingMarket;
 }
 
 /** Order placement result */
@@ -786,17 +789,35 @@ export interface AccountInfo {
   marginBalance: number;
 }
 
-/** Risk guard configuration */
-export interface RiskGuardConfig {
+/** Risk guard configuration for a specific market */
+export interface MarketRiskConfig {
   maxPositionSizeUSDT: number;
   maxDailyLossUSDT: number;
   maxOpenPositions: number;
-  stopLossMultiplier: number;
-  takeProfitMultiplier: number;
-  leverage: number;
+  stopLossMultiplier?: number;
+  takeProfitMultiplier?: number;
+  leverage?: number;
   minAccountBalanceUSDT: number;
   maxRiskPerTradePercent: number;
   requireMarketData: boolean;
+}
+
+/** Risk guard configuration (legacy single config or new dual config) */
+export interface RiskGuardConfig {
+  // Legacy single config fields (for backwards compatibility)
+  maxPositionSizeUSDT?: number;
+  maxDailyLossUSDT?: number;
+  maxOpenPositions?: number;
+  stopLossMultiplier?: number;
+  takeProfitMultiplier?: number;
+  leverage?: number;
+  minAccountBalanceUSDT?: number;
+  maxRiskPerTradePercent?: number;
+  requireMarketData?: boolean;
+
+  // New dual-mode config
+  spot?: MarketRiskConfig;
+  futures?: MarketRiskConfig;
 }
 
 /** Risk check input */
@@ -804,6 +825,7 @@ export interface RiskCheckInput {
   symbol: string;
   side: 'BUY' | 'SELL';
   quantityUSDT: number;
+  market?: TradingMarket;
 }
 
 /** Risk check result */
@@ -816,6 +838,12 @@ export interface RiskCheckResult {
 
 // ====== System Control & Status Types ======
 
+/** Trading mode */
+export type TradingMode = 'OFF' | 'DRY_RUN' | 'TESTNET';
+
+/** Trading market type */
+export type TradingMarket = 'SPOT' | 'FUTURES' | 'BOTH';
+
 /** System configuration with feature flags and modes */
 export interface SystemConfig {
   features: {
@@ -827,7 +855,12 @@ export interface SystemConfig {
   };
   modes: {
     environment: 'DEV' | 'STAGING' | 'PROD';
-    trading: 'OFF' | 'DRY_RUN' | 'TESTNET';
+    trading: TradingMode;
+  };
+  trading?: {
+    environment: 'DEV' | 'STAGING' | 'PROD';
+    mode: TradingMode;
+    market: TradingMarket;
   };
 }
 
@@ -842,7 +875,8 @@ export interface SystemStatusResponse {
     manualTrade: boolean;
   };
   trading: {
-    mode: 'OFF' | 'DRY_RUN' | 'TESTNET';
+    mode: TradingMode;
+    market?: TradingMarket;
     health: 'ok' | 'unreachable' | 'off' | 'unknown';
   };
   liveScoring: {

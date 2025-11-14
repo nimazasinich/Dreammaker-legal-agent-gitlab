@@ -9,5 +9,10 @@
   "modes": {
     "environment": "DEV",
     "trading": "DRY_RUN"
+  },
+  "trading": {
+    "environment": "DEV",
+    "mode": "DRY_RUN",
+    "market": "FUTURES"
   }
 }
