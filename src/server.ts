@@ -793,6 +793,15 @@ app.get('/api/trading/market/:symbol', async (req, res) => {
   await tradingController.analyzeMarket(req, res);
 });
 
+// Testnet Trading Engine endpoints
+app.post('/api/trade/execute', async (req, res) => {
+  await tradingController.executeTrade(req, res);
+});
+
+app.get('/api/trade/open-positions', async (req, res) => {
+  await tradingController.getOpenPositions(req, res);
+});
+
 // Market Data endpoints - using MarketDataController
 app.get('/api/market-data/prices', async (req, res) => {
   await marketDataController.getPrices(req, res);
