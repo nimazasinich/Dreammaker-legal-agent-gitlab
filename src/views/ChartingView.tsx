@@ -13,6 +13,7 @@ import { useOHLC, OHLCBar } from '../hooks/useOHLC';
 import { useDebouncedEffect } from '../hooks/useDebouncedEffect';
 import { useSafeAsync } from '../hooks/useSafeAsync';
 import BacktestButton from '../components/backtesting/BacktestButton';
+import { PatternOverlay } from '../components/charts/PatternOverlay';
 
 const logger = Logger.getInstance();
 
@@ -68,6 +69,7 @@ const ChartingView: React.FC = () => {
   const [priceChange, setPriceChange] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSymbolPicker, setShowSymbolPicker] = useState(false);
+  const [showPatternOverlay, setShowPatternOverlay] = useState(false);
 
   // Use useOHLC hook for resilient data loading
   const { data: chartData, loading, error: ohlcError, updatedAt, reload } = useOHLC(symbol, timeframe, 500);
@@ -410,6 +412,20 @@ const ChartingView: React.FC = () => {
               />
 
               <button
+                onClick={() => setShowPatternOverlay(!showPatternOverlay)}
+                className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+                  showPatternOverlay
+                    ? 'bg-gradient-to-r from-[var(--primary-500)] to-[var(--primary-600)] text-white shadow-md'
+                    : 'card-base hover:shadow-md'
+                }`}
+                aria-label="Toggle pattern overlay"
+                title="Toggle pattern overlay"
+              >
+                <Layers className="w-4 h-4" />
+                <span className="text-sm">Patterns</span>
+              </button>
+
+              <button
                 onClick={() => setShowSettings(!showSettings)}
                 className="px-4 py-2 rounded-lg card-base hover:shadow-md transition-all"
                 aria-label="Toggle chart settings"
@@ -528,14 +544,22 @@ const ChartingView: React.FC = () => {
 
           {/* Chart Container */}
           <ChartFrame
-            title="Price Chart"
+            title={showPatternOverlay ? "Pattern Analysis" : "Price Chart"}
             subtitle={`${currentSymbolInfo?.label || symbol} • ${timeframe}${updatedAt ? ' • updated ' + new Date(updatedAt).toLocaleTimeString() : ''}`}
             loading={loading && !chartData}
             error={error}
             onReload={reload}
             height={settings.showVolume ? 600 : 500}
           >
-            {renderChart()}
+            {/*
+              NOTE: PatternOverlay has architectural debt - uses independent API calls + setInterval polling
+              Same memory leak pattern as Phase 2 connectors (should be refactored to use DataContext/LiveDataContext)
+            */}
+            {showPatternOverlay ? (
+              <PatternOverlay symbol={symbol} timeframe={timeframe} />
+            ) : (
+              renderChart()
+            )}
           </ChartFrame>
 
           {/* Quick Stats */}

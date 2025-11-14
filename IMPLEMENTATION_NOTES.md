@@ -451,24 +451,83 @@ import { SignalVisualizationSection } from '../components/signal/SignalVisualiza
 - ✅ Re-enabled connector exports
 - ✅ No more duplicate API calls or subscriptions
 
-### ⚠️ Deferred
+**Phase 3: Enhancements** ✅
+- ✅ **Phase 3.1:** PatternOverlay integrated into ChartingView & MarketView with toggle button
+- ✅ **Phase 3.2:** ScoringEditor integrated into StrategyBuilderView with tab interface
+- ⚠️ **SignalVisualizationSection** - Deferred (requires complex context setup, see notes below)
 
-**Phase 3: Enhancements**
-- PatternOverlay integration ready but deferred
-- ScoringEditor/SignalVisualizationSection integration ready but deferred
-- Full implementation guide provided in Phase 3 section above
-- Reason: Keep PR focused, prevent scope creep, deliver incremental value
+### Phase 3 Implementation Details
+
+**Phase 3.1: PatternOverlay Integration**
+
+*ChartingView.tsx changes:*
+- Added PatternOverlay import
+- Added `showPatternOverlay` state toggle
+- Added "Patterns" button in action buttons area (with Layers icon)
+- Conditional rendering: PatternOverlay OR existing chart based on toggle
+- Warning comment about architectural debt (same memory leak pattern as Phase 2 connectors)
+
+*MarketView.tsx changes:*
+- Added PatternOverlay import and Layers icon
+- Added `showPatternOverlay` state toggle
+- Added pattern overlay toggle button in header (with visual feedback)
+- Conditional rendering in chart area
+- Same architectural debt warning
+
+**Phase 3.2: ScoringEditor Integration**
+
+*StrategyBuilderView.tsx changes:*
+- Added ScoringEditor import
+- Added tab-based interface: "Strategy Templates" | "Quantum Scoring"
+- ScoringEditor renders as full-width component when "Quantum Scoring" tab is active
+- Self-contained component - no props needed
+
+**SignalVisualizationSection - Integration Requirements (Deferred)**
+
+This component was not integrated due to complexity. It requires:
+- `symbol`, `timeframe`, `chartData` props
+- Parent callbacks: `onSymbolChange`, `onTimeframeChange`, `onRefresh`
+- WebSocket connection via `useSignalWebSocket` hook
+- Chart overlay integration
+
+**Recommended integration approach:**
+1. Create a dedicated "Signal Visualization" view or page
+2. Set up symbol/timeframe state management
+3. Integrate OHLC data fetching for `chartData` prop
+4. Implement callback handlers for symbol/timeframe changes
+5. Test WebSocket connectivity before full rollout
 
 ### 📊 Impact
 
-**Files Modified:** 9 files
-**Lines Changed:** ~550 insertions, ~220 deletions
-**Components Integrated:** 9 components (scanners, selectors, panels, connectors)
-**Memory Leaks Fixed:** 2 critical issues
-**New Features:** Scanner tabs, exchange selector, real backtest mode, chart connectors
+**Files Modified:** 12 files
+- Phase 1: 5 files (ScannerView, MarketView, UnifiedTradingView, SettingsView, BacktestView)
+- Phase 2: 3 files (RealChartDataConnector, RealPriceChartConnector, connectors/index.ts)
+- Phase 3: 3 files (ChartingView, MarketView, StrategyBuilderView)
+- Documentation: 1 file (IMPLEMENTATION_NOTES.md)
+
+**Lines Changed:** ~750 insertions, ~250 deletions (approximate)
+
+**Components Integrated:** 12 components
+- Phase 1: 6 scanner components, ExchangeSelector, BacktestPanel
+- Phase 2: 2 connectors (refactored & re-enabled)
+- Phase 3: PatternOverlay (2 views), ScoringEditor (1 view)
+
+**Memory Leaks Fixed:** 2 critical issues (Phase 2)
+
+**New Features:**
+- Scanner tabs with real-time data
+- Exchange selector with health monitoring
+- Real backtest mode with demo toggle
+- Chart connectors (memory leak free)
+- Pattern overlay visualization
+- Quantum scoring system editor
+
+**Architectural Debt Noted:**
+- PatternOverlay uses same memory leak pattern as Phase 2 connectors
+- Should be refactored to use DataContext/LiveDataContext in future
 
 ---
 
 **End of Implementation Notes**
 **Last Updated:** 2025-11-14
-**Status:** Phase 1 & 2 Complete ✅ | Phase 3 Deferred ⚠️
+**Status:** Phase 1, 2 & 3 Complete ✅ | SignalVisualizationSection Deferred ⚠️

@@ -10,7 +10,8 @@ import {
     Search,
     Filter,
     Settings,
-    AlertCircle
+    AlertCircle,
+    Layers
 } from 'lucide-react';
 import { PriceChart, MarketTicker } from '../components/market';
 import { NewsFeed } from '../components/news';
@@ -23,6 +24,7 @@ import { APP_MODE, USE_MOCK_DATA } from '../config/env.js';
 import { getTopPairs, searchPairs, PairItem, toBinanceSymbol, getChangePct } from '../services/marketUniverse';
 import BacktestButton from '../components/backtesting/BacktestButton';
 import { ExchangeSelector } from '../components/ExchangeSelector';
+import { PatternOverlay } from '../components/charts/PatternOverlay';
 
 // Helper function to generate sample analysis data
 const generateSampleAnalysisData = (symbol: string): AnalysisData => {
@@ -86,6 +88,7 @@ export const MarketView: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [topGainers, setTopGainers] = useState<Array<{ symbol: string; changePct: number; price?: number }>>([]);
     const [topLosers, setTopLosers] = useState<Array<{ symbol: string; changePct: number; price?: number }>>([]);
+    const [showPatternOverlay, setShowPatternOverlay] = useState(false);
 
     // Get live data context
     const liveDataContext = useContext(LiveDataContext);
@@ -350,6 +353,27 @@ export const MarketView: React.FC = () => {
                             />
                         </div>
 
+                        {/* Pattern Overlay Toggle */}
+                        <button
+                            onClick={() => setShowPatternOverlay(!showPatternOverlay)}
+                            className="px-4 py-2 rounded-xl backdrop-blur-sm transition-all hover:scale-105"
+                            style={{
+                                background: showPatternOverlay
+                                    ? 'rgba(139, 92, 246, 0.3)'
+                                    : 'rgba(15, 15, 24, 0.6)',
+                                border: showPatternOverlay
+                                    ? '1px solid rgba(139, 92, 246, 0.6)'
+                                    : '1px solid rgba(139, 92, 246, 0.2)',
+                                boxShadow: showPatternOverlay
+                                    ? '0 8px 32px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.3)'
+                                    : '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(139, 92, 246, 0.1)'
+                            }}
+                            aria-label="Toggle pattern overlay"
+                            title="Toggle pattern overlay"
+                        >
+                            <Layers className="w-4 h-4 text-purple-400" aria-hidden="true" />
+                        </button>
+
                         {/* Filter Button */}
                         <button
                             onClick={() => setShowFilters(!showFilters)}
@@ -592,11 +616,19 @@ export const MarketView: React.FC = () => {
                             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5)'
                         }}
                     >
-                        <PriceChart
-                            symbol={selectedSymbol}
-                            autoFetch={true}
-                            initialTimeframe={timeframe}
-                        />
+                        {/*
+                          NOTE: PatternOverlay has architectural debt - uses independent API calls + setInterval polling
+                          Same memory leak pattern as Phase 2 connectors (should be refactored to use DataContext/LiveDataContext)
+                        */}
+                        {showPatternOverlay ? (
+                            <PatternOverlay symbol={selectedSymbol} timeframe={timeframe} />
+                        ) : (
+                            <PriceChart
+                                symbol={selectedSymbol}
+                                autoFetch={true}
+                                initialTimeframe={timeframe}
+                            />
+                        )}
                     </div>
                 </div>
 

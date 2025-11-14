@@ -3,6 +3,7 @@ import { API_BASE, APP_MODE, STRICT_REAL_DATA } from '../config/env';
 import { StrategyTemplateEditor } from '../components/strategy/StrategyTemplateEditor';
 import ScoreGauge from '../components/strategy/ScoreGauge';
 import { saveStrategyOutput } from '../storage/mlOutputs';
+import { ScoringEditor } from '../components/scoring/ScoringEditor';
 
 // Simple animated step header (CSS transitions only)
 function StepHeader({ step, title, active }:{ step:number; title:string; active:boolean }) {
@@ -18,6 +19,7 @@ export default function StrategyBuilderView() {
     const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeStep, setActiveStep] = React.useState<1|2>(1);
+  const [activeTab, setActiveTab] = React.useState<'templates' | 'scoring'>('templates');
   const [selectedTemplate, setSelectedTemplate] = React.useState<any>(null);
   const [symbol, setSymbol] = React.useState('BTCUSDT');
   const [timeframe, setTimeframe] = React.useState('1h');
@@ -94,7 +96,33 @@ export default function StrategyBuilderView() {
         <StepHeader step={2} title="Real Backtest" active={activeStep===2}/>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4">
+      {/* Tab Switcher */}
+      <div className="flex gap-2 border-b border-white/15 pb-2">
+        <button
+          onClick={() => setActiveTab('templates')}
+          className={`px-4 py-2 rounded-t-lg transition-all ${
+            activeTab === 'templates'
+              ? 'bg-blue-500/80 text-white font-semibold'
+              : 'bg-white/5 hover:bg-white/10'
+          }`}
+        >
+          Strategy Templates
+        </button>
+        <button
+          onClick={() => setActiveTab('scoring')}
+          className={`px-4 py-2 rounded-t-lg transition-all ${
+            activeTab === 'scoring'
+              ? 'bg-blue-500/80 text-white font-semibold'
+              : 'bg-white/5 hover:bg-white/10'
+          }`}
+        >
+          Quantum Scoring
+        </button>
+      </div>
+
+      {/* Conditional Rendering based on active tab */}
+      {activeTab === 'templates' && (
+        <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2 space-y-4">
           <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur p-4">
             <h3 className="font-semibold mb-2">Strategy Templates</h3>
@@ -178,6 +206,14 @@ export default function StrategyBuilderView() {
           </div>
         )}
       </div>
+      )}
+
+      {/* Quantum Scoring Tab */}
+      {activeTab === 'scoring' && (
+        <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur">
+          <ScoringEditor />
+        </div>
+      )}
     </div>
   );
 }
