@@ -16,11 +16,14 @@ const STATUS_STYLES: Record<string, string> = {
 
 export function StatusRibbon() {
   const { status, error } = useHealthCheck(15000, 4000);
-  const { state: { dataMode, tradingMode }, setDataMode, setTradingMode } = useMode();
+  const { state: { dataMode, tradingMode, dataSource: contextDataSource }, setDataMode, setTradingMode, setDataSource } = useMode();
   const { dataSource } = useData();
   const { isConnected } = useLiveData();
   const [systemTradingMode, setSystemTradingMode] = useState<TradingMode>('OFF');
   const [systemTradingMarket, setSystemTradingMarket] = useState<TradingMarket>('FUTURES');
+
+  // Use context data source or default to 'huggingface'
+  const activeDataSource = contextDataSource || 'huggingface';
 
   // Fetch system trading config from API
   useEffect(() => {
@@ -136,6 +139,46 @@ export function StatusRibbon() {
             aria-pressed={tradingMode === 'real'}
           >
             Real
+          </button>
+        </div>
+
+        {/* Data Source Selector */}
+        <div className="flex rounded-lg overflow-hidden border border-gray-300">
+          <button
+            onClick={() => setDataSource('huggingface')}
+            className={`px-3 py-1 text-xs font-medium transition ${
+              activeDataSource === 'huggingface'
+                ? 'bg-amber-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+            aria-pressed={activeDataSource === 'huggingface'}
+            title="Use HuggingFace Data Engine as primary data source"
+          >
+            🤗 HF
+          </button>
+          <button
+            onClick={() => setDataSource('exchanges')}
+            className={`px-3 py-1 text-xs font-medium transition ${
+              activeDataSource === 'exchanges'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+            aria-pressed={activeDataSource === 'exchanges'}
+            title="Use direct exchange APIs (Binance, KuCoin)"
+          >
+            📊 Exchanges
+          </button>
+          <button
+            onClick={() => setDataSource('mixed')}
+            className={`px-3 py-1 text-xs font-medium transition ${
+              activeDataSource === 'mixed'
+                ? 'bg-teal-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+            aria-pressed={activeDataSource === 'mixed'}
+            title="Use both HuggingFace and direct exchanges"
+          >
+            🔀 Mixed
           </button>
         </div>
       </div>
