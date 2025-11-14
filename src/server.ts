@@ -97,6 +97,7 @@ import { SystemController } from './controllers/SystemController.js';
 import { ScoringController } from './controllers/ScoringController.js';
 import { StrategyPipelineController } from './controllers/StrategyPipelineController.js';
 import { TuningController } from './controllers/TuningController.js';
+import { SystemStatusController } from './controllers/SystemStatusController.js';
 import { setupProxyRoutes } from './services/ProxyRoutes.js';
 import { SignalVisualizationWebSocketService } from './services/SignalVisualizationWebSocketService.js';
 import { TelegramService } from './services/TelegramService.js';
@@ -222,6 +223,7 @@ const systemController = new SystemController();
 const scoringController = new ScoringController();
 const strategyPipelineController = new StrategyPipelineController();
 const tuningController = new TuningController();
+const systemStatusController = new SystemStatusController();
 
 // Initialize AI Core and Training Systems
 const { XavierInitializer, StableActivations, NetworkArchitectures } = AICore;
@@ -1087,59 +1089,9 @@ app.post('/api/telegram/webhook', async (req, res) => {
   }
 });
 
-// System status endpoint
+// System status endpoint - Control Center + Safety Layer
 app.get('/api/system/status', async (req, res) => {
-  try {
-    const binanceHealthy = await binanceService.testConnection();
-    const connectionHealth = binanceService.getConnectionHealth();
-    const redisStatus = await redisService.getConnectionStatus();
-    
-    // Get system resource usage
-    const memUsage = process.memoryUsage();
-    const totalMemory = memUsage.heapTotal;
-    const usedMemory = memUsage.heapUsed;
-    const memoryPercent = (usedMemory / totalMemory) * 100;
-    
-    // CPU usage estimation
-    const startCpu = process.cpuUsage();
-    await new Promise(resolve => setTimeout(resolve, 100));
-    const endCpu = process.cpuUsage(startCpu);
-    const cpuPercent = Math.min(100, ((endCpu.user + endCpu.system) / 1000000) * 10);
-    
-    res.json({
-      providers: {
-        binance: {
-          status: binanceHealthy ? 'healthy' : 'unhealthy',
-          latency: connectionHealth.latency,
-          reconnectAttempts: connectionHealth.reconnectAttempts
-        },
-        redis: {
-          status: redisStatus.isConnected ? 'healthy' : 'unhealthy',
-          latency: 0
-        }
-      },
-      circuitBreakers: {
-        binance: connectionHealth.isConnected ? 'closed' : 'open'
-      },
-      system: {
-        cpu: cpuPercent,
-        memory: memoryPercent,
-        memoryMB: {
-          used: Math.round(usedMemory / 1024 / 1024),
-          total: Math.round(totalMemory / 1024 / 1024),
-          rss: Math.round(memUsage.rss / 1024 / 1024)
-        },
-        disk: 0 // Would need external library
-      },
-      timestamp: Date.now()
-    });
-  } catch (error) {
-    logger.error('Failed to get system status', {}, error as Error);
-    res.status(500).json({
-      error: 'Failed to get system status',
-      message: (error as Error).message
-    });
-  }
+  await systemStatusController.getStatus(req, res);
 });
 
 // Cache stats endpoint

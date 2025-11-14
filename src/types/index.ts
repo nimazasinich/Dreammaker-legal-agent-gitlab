@@ -814,5 +814,52 @@ export interface RiskCheckResult {
 
 // ====== End Trading Engine Types ======
 
+// ====== System Control & Status Types ======
+
+/** System configuration with feature flags and modes */
+export interface SystemConfig {
+  features: {
+    liveScoring: boolean;
+    backtest: boolean;
+    autoTuning: boolean;
+    autoTrade: boolean;
+    manualTrade: boolean;
+  };
+  modes: {
+    environment: 'DEV' | 'STAGING' | 'PROD';
+    trading: 'OFF' | 'DRY_RUN' | 'TESTNET';
+  };
+}
+
+/** System status response aggregating all subsystems */
+export interface SystemStatusResponse {
+  environment: 'DEV' | 'STAGING' | 'PROD';
+  features: {
+    liveScoring: boolean;
+    backtest: boolean;
+    autoTuning: boolean;
+    autoTrade: boolean;
+    manualTrade: boolean;
+  };
+  trading: {
+    mode: 'OFF' | 'DRY_RUN' | 'TESTNET';
+    health: 'ok' | 'unreachable' | 'off' | 'unknown';
+  };
+  liveScoring: {
+    enabled: boolean;
+    streaming: boolean;
+    lastScoreTimestamp: number | null;
+  };
+  tuning: {
+    hasRun: boolean;
+    lastMetric: {
+      metric: 'sharpe' | 'winRate' | 'pnl' | null;
+      value: number | null;
+    };
+  };
+}
+
+// ====== End System Control & Status Types ======
+
 // Re-export strategy pipeline types
 export * from './strategyPipeline';

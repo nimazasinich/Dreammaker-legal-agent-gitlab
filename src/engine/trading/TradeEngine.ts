@@ -16,6 +16,7 @@ import { Logger } from '../../core/Logger.js';
 import { ExchangeClient, PlaceOrderParams, PlaceOrderResult } from '../../services/exchange/ExchangeClient.js';
 import { RiskGuard } from './RiskGuard.js';
 import { Database } from '../../data/Database.js';
+import { getTradingMode } from '../../config/systemConfig.js';
 
 export interface TradeSignal {
   source: 'strategy-pipeline' | 'live-scoring' | 'manual';
@@ -67,13 +68,26 @@ export class TradeEngine {
    */
   async executeSignal(signal: TradeSignal, quantityUSDT?: number): Promise<TradeExecutionResult> {
     const tradeSize = quantityUSDT || this.defaultTradeSize;
+    const tradingMode = getTradingMode();
 
     this.logger.info('Executing trade signal', {
       source: signal.source,
       symbol: signal.symbol,
       action: signal.action,
-      quantityUSDT: tradeSize
+      quantityUSDT: tradeSize,
+      tradingMode
     });
+
+    // 0. Check trading mode (system-level control)
+    if (tradingMode === 'OFF') {
+      this.logger.warn('Trading is disabled in system config', {
+        symbol: signal.symbol
+      });
+      return {
+        executed: false,
+        reason: 'trading-disabled'
+      };
+    }
 
     // 1. Check if action is HOLD
     if (signal.action === 'HOLD') {
@@ -130,7 +144,7 @@ export class TradeEngine {
     const riskConfig = this.riskGuard.getConfig();
     const leverage = riskConfig.leverage || 3;
 
-    // 6. Place order via exchange client
+    // 6. Place order (real or simulated based on trading mode)
     const orderParams: PlaceOrderParams = {
       symbol: signal.symbol,
       side: signal.action,
@@ -141,27 +155,52 @@ export class TradeEngine {
     };
 
     let orderResult: PlaceOrderResult;
-    try {
-      orderResult = await this.exchangeClient.placeOrder(orderParams);
-    } catch (error: any) {
-      this.logger.error('Failed to place order', { params: orderParams }, error);
-      return {
-        executed: false,
-        reason: `Order placement failed: ${error.message}`
-      };
-    }
 
-    // 7. Check if order was successful
-    if (orderResult.status === 'REJECTED') {
-      this.logger.warn('Order rejected by exchange', {
+    if (tradingMode === 'DRY_RUN') {
+      // Simulate order without calling exchange
+      this.logger.info('DRY_RUN mode: Simulating order execution', { params: orderParams });
+
+      orderResult = {
+        orderId: `DRY_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         symbol: signal.symbol,
-        error: orderResult.error
-      });
-      return {
-        executed: false,
-        reason: `Order rejected: ${orderResult.error}`,
-        order: orderResult
+        side: signal.action,
+        quantity: quantity,
+        status: 'FILLED',
+        price: currentPrice,
+        timestamp: Date.now()
       };
+
+      this.logger.info('DRY_RUN order simulated', {
+        orderId: orderResult.orderId,
+        symbol: signal.symbol,
+        side: signal.action,
+        quantity: quantity,
+        price: currentPrice
+      });
+    } else {
+      // TESTNET mode - place real order via exchange
+      try {
+        orderResult = await this.exchangeClient.placeOrder(orderParams);
+      } catch (error: any) {
+        this.logger.error('Failed to place order', { params: orderParams }, error);
+        return {
+          executed: false,
+          reason: `Order placement failed: ${error.message}`
+        };
+      }
+
+      // 7. Check if order was successful
+      if (orderResult.status === 'REJECTED') {
+        this.logger.warn('Order rejected by exchange', {
+          symbol: signal.symbol,
+          error: orderResult.error
+        });
+        return {
+          executed: false,
+          reason: `Order rejected: ${orderResult.error}`,
+          order: orderResult
+        };
+      }
     }
 
     // 8. Save order to database
