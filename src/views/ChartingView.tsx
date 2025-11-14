@@ -13,6 +13,8 @@ import { useOHLC, OHLCBar } from '../hooks/useOHLC';
 import { useDebouncedEffect } from '../hooks/useDebouncedEffect';
 import { useSafeAsync } from '../hooks/useSafeAsync';
 import BacktestButton from '../components/backtesting/BacktestButton';
+import ErrorStateCard from '../components/ui/ErrorStateCard';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const logger = Logger.getInstance();
 
@@ -70,7 +72,13 @@ const ChartingView: React.FC = () => {
   const [showSymbolPicker, setShowSymbolPicker] = useState(false);
 
   // Use useOHLC hook for resilient data loading
-  const { data: chartData, loading, error: ohlcError, updatedAt, reload } = useOHLC(symbol, timeframe, 500);
+  const { state: ohlcState, reload } = useOHLC(symbol, timeframe, 500);
+
+  // Extract data from state
+  const chartData = ohlcState.status === 'success' ? ohlcState.data.bars : null;
+  const loading = ohlcState.status === 'loading';
+  const ohlcError = ohlcState.status === 'error' ? ohlcState.error : null;
+  const updatedAt = ohlcState.status === 'success' ? ohlcState.data.updatedAt : null;
   const [settings, setSettings] = useState<ChartSettings>({
     chartType: 'candlestick',
     showVolume: true,
@@ -531,11 +539,25 @@ const ChartingView: React.FC = () => {
             title="Price Chart"
             subtitle={`${currentSymbolInfo?.label || symbol} • ${timeframe}${updatedAt ? ' • updated ' + new Date(updatedAt).toLocaleTimeString() : ''}`}
             loading={loading && !chartData}
-            error={error}
+            error={ohlcError}
             onReload={reload}
             height={settings.showVolume ? 600 : 500}
           >
-            {renderChart()}
+            {ohlcError ? (
+              <div className="p-6">
+                <ErrorStateCard
+                  title="Failed to load chart data"
+                  message={ohlcError}
+                  onRetry={reload}
+                />
+              </div>
+            ) : loading && !chartData ? (
+              <div className="flex items-center justify-center h-full">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              renderChart()
+            )}
           </ChartFrame>
 
           {/* Quick Stats */}
