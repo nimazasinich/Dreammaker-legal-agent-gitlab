@@ -12,6 +12,7 @@
 import { WebSocket } from 'ws';
 import { Logger } from '../core/Logger.js';
 import { ScoringLiveService, LiveScoreResult } from '../engine/live/ScoringLiveService.js';
+import { isFeatureEnabled } from '../config/systemConfig.js';
 
 export interface ScoreStreamConfig {
   symbols: string[];
@@ -54,6 +55,17 @@ export class ScoreStreamGateway {
    * Handle new WebSocket connection
    */
   handleConnection(client: WebSocket): void {
+    // Check if live scoring is enabled
+    if (!isFeatureEnabled('liveScoring')) {
+      this.logger.warn('Live scoring is disabled, rejecting connection');
+      client.send(JSON.stringify({
+        type: 'error',
+        message: 'Live scoring is currently disabled in system configuration'
+      }));
+      client.close();
+      return;
+    }
+
     this.connectedClients.add(client);
     this.logger.info('Score stream client connected', { clients: this.connectedClients.size });
 
@@ -205,6 +217,12 @@ export class ScoreStreamGateway {
    * Start streaming scores
    */
   private startStreaming(): void {
+    // Check if live scoring is enabled
+    if (!isFeatureEnabled('liveScoring')) {
+      this.logger.warn('Live scoring is disabled in system config, cannot start streaming');
+      return;
+    }
+
     if (this.isStreaming) {
       this.logger.warn('Score streaming already active');
       return;
