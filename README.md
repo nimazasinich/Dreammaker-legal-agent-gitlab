@@ -109,6 +109,102 @@ All environment variables are documented in `.env.example`. Key configurations:
 | `FEATURE_FUTURES` | Enable futures trading | `false` | No |
 | `EXCHANGE_KUCOIN` | Enable KuCoin integration | `true` | No |
 
+### Data Sources & HuggingFace Engine
+
+The platform supports multiple data sources for market data and analysis. As of Phase 2, **HuggingFace Data Engine** is the recommended primary data source.
+
+#### Primary Data Source Configuration
+
+Configure which data source provides market and status data:
+
+| Variable | Description | Default | Options |
+|----------|-------------|---------|---------|
+| `PRIMARY_DATA_SOURCE` | Primary data source | `huggingface` | `huggingface`, `binance`, `kucoin`, `mixed` |
+| `HF_ENGINE_BASE_URL` | HuggingFace Data Engine URL | `https://really-amin-datasourceforcryptocurrency.hf.space` | Any valid URL |
+| `HF_ENGINE_ENABLED` | Enable/disable HF engine | `true` | `true`, `false` |
+| `HF_ENGINE_TIMEOUT` | Request timeout in milliseconds | `30000` | Any positive integer |
+| `BINANCE_ENABLED` | Enable Binance API | `true` | `true`, `false` |
+| `KUCOIN_ENABLED` | Enable KuCoin API | `true` | `true`, `false` |
+
+#### Data Source Options
+
+1. **HuggingFace (Recommended)**
+   - **Description**: Multi-provider aggregation engine hosted on HuggingFace Spaces
+   - **Benefits**:
+     - Aggregates data from multiple sources (CoinGecko, CoinMarketCap, etc.)
+     - Built-in rate limiting and caching
+     - Sentiment analysis capabilities
+     - Provider health monitoring
+   - **Configuration**:
+     ```env
+     PRIMARY_DATA_SOURCE=huggingface
+     HF_ENGINE_BASE_URL=https://really-amin-datasourceforcryptocurrency.hf.space
+     HF_ENGINE_ENABLED=true
+     HF_ENGINE_TIMEOUT=30000
+     ```
+
+2. **Binance (Legacy)**
+   - **Description**: Direct integration with Binance API
+   - **Configuration**:
+     ```env
+     PRIMARY_DATA_SOURCE=binance
+     BINANCE_ENABLED=true
+     ```
+   - **Note**: Only partially implemented in Phase 2. May return NOT_IMPLEMENTED errors.
+
+3. **KuCoin (Legacy)**
+   - **Description**: Direct integration with KuCoin API
+   - **Configuration**:
+     ```env
+     PRIMARY_DATA_SOURCE=kucoin
+     KUCOIN_ENABLED=true
+     ```
+   - **Note**: Only partially implemented in Phase 2. May return NOT_IMPLEMENTED errors.
+
+4. **Mixed (Beta)**
+   - **Description**: HuggingFace with exchange fallback
+   - **Configuration**:
+     ```env
+     PRIMARY_DATA_SOURCE=mixed
+     HF_ENGINE_ENABLED=true
+     BINANCE_ENABLED=true
+     ```
+   - **Note**: Tries HuggingFace first, falls back to exchanges on failure.
+
+#### Changing Data Source at Runtime
+
+You can change the primary data source through:
+
+1. **Frontend Settings UI**:
+   - Navigate to Settings → Data Source Configuration
+   - Select your preferred data source
+   - Changes take effect immediately
+
+2. **API Endpoint**:
+   ```bash
+   # Get current configuration
+   curl http://localhost:8001/api/config/data-source
+
+   # Update data source
+   curl -X POST http://localhost:8001/api/config/data-source \
+     -H "Content-Type: application/json" \
+     -d '{"primarySource": "huggingface"}'
+   ```
+
+#### HuggingFace Data Engine
+
+The HuggingFace Data Engine is a separate service that provides:
+
+- **Multi-provider market data**: Aggregates from CoinGecko, CoinMarketCap, CryptoCompare
+- **Rate limit management**: Handles API limits across all providers
+- **Health monitoring**: Tracks provider availability and status
+- **Sentiment analysis**: CryptoBERT-based sentiment analysis for news and social media
+- **Logging and alerts**: Centralized logging and alert system
+
+**Space URL**: https://huggingface.co/spaces/Really-amin/Datasourceforcryptocurrency
+
+**Note**: You do NOT need to modify the HuggingFace Space code. This project integrates with the existing deployed Space.
+
 ### API Keys (Optional)
 
 Configure API keys for data providers (leave empty to disable):

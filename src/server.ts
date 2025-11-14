@@ -100,6 +100,7 @@ import { TuningController } from './controllers/TuningController.js';
 import { SystemStatusController } from './controllers/SystemStatusController.js';
 import { HFDataEngineController } from './controllers/HFDataEngineController.js';
 import { setupProxyRoutes } from './services/ProxyRoutes.js';
+import dataSourceRoutes from './routes/dataSource.js';
 import { SignalVisualizationWebSocketService } from './services/SignalVisualizationWebSocketService.js';
 import { TelegramService } from './services/TelegramService.js';
 import { readVault, writeVault } from './config/secrets.js';
@@ -819,6 +820,11 @@ app.get('/api/system/health', async (req, res) => {
 app.get('/api/system/config', async (req, res) => {
   await systemController.getConfig(req, res);
 });
+
+// ============================================================================
+// Data Source Configuration Routes
+// ============================================================================
+app.use('/api/config', dataSourceRoutes);
 
 // ============================================================================
 // HuggingFace Data Engine Routes
