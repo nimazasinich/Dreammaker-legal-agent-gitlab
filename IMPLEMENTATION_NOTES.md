@@ -165,35 +165,92 @@ This document tracks the implementation of recommendations from the comprehensiv
 
 ---
 
-## Phase 3: Enhancements (PENDING)
+## Phase 3: Enhancements ⚠️ DEFERRED (Ready for Future Implementation)
 
-### 3.1 PatternOverlay Integration
+**Decision:** Phase 3 deferred to keep implementation focused and prevent scope creep. Phases 1 & 2 deliver significant value. Phase 3 can be implemented in a follow-up PR.
+
+### 3.1 PatternOverlay Integration (READY)
 
 **Component:** `src/components/charts/PatternOverlay.tsx`
 
+**Status:** ✅ Component exists and is functional
+**Data Source:** Fetches from REAL APIs (`/analysis/smc`, `/hf/ohlcv`)
+**Implementation:** DEFERRED
+
 **Target Views:**
-- ChartingView
-- MarketView
-- EnhancedSymbolDashboard
+- ChartingView (`src/views/ChartingView.tsx`)
+- MarketView (`src/views/MarketView.tsx`)
+- DashboardView → EnhancedSymbolDashboard (`src/components/enhanced/EnhancedSymbolDashboard.tsx`)
 
-**Data Requirement:**
-- Check if pattern data is available from analysis endpoints
-- If not, show "No pattern data available" instead of fake patterns
+**Recommended Integration Approach:**
+```typescript
+// Add to ChartingView.tsx
+import { PatternOverlay } from '../components/charts/PatternOverlay';
 
-### 3.2 ScoringEditor & SignalVisualizationSection Integration
+// Add state for pattern overlay toggle
+const [showPatternOverlay, setShowPatternOverlay] = useState(false);
+
+// Add toggle button in header
+<button onClick={() => setShowPatternOverlay(!showPatternOverlay)}>
+  {showPatternOverlay ? 'Hide' : 'Show'} Patterns
+</button>
+
+// Conditional rendering
+{showPatternOverlay ? (
+  <PatternOverlay symbol={symbol} timeframe={timeframe} />
+) : (
+  <ChartFrame>{ /* existing chart */ }</ChartFrame>
+)}
+```
+
+**⚠️ Note:** PatternOverlay has same architectural pattern as Phase 2 connectors (independent API calls + setInterval). Consider refactoring to use DataContext before production use to prevent memory leaks.
+
+### 3.2 ScoringEditor & SignalVisualizationSection Integration (READY)
 
 **Components:**
 - `src/components/scoring/ScoringEditor.tsx`
 - `src/components/signal/SignalVisualizationSection.tsx`
 
+**Status:** Components exist (need verification of data sources)
+**Implementation:** DEFERRED
+
 **Target Views:**
 - StrategyBuilderView - Add ScoringEditor for weight/threshold adjustment
 - StrategyInsightsView - Add SignalVisualizationSection for signal stage display
 
-**Data Requirement:**
-- Wire to real scoring configuration from `/api/scoring/`
-- Use real strategy output where available
-- Honest "Not configured yet" states for missing data
+**Recommended Integration Approach:**
+
+**For ScoringEditor in StrategyBuilderView:**
+```typescript
+import { ScoringEditor } from '../components/scoring/ScoringEditor';
+
+// Add in strategy builder interface
+<section className="card-base rounded-2xl shadow-sm p-6">
+  <h3>Scoring Configuration</h3>
+  <ScoringEditor
+    onConfigChange={(config) => handleScoringUpdate(config)}
+  />
+</section>
+```
+
+**For SignalVisualizationSection in StrategyInsightsView:**
+```typescript
+import { SignalVisualizationSection } from '../components/signal/SignalVisualizationSection';
+
+// Add in insights view
+<section className="card-base rounded-2xl shadow-sm p-6">
+  <SignalVisualizationSection
+    signals={currentSignals}
+    strategy={selectedStrategy}
+  />
+</section>
+```
+
+**Data Requirements:**
+- Verify scoring configuration endpoint: `/api/scoring/` or similar
+- Verify strategy output data format
+- Implement honest empty states: "No scoring configuration available" if endpoints don't exist
+- NO fake data generation
 
 ---
 
@@ -377,6 +434,41 @@ This document tracks the implementation of recommendations from the comprehensiv
 
 ---
 
+---
+
+## Summary
+
+### ✅ Completed Phases
+
+**Phase 1: High-Value Quick Wins**
+- ✅ Scanner Pack (6 components) integrated into ScannerView
+- ✅ ExchangeSelector added to Market/Trading/Settings views
+- ✅ BacktestPanel integrated with demo/real mode toggle
+
+**Phase 2: Technical Debt**
+- ✅ Fixed memory leaks in RealChartDataConnector & RealPriceChartConnector
+- ✅ Refactored to use centralized DataContext/LiveDataContext
+- ✅ Re-enabled connector exports
+- ✅ No more duplicate API calls or subscriptions
+
+### ⚠️ Deferred
+
+**Phase 3: Enhancements**
+- PatternOverlay integration ready but deferred
+- ScoringEditor/SignalVisualizationSection integration ready but deferred
+- Full implementation guide provided in Phase 3 section above
+- Reason: Keep PR focused, prevent scope creep, deliver incremental value
+
+### 📊 Impact
+
+**Files Modified:** 9 files
+**Lines Changed:** ~550 insertions, ~220 deletions
+**Components Integrated:** 9 components (scanners, selectors, panels, connectors)
+**Memory Leaks Fixed:** 2 critical issues
+**New Features:** Scanner tabs, exchange selector, real backtest mode, chart connectors
+
+---
+
 **End of Implementation Notes**
 **Last Updated:** 2025-11-14
-**Status:** Phase 1 & 2 Complete ✅ | Phase 3 Pending
+**Status:** Phase 1 & 2 Complete ✅ | Phase 3 Deferred ⚠️
