@@ -101,11 +101,14 @@ class DataManager {
                 let connectionResolved = false;
 
                 try {
-                    // Build WebSocket URL using WS_BASE and path
-                    const wsUrl = `${WS_BASE_NORMALIZED}${WS_PATH}`;
+                    // In dev mode, use relative path to leverage Vite proxy
+                    // In production, use absolute WS_BASE URL
+                    const wsUrl = import.meta.env.DEV
+                        ? `${location.origin.replace(/^http/, 'ws')}${WS_PATH}`
+                        : `${WS_BASE_NORMALIZED}${WS_PATH}`;
 
                     if (import.meta.env.DEV) {
-                        logger.info(`Attempting WebSocket connection to: ${wsUrl}`);
+                        logger.info(`Attempting WebSocket connection to: ${wsUrl} (via Vite proxy)`);
                     }
 
                     // Suppress browser console error by wrapping in try-catch

@@ -6,6 +6,7 @@ import { SMCAnalyzer } from '../services/SMCAnalyzer.js';
 import { ElliottWaveAnalyzer } from '../services/ElliottWaveAnalyzer.js';
 import { HarmonicPatternDetector } from '../services/HarmonicPatternDetector.js';
 import { SentimentAnalysisService } from '../services/SentimentAnalysisService.js';
+import { handleErrorAndRespond } from '../utils/errorResponse.js';
 import { WhaleTrackerService } from '../services/WhaleTrackerService.js';
 import { BullBearAgent } from '../ai/BullBearAgent.js';
 import { FeatureEngineering } from '../ai/FeatureEngineering.js';
@@ -96,11 +97,13 @@ export class AnalysisController {
         timestamp: Date.now()
       });
     } catch (error) {
-      this.logger.error('Failed to analyze SMC', { symbol: req.body.symbol }, error as Error);
-      res.status(500).json({
-        error: 'Failed to analyze SMC',
-        message: (error as Error).message
-      });
+      handleErrorAndRespond(
+        res,
+        'internal',
+        error,
+        'Failed to analyze Smart Money Concepts',
+        { symbol: req.body.symbol, timeframe, bars }
+      );
     }
   }
 
@@ -131,11 +134,13 @@ export class AnalysisController {
         timestamp: Date.now()
       });
     } catch (error) {
-      this.logger.error('Failed to analyze Elliott Wave', { symbol: req.body.symbol }, error as Error);
-      res.status(500).json({
-        error: 'Failed to analyze Elliott Wave',
-        message: (error as Error).message
-      });
+      handleErrorAndRespond(
+        res,
+        'internal',
+        error,
+        'Failed to analyze Elliott Wave',
+        { symbol: req.body.symbol, timeframe, bars }
+      );
     }
   }
 
