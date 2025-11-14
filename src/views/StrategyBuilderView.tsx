@@ -107,17 +107,27 @@ export default function StrategyBuilderView() {
           <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur p-4">
             <h3 className="font-semibold mb-2">Parameters</h3>
             <div className="flex flex-wrap items-center gap-3">
-              <label className="text-sm">Symbol</label>
-              <input value={symbol} onChange={e=>setSymbol(e.target.value)} className="px-2 py-1 rounded border bg-white/70 text-black"/>
-              <label className="text-sm">Timeframe</label>
-              <select value={timeframe} onChange={e=>setTimeframe(e.target.value)} className="px-2 py-1 rounded border bg-white/70 text-black">
+              <label htmlFor="strategy-symbol" className="text-sm font-medium">Symbol</label>
+              <input
+                id="strategy-symbol"
+                value={symbol}
+                onChange={e=>setSymbol(e.target.value)}
+                className="px-3 py-1.5 rounded-lg border border-white/30 bg-white/80 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <label htmlFor="strategy-timeframe" className="text-sm font-medium">Timeframe</label>
+              <select
+                id="strategy-timeframe"
+                value={timeframe}
+                onChange={e=>setTimeframe(e.target.value)}
+                className="px-3 py-1.5 rounded-lg border border-white/30 bg-white/80 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
                 <option>1h</option><option>4h</option><option>1d</option>
               </select>
               <button
                 type="button"
                 onClick={applyTemplate}
                 disabled={!selectedTemplate || isApplying}
-                className="ml-auto px-3 py-1 rounded border bg-white/70 hover:bg-white transition"
+                className="ml-auto px-4 py-1.5 rounded-lg border border-white/30 bg-white/80 hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 aria-busy={isApplying ? 'true':'false'}
               >
                 {isApplying ? 'Applying…' : 'Apply Template'}
@@ -125,7 +135,7 @@ export default function StrategyBuilderView() {
               <button
                 type="button"
                 onClick={()=> setActiveStep(2)}
-                className="px-3 py-1 rounded border bg-blue-500/80 hover:bg-blue-500 text-white transition"
+                className="px-4 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-all font-medium shadow-sm"
               >
                 Next: Backtest
               </button>
@@ -153,7 +163,7 @@ export default function StrategyBuilderView() {
             type="button"
             onClick={runBacktest}
             disabled={btLoading}
-            className="px-3 py-1 rounded border bg-emerald-500/80 hover:bg-emerald-500 text-white transition"
+            className="px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-all font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             aria-busy={btLoading ? 'true':'false'}
           >
             {btLoading ? 'Running…' : 'Run Backtest'}
