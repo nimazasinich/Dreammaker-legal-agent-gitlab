@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useHealthCheck from '../../lib/useHealthCheck';
+import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import { t } from '../../i18n';
 import { useMode } from '../../contexts/ModeContext';
 import { useData } from '../../contexts/DataContext';
@@ -16,6 +17,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export function StatusRibbon() {
   const { state: healthState, refresh: refreshHealth } = useHealthCheck(15000, 4000);
+  const isOnline = useOnlineStatus();
   const { state: { dataMode, tradingMode, dataSource: contextDataSource }, setDataMode, setTradingMode, setDataSource } = useMode();
   const { dataSource } = useData();
   const { isConnected } = useLiveData();
@@ -62,12 +64,26 @@ export function StatusRibbon() {
   const style = STATUS_STYLES[status] ?? STATUS_STYLES.unknown;
 
   return (
-    <div
-      className={`w-full border ${style} text-sm px-4 py-2 flex items-center gap-4 justify-between`}
-      dir="ltr"
-      role="status"
-      aria-live="polite"
-    >
+    <>
+      {/* Offline Banner */}
+      {!isOnline && (
+        <div
+          className="w-full bg-red-600 text-white text-sm px-4 py-2 flex items-center justify-center gap-2"
+          role="alert"
+          aria-live="assertive"
+        >
+          <span className="font-bold">📴 OFFLINE</span>
+          <span>No internet connection. Some features may be unavailable.</span>
+        </div>
+      )}
+
+      {/* Main Status Ribbon */}
+      <div
+        className={`w-full border ${style} text-sm px-4 py-2 flex items-center gap-4 justify-between`}
+        dir="ltr"
+        role="status"
+        aria-live="polite"
+      >
       <div className="flex items-center gap-3">
         <span>
           <strong>{t('layout.healthLabel')}:</strong>{' '}
@@ -241,6 +257,7 @@ export function StatusRibbon() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

@@ -14,7 +14,7 @@ import { useDebouncedEffect } from '../hooks/useDebouncedEffect';
 import { useSafeAsync } from '../hooks/useSafeAsync';
 import BacktestButton from '../components/backtesting/BacktestButton';
 import ErrorStateCard from '../components/ui/ErrorStateCard';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { ChartSkeleton } from '../components/ui/Skeleton';
 
 const logger = Logger.getInstance();
 
@@ -552,9 +552,7 @@ const ChartingView: React.FC = () => {
                 />
               </div>
             ) : loading && !chartData ? (
-              <div className="flex items-center justify-center h-full">
-                <LoadingSpinner />
-              </div>
+              <ChartSkeleton />
             ) : (
               renderChart()
             )}

@@ -63,6 +63,7 @@ const StrategyLabView = lazyLoad(() => import('./views/EnhancedStrategyLabView')
 const StrategyBuilderView = lazyLoad(() => import('./views/StrategyBuilderView'), 'StrategyBuilderView');
 const StrategyInsightsView = lazyLoad(() => import('./views/StrategyInsightsView'), 'StrategyInsightsView');
 const ExchangeSettingsView = lazyLoad(() => import('./views/ExchangeSettingsView'), 'ExchangeSettingsView');
+const MonitoringView = lazyLoad(() => import('./views/MonitoringView'), 'MonitoringView');
 
 const AppContent: React.FC = () => {
   const { currentView } = useNavigation();
@@ -103,6 +104,7 @@ const AppContent: React.FC = () => {
         case 'strategylab': return <StrategyLabView />;
         case 'strategy-insights': return <StrategyInsightsView />;
         case 'exchange-settings': return <ExchangeSettingsView />;
+        case 'monitoring': return <MonitoringView />;
         default: return <DashboardView />;
       }
     })();
