@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ExchangeCredential } from '../types/index';
+import { showToast } from '../components/ui/Toast';
+import { useConfirmModal } from '../components/ui/ConfirmModal';
+import { Logger } from '../core/Logger';
+
+const logger = Logger.getInstance();
 
 export const ExchangeSettingsView: React.FC = () => {
-    const [isLoading, setIsLoading] = useState(false);
+  const { confirm, ModalComponent } = useConfirmModal();
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [exchanges, setExchanges] = useState<ExchangeCredential[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,7 +26,7 @@ export const ExchangeSettingsView: React.FC = () => {
         setExchanges(data.exchanges || []);
       }
     } catch (error) {
-      console.error('Failed to load exchanges:', error);
+      logger.error('Failed to load exchanges:', {}, error as Error);
     }
   };
 
@@ -34,12 +40,12 @@ export const ExchangeSettingsView: React.FC = () => {
       });
       const data = await response.json();
       if (data.success) {
-        alert('Exchanges saved successfully!');
+        showToast('success', 'Success', 'Exchanges saved successfully!');
       } else {
-        alert('Failed to save exchanges: ' + data.error);
+        showToast('error', 'Save Failed', 'Failed to save exchanges: ' + data.error);
       }
     } catch (error) {
-      alert('Failed to save exchanges: ' + (error as Error).message);
+      showToast('error', 'Save Failed', 'Failed to save exchanges: ' + (error as Error).message);
     }
     setLoading(false);
   };
@@ -57,8 +63,13 @@ export const ExchangeSettingsView: React.FC = () => {
     ]);
   };
 
-  const handleRemoveExchange = (index: number) => {
-    if (confirm('Remove this exchange?')) {
+  const handleRemoveExchange = async (index: number) => {
+    const confirmed = await confirm(
+      'Remove Exchange',
+      'Are you sure you want to remove this exchange?',
+      'danger'
+    );
+    if (confirmed) {
       const newExchanges = exchanges.filter((_, i) => i !== index);
       // If removed exchange was default, set first one as default
       if (exchanges[index].isDefault && (newExchanges?.length || 0) > 0) {
@@ -87,8 +98,10 @@ export const ExchangeSettingsView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface p-6">
-      <div className="max-w-4xl mx-auto">
+    <>
+      <ModalComponent />
+      <div className="min-h-screen bg-surface p-6">
+        <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Exchange Settings</h1>
           <button
@@ -223,7 +236,8 @@ export const ExchangeSettingsView: React.FC = () => {
         >
           + Add Exchange
         </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };

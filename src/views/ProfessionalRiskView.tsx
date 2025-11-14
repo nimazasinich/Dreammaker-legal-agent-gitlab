@@ -51,7 +51,7 @@ export const ProfessionalRiskView: React.FC = () => {
       const response = await fetch(`${API_BASE}/api/professional-risk/metrics`, { mode: "cors", headers: { "Content-Type": "application/json" } });
 
       if (!response.ok) {
-        console.error(`HTTP ${response.status}: ${response.statusText}`);
+        logger.error('Failed to fetch risk metrics', { status: response.status, statusText: response.statusText });
         // Don't throw, just set empty metrics to show UI
         setMetrics({
           totalLiquidationRisk: 0,
@@ -81,7 +81,7 @@ export const ProfessionalRiskView: React.FC = () => {
       const data = await response.json();
 
       if (!data.success) {
-        console.error(data.error || 'Failed to fetch risk metrics');
+        logger.error('Failed to fetch risk metrics', { error: data.error });
         // Still set empty metrics to show UI
         setMetrics({
           totalLiquidationRisk: 0,

@@ -2,6 +2,11 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { StrategyTemplate } from '../types/index';
 import { Activity, TrendingUp, TrendingDown, PlayCircle, Save, BarChart3, Zap, Target } from 'lucide-react';
 import { PerformanceChart } from '../components/strategy/PerformanceChart';
+import { showToast } from '../components/ui/Toast';
+import { useConfirmModal } from '../components/ui/ConfirmModal';
+import { Logger } from '../core/Logger';
+
+const logger = Logger.getInstance();
 
 interface AnimationStage {
   id: number;
@@ -30,7 +35,8 @@ interface SavedStrategy {
 }
 
 export const EnhancedStrategyLabView: React.FC = () => {
-    const [isLoading, setIsLoading] = useState(false);
+  const { confirm, ModalComponent } = useConfirmModal();
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
   const [currentTemplate, setCurrentTemplate] = useState<string>('live');
@@ -126,7 +132,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
         if (typeof state.livePreview === 'boolean') setLivePreview(state.livePreview);
       }
     } catch (error) {
-      console.error('Failed to load persisted state:', error);
+      logger.error('Failed to load persisted state:', {}, error as Error);
     }
   };
 
@@ -165,7 +171,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
         setTemplates(templatesData.filter(Boolean));
       }
     } catch (error) {
-      console.error('Failed to load templates:', error);
+      logger.error('Failed to load templates:', {}, error as Error);
     }
   };
 
@@ -207,7 +213,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
         updateCurrentMetrics(data.snapshot);
       }
     } catch (error) {
-      console.error('Live preview failed:', error);
+      logger.error('Live preview failed:', {}, error as Error);
     }
   };
 
@@ -304,8 +310,8 @@ export const EnhancedStrategyLabView: React.FC = () => {
       }
 
     } catch (error) {
-      console.error('Simulation failed:', error);
-      alert('Simulation failed: ' + (error as Error).message);
+      logger.error('Simulation failed:', {}, error as Error);
+      showToast('error', 'Simulation Failed', 'Simulation failed: ' + (error as Error).message);
     }
 
     setIsSimulating(false);
@@ -313,7 +319,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
 
   const handleSaveStrategy = async () => {
     const name = prompt('Enter strategy name:');
-    if (!name) { console.warn("Missing data"); }
+    if (!name) return;
 
     const newStrategy: SavedStrategy = {
       id: `strategy-${Date.now()}`,
@@ -327,14 +333,14 @@ export const EnhancedStrategyLabView: React.FC = () => {
     const updated = [...savedStrategies, newStrategy];
     setSavedStrategies(updated);
     localStorage.setItem('savedStrategies', JSON.stringify(updated));
-    alert(`Strategy "${name}" saved successfully!`);
+    showToast('success', 'Strategy Saved', `Strategy "${name}" saved successfully!`);
   };
 
   const handleLoadStrategy = (strategy: SavedStrategy) => {
     setWeights(strategy.weights);
     setStrategyParams(strategy.params);
     setCurrentMetrics(strategy.performance);
-    alert(`Strategy "${strategy.name}" loaded successfully!`);
+    showToast('success', 'Strategy Loaded', `Strategy "${strategy.name}" loaded successfully!`);
   };
 
   const handleRunStrategy = async (strategy: SavedStrategy) => {
@@ -354,7 +360,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
 
   const handleSaveTemplate = async () => {
     const name = prompt('Enter template name:');
-    if (!name) { console.warn("Missing data"); }
+    if (!name) return;
 
     try {
       const response = await fetch(`http://localhost:${import.meta.env.VITE_BACKEND_PORT || '3001'}/api/strategy/templates`, {
@@ -422,7 +428,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
     input.onchange = async (e: Event) => {
       const target = e.target as HTMLInputElement;
       const file = target.files?.[0];
-      if (!file) { console.warn("Missing data"); }
+      if (!file) return;
 
       try {
         const text = await file.text();
@@ -498,8 +504,10 @@ export const EnhancedStrategyLabView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface p-6">
-      <div className="max-w-[1800px] mx-auto">
+    <>
+      <ModalComponent />
+      <div className="min-h-screen bg-surface p-6">
+        <div className="max-w-[1800px] mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
             <Activity className="w-8 h-8 text-purple-600" />
@@ -1009,7 +1017,8 @@ export const EnhancedStrategyLabView: React.FC = () => {
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { KuCoinFuturesService } from '../../services/KuCoinFuturesService';
 import { Logger } from '../../core/Logger';
+import { showToast } from '../ui/Toast';
+import { useConfirmModal } from '../ui/ConfirmModal';
 
 const logger = Logger.getInstance();
 
 export const ExchangeSettings: React.FC = () => {
+  const { confirm, ModalComponent } = useConfirmModal();
   const futuresService = KuCoinFuturesService.getInstance();
   
   const [exchanges, setExchanges] = useState<any[]>([
@@ -52,7 +55,7 @@ export const ExchangeSettings: React.FC = () => {
 
   const handleSave = () => {
     if (!apiKey || !apiSecret) {
-      alert('API Key and Secret are required');
+      showToast('warning', 'Missing Fields', 'API Key and Secret are required');
       return;
     }
 
@@ -62,14 +65,14 @@ export const ExchangeSettings: React.FC = () => {
         apiSecret,
         passphrase
       });
-      
+
       setSaved(true);
-      alert('Credentials saved successfully!');
-      
+      showToast('success', 'Credentials Saved', 'API credentials saved successfully!');
+
       setApiSecret('••••••••••••••••');
       setPassphrase('••••••••••••••••');
     } catch (error) {
-      alert('Failed to save credentials');
+      showToast('error', 'Save Failed', 'Failed to save credentials');
     }
   };
 
@@ -81,12 +84,13 @@ export const ExchangeSettings: React.FC = () => {
     }));
     setExchanges(updated);
     localStorage.setItem('active_exchange', exchangeId);
-    alert(`${exchangeId.toUpperCase()} is now active`);
+    showToast('success', 'Exchange Activated', `${exchangeId.toUpperCase()} is now active`);
   };
 
-  const handleDelete = () => {
-    if (!confirm('Delete credentials for ' + selectedExchange + '?')) return;
-    
+  const handleDelete = async () => {
+    const confirmed = await confirm('Delete Credentials', `Are you sure you want to delete credentials for ${selectedExchange.toUpperCase()}?`, 'danger');
+    if (!confirmed) return;
+
     try {
       const stored = localStorage.getItem('exchange_credentials');
       if (stored) {
@@ -95,15 +99,17 @@ export const ExchangeSettings: React.FC = () => {
         localStorage.setItem('exchange_credentials', JSON.stringify(creds));
       }
       clearForm();
-      alert('Credentials deleted');
+      showToast('success', 'Credentials Deleted', 'API credentials have been removed');
     } catch (error) {
-      alert('Failed to delete credentials');
+      showToast('error', 'Delete Failed', 'Failed to delete credentials');
     }
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6 text-white">Exchange API Settings</h2>
+    <>
+      <ModalComponent />
+      <div className="bg-gray-800 rounded-lg p-6">
+        <h2 className="text-2xl font-bold mb-6 text-white">Exchange API Settings</h2>
 
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-gray-300">Select Exchange</label>
@@ -234,6 +240,6 @@ export const ExchangeSettings: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };

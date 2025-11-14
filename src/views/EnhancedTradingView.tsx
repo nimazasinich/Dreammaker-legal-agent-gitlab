@@ -2,9 +2,15 @@ import React, { useState, useEffect } from 'react';
 import {
   ScoringSnapshot, ConfluenceInfo, EntryPlan, Direction, Action
 } from '../types/index';
+import { showToast } from '../components/ui/Toast';
+import { useConfirmModal } from '../components/ui/ConfirmModal';
+import { Logger } from '../core/Logger';
+
+const logger = Logger.getInstance();
 
 export const EnhancedTradingView: React.FC = () => {
-    const [isLoading, setIsLoading] = useState(false);
+  const { confirm, ModalComponent } = useConfirmModal();
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState<'spot' | 'futures'>('futures');
   const [strategyEnabled, setStrategyEnabled] = useState(false);
@@ -50,7 +56,7 @@ export const EnhancedTradingView: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Failed to fetch snapshot:', error);
+      logger.error('Failed to fetch snapshot:', {}, error as Error);
       // Set empty snapshot to show UI
       setSnapshot({
         symbol,
@@ -68,12 +74,12 @@ export const EnhancedTradingView: React.FC = () => {
 
   const handlePlaceOrder = async () => {
     if (!snapshot || !strategyEnabled) {
-      alert('Strategy is disabled. Enable strategy to execute trades.');
+      showToast('warning', 'Strategy Disabled', 'Enable strategy to execute trades.');
       return;
     }
 
     if (snapshot.action === 'HOLD') {
-      alert('Current signal is HOLD. No order placed.');
+      showToast('info', 'Hold Signal', 'Current signal is HOLD. No order placed.');
       return;
     }
 
@@ -100,13 +106,13 @@ export const EnhancedTradingView: React.FC = () => {
       const result = await response.json();
 
       if (result.success || response.ok) {
-        alert(`✅ Order placed successfully: ${snapshot.action} ${positionSize} ${symbol} at ${leverage}x leverage`);
+        showToast('success', 'Order Placed', `${snapshot.action} ${positionSize} ${symbol} at ${leverage}x leverage`);
       } else {
-        console.error(result.error || 'Failed to place order');
+        logger.error('Failed to place order', { error: result.error });
       }
     } catch (error: any) {
-      alert(`❌ Failed to place order: ${error.message || 'Unknown error'}`);
-      console.error('Order placement error:', error);
+      showToast('error', 'Order Failed', error.message || 'Unknown error');
+      logger.error('Order placement error:', {}, error);
     } finally {
       setLoading(false);
     }
@@ -254,8 +260,10 @@ export const EnhancedTradingView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface p-6">
-      <div className="max-w-7xl mx-auto">
+    <>
+      <ModalComponent />
+      <div className="min-h-screen bg-surface p-6">
+        <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">Trading</h1>
 
         {/* Tabs */}
@@ -412,6 +420,6 @@ export const EnhancedTradingView: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };

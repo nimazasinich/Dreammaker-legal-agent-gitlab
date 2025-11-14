@@ -6,6 +6,8 @@ import { SignalExamplesPanel } from './SignalExamplesPanel';
 import { ControlsPanel } from './ControlsPanel';
 import { useSignalWebSocket } from '../../hooks/useSignalWebSocket';
 import { OverlayConfig, TechnicalData } from '../charts/ChartOverlay';
+import { showToast } from '../ui/Toast';
+import { useConfirmModal } from '../ui/ConfirmModal';
 
 interface CandleData {
   time: number;
@@ -36,6 +38,7 @@ export const SignalVisualizationSection: React.FC<SignalVisualizationSectionProp
   onTimeframeChange,
   onRefresh
 }) => {
+  const { confirm, ModalComponent } = useConfirmModal();
   const { stages, isConnected, error: wsError, signalData } = useSignalWebSocket(symbol, true);
   const [overlayConfig, setOverlayConfig] = useState<OverlayConfig>({
     showSupportResistance: true,
@@ -100,11 +103,11 @@ export const SignalVisualizationSection: React.FC<SignalVisualizationSectionProp
       } else {
         logger.info('Screenshot: html2canvas not available, using fallback');
         // Fallback: Just log for now
-        alert('Screenshot feature requires html2canvas library. Please install it.');
+        showToast('warning', 'Library Missing', 'Screenshot feature requires html2canvas library. Please install it.');
       }
     } catch (error) {
       logger.error('Screenshot failed:', {}, error);
-      alert('Failed to capture screenshot');
+      showToast('error', 'Screenshot Failed', 'Failed to capture screenshot');
     }
   };
 
@@ -124,7 +127,7 @@ export const SignalVisualizationSection: React.FC<SignalVisualizationSectionProp
   const handlePlaySimulation = () => {
     // Implement simulation playback - replay signal generation stages
     logger.info('Starting signal generation simulation...');
-    
+
     // This would trigger a replay of the 8-stage process
     // For now, we'll just log the action
     // In a full implementation, this would:
@@ -132,14 +135,16 @@ export const SignalVisualizationSection: React.FC<SignalVisualizationSectionProp
     // 2. Sequentially activate each stage with delays
     // 3. Show data flowing through the pipeline
     // 4. Display the final decision
-    
-    alert('Simulation playback: This feature will replay the signal generation process step-by-step. Implementation in progress.');
+
+    showToast('info', 'Simulation Mode', 'This feature will replay the signal generation process step-by-step. Implementation in progress.');
   };
 
   return (
-    <div className="space-y-6" role="region" aria-label="Signal Visualization Dashboard">
-      {/* Connection Status */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-slate-800/50 gap-3">
+    <>
+      <ModalComponent />
+      <div className="space-y-6" role="region" aria-label="Signal Visualization Dashboard">
+        {/* Connection Status */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-slate-800/50 gap-3">
         <div className="flex items-center gap-2">
           <div 
             className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}
@@ -242,7 +247,7 @@ export const SignalVisualizationSection: React.FC<SignalVisualizationSectionProp
           />
         </div>
       )}
-    </div>
+    </>
   );
 };
 

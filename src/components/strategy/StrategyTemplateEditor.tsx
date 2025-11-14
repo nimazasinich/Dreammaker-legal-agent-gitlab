@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { 
-  Save, Copy, Download, Upload, Play, Pause, Settings, 
+import {
+  Save, Copy, Download, Upload, Play, Pause, Settings,
   TrendingUp, TrendingDown, Zap, Target, Brain, Edit
 } from 'lucide-react';
-import { 
-  STRATEGY_TEMPLATES, 
-  StrategyTemplate, 
+import {
+  STRATEGY_TEMPLATES,
+  StrategyTemplate,
   TEMPLATE_CATEGORIES,
-  cloneTemplate 
+  cloneTemplate
 } from '../../config/strategyTemplates';
+import { showToast } from '../ui/Toast';
+import { useConfirmModal } from '../ui/ConfirmModal';
 
 export const StrategyTemplateEditor: React.FC = () => {
+  const { confirm, ModalComponent } = useConfirmModal();
   const [selectedTemplate, setSelectedTemplate] = useState<StrategyTemplate>(STRATEGY_TEMPLATES.trendFollowing);
   const [editedTemplate, setEditedTemplate] = useState<StrategyTemplate>(selectedTemplate);
   const [isEditing, setIsEditing] = useState(false);
@@ -52,7 +55,7 @@ export const StrategyTemplateEditor: React.FC = () => {
     setSavedTemplates([...savedTemplates, customTemplate]);
     localStorage.setItem('custom-strategies', JSON.stringify([...savedTemplates, customTemplate]));
     setIsEditing(false);
-    alert(`Strategy "${customTemplate.name}" saved successfully!`);
+    showToast('success', 'Strategy Saved', `Strategy "${customTemplate.name}" saved successfully!`);
   };
 
   const handleExport = () => {
@@ -65,8 +68,9 @@ export const StrategyTemplateEditor: React.FC = () => {
     linkElement.click();
   };
 
-  const handleReset = () => {
-    if (confirm('Reset all parameters to default values?')) {
+  const handleReset = async () => {
+    const confirmed = await confirm('Reset Parameters', 'Reset all parameters to default values?', 'warning');
+    if (confirmed) {
       setEditedTemplate(selectedTemplate);
       setIsEditing(false);
     }
@@ -95,8 +99,10 @@ export const StrategyTemplateEditor: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen p-8">
-      <style>{`
+    <>
+      <ModalComponent />
+      <div className="min-h-screen p-8">
+        <style>{`
         @keyframes shimmer {
           0% { background-position: -1000px 0; }
           100% { background-position: 1000px 0; }
@@ -383,6 +389,6 @@ export const StrategyTemplateEditor: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };

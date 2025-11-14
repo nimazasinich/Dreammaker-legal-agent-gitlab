@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
-import { 
-  PlayCircle, 
-  PauseCircle, 
-  BarChart3, 
-  TrendingUp, 
+import {
+  PlayCircle,
+  PauseCircle,
+  BarChart3,
+  TrendingUp,
   TrendingDown,
   Calendar,
   DollarSign,
@@ -17,6 +17,8 @@ import { backtestService } from '../../services/backtestService';
 import { marketDataService } from '../../services/marketDataService';
 import { dataManager } from '../../services/dataManager';
 import { RealBacktestEngine } from '../../services/RealBacktestEngine.js';
+import { showToast } from '../ui/Toast';
+import { useConfirmModal } from '../ui/ConfirmModal';
 
 interface BacktestPanelProps {
   symbol: string;
@@ -27,6 +29,7 @@ interface BacktestPanelProps {
 const logger = Logger.getInstance();
 
 export const BacktestPanel: React.FC<BacktestPanelProps> = ({ symbol, timeframe }) => {
+  const { confirm, ModalComponent } = useConfirmModal();
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -85,7 +88,7 @@ export const BacktestPanel: React.FC<BacktestPanelProps> = ({ symbol, timeframe 
 
   const runBacktest = async () => {
     if (historicalData.length < 100) {
-      alert('Need at least 100 data points for backtesting');
+      showToast('warning', 'Insufficient Data', 'Need at least 100 data points for backtesting');
       return;
     }
 
@@ -106,11 +109,11 @@ export const BacktestPanel: React.FC<BacktestPanelProps> = ({ symbol, timeframe 
       clearInterval(progressInterval);
       setProgress(100);
       setBacktestResult(result);
-      
+
       setTimeout(() => setProgress(0), 1000);
     } catch (error) {
       if (import.meta.env.DEV) logger.error('Backtest error:', {}, error);
-      alert('Error running backtest. Please try again.');
+      showToast('error', 'Backtest Error', 'Error running backtest. Please try again.');
     } finally {
       setIsRunning(false);
     }
@@ -152,8 +155,10 @@ export const BacktestPanel: React.FC<BacktestPanelProps> = ({ symbol, timeframe 
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-      <div className="p-6 border-b border-gray-200">
+    <>
+      <ModalComponent />
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-blue-600" />
@@ -484,6 +489,6 @@ export const BacktestPanel: React.FC<BacktestPanelProps> = ({ symbol, timeframe 
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };
