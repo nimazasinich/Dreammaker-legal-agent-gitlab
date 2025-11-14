@@ -498,7 +498,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-6">
+    <div className="min-h-screen bg-surface p-6">
       <div className="max-w-[1800px] mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">

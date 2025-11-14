@@ -17,6 +17,8 @@ import {
   TrendingUp,
   Wallet,
   Zap,
+  Rocket,
+  ListOrdered,
 } from 'lucide-react';
 import { useNavigation, NavigationView } from './NavigationProvider';
 import { t } from '../../i18n';
@@ -33,6 +35,8 @@ const NAV_ITEMS: NavigationItem[] = [
   { id: 'market', label: t('navigation.market'), icon: Zap },
   { id: 'scanner', label: t('navigation.scanner'), icon: Search },
   { id: 'trading', label: t('navigation.trading'), icon: Sparkles },
+  { id: 'enhanced-trading', label: 'Enhanced Trading', icon: Rocket },
+  { id: 'positions', label: 'Positions', icon: ListOrdered },
   { id: 'futures', label: t('navigation.futures'), icon: DollarSign },
   { id: 'portfolio', label: 'Portfolio', icon: Wallet },
   { id: 'training', label: t('navigation.training'), icon: Brain },
@@ -40,9 +44,11 @@ const NAV_ITEMS: NavigationItem[] = [
   { id: 'professional-risk', label: '🔥 Pro Risk', icon: AlertTriangle },
   { id: 'backtest', label: t('navigation.backtest'), icon: BarChart3 },
   { id: 'strategyBuilder', label: 'Strategy Builder', icon: Sliders },
+  { id: 'strategylab', label: 'Strategy Lab', icon: Activity },
   { id: 'strategy-insights', label: 'Strategy Insights', icon: Layers },
   { id: 'health', label: t('navigation.health'), icon: Activity },
   { id: 'settings', label: t('navigation.settings'), icon: Settings },
+  { id: 'exchange-settings', label: 'Exchange Settings', icon: Settings },
 ];
 
 export const Sidebar: React.FC = () => {
