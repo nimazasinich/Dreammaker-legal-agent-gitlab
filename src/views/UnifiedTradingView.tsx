@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Wallet, TrendingUp } from 'lucide-react';
+import { Wallet, TrendingUp, AlertCircle } from 'lucide-react';
 
 // Import existing trading views - do not modify these files
 import TradingView from './TradingView';
@@ -12,7 +12,7 @@ type Props = {
   initialTab?: TabKey; // optional: allow deep-link set or wrappers to preselect
 };
 
-export default function UnifiedTradingView({ initialTab = 'spot' }: Props) {
+export default function UnifiedTradingView({ initialTab = 'futures' }: Props) {
   const [tab, setTab] = useState<TabKey>(initialTab);
 
   // Optional deep-link: support query parameter ?tab=spot|futures (non-breaking)
@@ -69,6 +69,23 @@ export default function UnifiedTradingView({ initialTab = 'spot' }: Props) {
       <div className="mb-4">
         <ExchangeSelector />
       </div>
+
+      {/* SPOT Trading Warning */}
+      {tab === 'spot' && (
+        <div className="mb-4 bg-amber-50 border-l-4 border-amber-500 p-4 rounded-lg">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-amber-900 mb-1">SPOT Trading Not Fully Implemented</h3>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                KuCoin SPOT testnet API integration is not yet complete.
+                The interface below is for demonstration purposes only and will not execute real SPOT trades.
+                For actual trading, please use the <strong>Leverage</strong> tab which supports live Futures trading.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CRITICAL: render exactly ONE page at a time to mimic separate routes */}
       {tab === 'spot'    && <TradingView />}

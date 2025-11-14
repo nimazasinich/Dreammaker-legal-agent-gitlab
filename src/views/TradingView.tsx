@@ -3,6 +3,8 @@ import { useTrading } from '../contexts/TradingContext';
 import { useMode } from '../contexts/ModeContext';
 import { TrendingUp, TrendingDown, DollarSign, BarChart3, Activity, X, Plus, Settings, RefreshCw, AlertCircle } from 'lucide-react';
 import { Logger } from '../core/Logger';
+import { showToast } from '../components/ui/Toast';
+import { useConfirmModal } from '../components/ui/ConfirmModal';
 
 interface OrderForm {
   symbol: string;
@@ -18,6 +20,7 @@ interface OrderForm {
 const TradingView: React.FC = () => {
   const { state: { dataMode }, setDataMode } = useMode();
   const { tradingMode, setMode, balance, positions, orders, placeOrder, closePosition, cancelOrder, refreshData, isLoading } = useTrading();
+  const { confirm, ModalComponent } = useConfirmModal();
 
   const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT');
   const [currentPrice, setCurrentPrice] = useState(50000);
@@ -56,30 +59,37 @@ const TradingView: React.FC = () => {
   const handlePlaceOrder = async () => {
     try {
       await placeOrder(orderForm);
-      alert('Order placed successfully!');
+      showToast('success', 'Order Placed', 'Your order has been placed successfully!');
       await refreshData();
     } catch (error: any) {
-      alert('Failed to place order: ' + error.message);
+      showToast('error', 'Order Failed', error.message || 'Failed to place order');
     }
   };
 
   const handleClosePosition = async (symbol: string) => {
-    if (!confirm('Close position for ' + symbol + '?')) return;
+    const confirmed = await confirm(
+      'Close Position',
+      `Are you sure you want to close your position for ${symbol}?`,
+      'danger'
+    );
+    if (!confirmed) return;
+
     try {
       await closePosition(symbol);
-      alert('Position closed successfully!');
+      showToast('success', 'Position Closed', `Position for ${symbol} has been closed successfully!`);
       await refreshData();
     } catch (error: any) {
-      alert('Failed to close position: ' + error.message);
+      showToast('error', 'Failed to Close', error.message || 'Failed to close position');
     }
   };
 
   const handleCancelOrder = async (orderId: string) => {
     try {
       await cancelOrder(orderId);
+      showToast('success', 'Order Cancelled', 'Order has been cancelled successfully');
       await refreshData();
     } catch (error: any) {
-      alert('Failed to cancel order: ' + error.message);
+      showToast('error', 'Cancellation Failed', error.message || 'Failed to cancel order');
     }
   };
 
@@ -101,8 +111,10 @@ const TradingView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[color:var(--surface-page)] p-6">
-      <div className="max-w-[1800px] mx-auto space-y-6">
+    <>
+      <ModalComponent />
+      <div className="min-h-screen bg-[color:var(--surface-page)] p-6">
+        <div className="max-w-[1800px] mx-auto space-y-6">
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -502,7 +514,8 @@ const TradingView: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
