@@ -96,5 +96,23 @@
     "enabled": true,
     "intervals": ["15m", "1h", "4h"],
     "aggregationMethod": "weighted"
+  },
+  "tuning": {
+    "enabled": false,
+    "mode": "grid",
+    "maxCandidates": 30,
+    "maxGenerations": 10,
+    "populationSize": 12,
+    "metric": "sharpe",
+    "backtestDefaults": {
+      "symbolUniverse": ["BTCUSDT", "ETHUSDT"],
+      "timeframe": "1h",
+      "lookbackDays": 60,
+      "initialBalance": 1000
+    },
+    "promotion": {
+      "autoPromote": false,
+      "tunedConfigPath": "config/scoring.tuned.json"
+    }
   }
 }

@@ -96,6 +96,7 @@ import { MarketDataController } from './controllers/MarketDataController.js';
 import { SystemController } from './controllers/SystemController.js';
 import { ScoringController } from './controllers/ScoringController.js';
 import { StrategyPipelineController } from './controllers/StrategyPipelineController.js';
+import { TuningController } from './controllers/TuningController.js';
 import { setupProxyRoutes } from './services/ProxyRoutes.js';
 import { SignalVisualizationWebSocketService } from './services/SignalVisualizationWebSocketService.js';
 import { TelegramService } from './services/TelegramService.js';
@@ -219,6 +220,7 @@ const marketDataController = new MarketDataController();
 const systemController = new SystemController();
 const scoringController = new ScoringController();
 const strategyPipelineController = new StrategyPipelineController();
+const tuningController = new TuningController();
 
 // Initialize AI Core and Training Systems
 const { XavierInitializer, StableActivations, NetworkArchitectures } = AICore;
@@ -1739,6 +1741,34 @@ app.post('/api/strategies/pipeline/run', async (req, res) => {
 // Get pipeline status
 app.get('/api/strategies/pipeline/status', async (req, res) => {
   await strategyPipelineController.getStatus(req, res);
+});
+
+// ============================
+// Auto-Tuning Engine Routes
+// ============================
+// Start a tuning run
+app.post('/api/tuning/run', async (req, res) => {
+  await tuningController.runTuning(req, res);
+});
+
+// Get specific tuning result
+app.get('/api/tuning/result/:id', async (req, res) => {
+  await tuningController.getResult(req, res);
+});
+
+// Get latest tuning result
+app.get('/api/tuning/latest', async (req, res) => {
+  await tuningController.getLatest(req, res);
+});
+
+// Get all tuning summaries
+app.get('/api/tuning/all', async (req, res) => {
+  await tuningController.getAllSummaries(req, res);
+});
+
+// Delete a tuning result
+app.delete('/api/tuning/result/:id', async (req, res) => {
+  await tuningController.deleteResult(req, res);
 });
 
 // COMMENTED OUT: Missing route files - need to be created or removed
