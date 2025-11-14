@@ -7,12 +7,17 @@ import {
   RefreshCw,
   Shield,
   TrendingUp,
+  AlertTriangle,
+  Zap,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import { t } from '../i18n';
 import fmt from '../lib/formatNumber';
 import createPseudoRandom from '../lib/pseudoRandom';
 import { useBacktestContext } from '../contexts/BacktestContext';
+import { BacktestPanel } from '../components/backtesting/BacktestPanel';
 
 type BacktestStatus = 'idle' | 'running' | 'completed';
 
@@ -198,6 +203,7 @@ const BacktestView: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<BacktestResult[]>([]);
   const [metrics, setMetrics] = useState<AggregateMetrics | null>(null);
+  const [backtestMode, setBacktestMode] = useState<'demo' | 'real'>('demo');
 
   const timerRef = useRef<number | null>(null);
 
@@ -287,63 +293,112 @@ const BacktestView: React.FC = () => {
   return (
     <ErrorBoundary>
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 pb-12">
-        {/* Warning Banner: Demo Mode */}
-        <div className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4 shadow-md">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-6 w-6 flex-shrink-0 text-amber-600" aria-hidden="true" />
-            <div className="flex-1">
-              <h2 className="text-lg font-bold text-amber-900">⚠️ DEMO MODE: Simulated Results</h2>
-              <p className="mt-1 text-sm text-amber-800">
-                Results are generated using deterministic pseudo-random algorithms for demonstration purposes only.
-                This is <strong>NOT</strong> real historical backtesting. Metrics shown do not reflect actual trading performance.
-              </p>
-              <p className="mt-2 text-xs text-amber-700">
-                Real backtesting with historical data integration is planned for a future release.
-              </p>
-            </div>
-          </div>
+        {/* Mode Toggle */}
+        <div className="flex items-center justify-end gap-4">
+          <span className="text-sm font-medium text-text-secondary">Backtest Mode:</span>
+          <button
+            type="button"
+            onClick={() => setBacktestMode(backtestMode === 'demo' ? 'real' : 'demo')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              backtestMode === 'real'
+                ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg'
+                : 'bg-surface border border-border text-text-secondary hover:bg-surface-muted'
+            }`}
+          >
+            {backtestMode === 'real' ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+            <span>{backtestMode === 'real' ? 'Real Backtest' : 'Demo Mode'}</span>
+            {backtestMode === 'real' && <Zap className="h-4 w-4" />}
+          </button>
         </div>
-        <section className="rounded-2xl border border-border bg-surface shadow-card-soft">
-          <div className="flex flex-col gap-6 p-8 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
-                <BarChart3 className="h-4 w-4" aria-hidden="true" />
-                <span>{statusLabel}</span>
+
+        {/* Warning Banner: Demo Mode */}
+        {backtestMode === 'demo' && (
+          <div className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4 shadow-md">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-6 w-6 flex-shrink-0 text-amber-600" aria-hidden="true" />
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-amber-900">⚠️ DEMO MODE: Simulated Results</h2>
+                <p className="mt-1 text-sm text-amber-800">
+                  Results are generated using deterministic pseudo-random algorithms for demonstration purposes only.
+                  This is <strong>NOT</strong> real historical backtesting. Metrics shown do not reflect actual trading performance.
+                </p>
+                <p className="mt-2 text-xs text-amber-700">
+                  Toggle to "Real Backtest" mode above to use actual historical data.
+                </p>
               </div>
-              <h1
-                ref={headingRef}
-                tabIndex={-1}
-                className="text-3xl font-semibold text-text-base outline-none"
-              >
-                {t('backtest.title')}
-              </h1>
-              <p className="max-w-xl text-sm text-text-secondary">{t('backtest.subtitle')}</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={handleRun}
-                disabled={status === 'running'}
-              >
-                <Play className="h-4 w-4" aria-hidden="true" />
-                {t('backtest.actions.run')}
-              </button>
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={handleReset}
-              >
-                <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                {t('backtest.actions.reset')}
-              </button>
             </div>
           </div>
-        </section>
+        )}
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-border bg-surface shadow-sm">
+        {/* Real Backtest Info Banner */}
+        {backtestMode === 'real' && (
+          <div className="rounded-xl border-2 border-emerald-400 bg-emerald-50 p-4 shadow-md">
+            <div className="flex items-start gap-3">
+              <Zap className="h-6 w-6 flex-shrink-0 text-emerald-600" aria-hidden="true" />
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-emerald-900">✓ REAL BACKTEST MODE</h2>
+                <p className="mt-1 text-sm text-emerald-800">
+                  Using actual historical market data and real backtest engine with walk-forward analysis.
+                  Results reflect genuine strategy performance on historical data.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {backtestMode === 'demo' && (
+          <section className="rounded-2xl border border-border bg-surface shadow-card-soft">
+            <div className="flex flex-col gap-6 p-8 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
+                  <BarChart3 className="h-4 w-4" aria-hidden="true" />
+                  <span>{statusLabel}</span>
+                </div>
+                <h1
+                  ref={headingRef}
+                  tabIndex={-1}
+                  className="text-3xl font-semibold text-text-base outline-none"
+                >
+                  {t('backtest.title')}
+                </h1>
+                <p className="max-w-xl text-sm text-text-secondary">{t('backtest.subtitle')}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={handleRun}
+                  disabled={status === 'running'}
+                >
+                  <Play className="h-4 w-4" aria-hidden="true" />
+                  {t('backtest.actions.run')}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={handleReset}
+                >
+                  <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                  {t('backtest.actions.reset')}
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Real Backtest Panel */}
+        {backtestMode === 'real' && (
+          <section className="rounded-2xl border border-border bg-surface shadow-sm">
+            <BacktestPanel symbol={effectiveSymbol} timeframe={effectiveTimeframe} />
+          </section>
+        )}
+
+        {/* Demo Backtest Configuration and Results */}
+        {backtestMode === 'demo' && (
+          <>
+            <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-border bg-surface shadow-sm">
               <div className="border-b border-border px-6 py-4">
                 <h2 className="text-lg font-semibold text-text-base">{t('backtest.config.heading')}</h2>
               </div>
@@ -573,6 +628,8 @@ const BacktestView: React.FC = () => {
             </div>
           )}
         </section>
+          </>
+        )}
       </div>
     </ErrorBoundary>
   );

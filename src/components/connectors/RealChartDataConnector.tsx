@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
 import { MarketData } from '../../types';
-import { realDataManager } from '../../services/RealDataManager';
+import { useData } from '../../contexts/DataContext';
 import { AdvancedChart } from '../AdvancedChart';
 
 interface RealChartDataConnectorProps {
@@ -12,7 +12,10 @@ interface RealChartDataConnectorProps {
 }
 
 /**
- * RealChartDataConnector - Wraps AdvancedChart component with real data from backend
+ * RealChartDataConnector - Wraps AdvancedChart component with real data from DataContext
+ *
+ * REFACTORED: Now uses centralized DataContext instead of creating independent API calls.
+ * This fixes the memory leak caused by multiple polling intervals and subscriptions.
  */
 
 const logger = Logger.getInstance();
@@ -22,64 +25,48 @@ export const RealChartDataConnector: React.FC<RealChartDataConnectorProps> = ({
   timeframe,
   limit = 100
 }) => {
-  const [realChartData, setRealChartData] = useState<MarketData[]>([]);
+  const dataContext = useData();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Use bars from DataContext - no independent API calls
+  const chartData = dataContext?.bars || [];
+
   useEffect(() => {
     let isMounted = true;
-    let interval: NodeJS.Timeout | null = null;
-    
-    const fetchRealChartData = async () => {
-      if (!isMounted) { console.warn("Missing data"); }
-      
+
+    const loadData = async () => {
+      if (!dataContext || !isMounted) return;
+
       try {
         setLoading(true);
         setError(null);
-        
-        // Fetch REAL OHLC data from backend
-        const data = await realDataManager.fetchRealChartData(symbol, timeframe, limit);
-        
-        if (!isMounted) { console.warn("Missing data"); }
-        
-        if (data && (data?.length || 0) > 0) {
-          // Limit data size to prevent memory leak
-          const limitedData = data.slice(0, limit);
-          setRealChartData(limitedData);
-        } else {
-          setError('No chart data available');
+
+        // Request data refresh from context if symbol/timeframe changed
+        if (dataContext.symbol !== symbol || dataContext.timeframe !== timeframe) {
+          dataContext.refresh({ symbol, timeframe });
+        }
+
+        if (isMounted) {
+          setLoading(false);
         }
       } catch (err) {
-        if (!isMounted) { console.warn("Missing data"); }
-        
-        logger.error('Failed to fetch chart data:', {}, err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch chart data');
-      } finally {
         if (isMounted) {
+          logger.error('Failed to load chart data:', {}, err);
+          setError(err instanceof Error ? err.message : 'Failed to load chart data');
           setLoading(false);
         }
       }
     };
 
-    // Initial fetch
-    fetchRealChartData();
-
-    // Set up periodic updates (every minute) - minimum interval to prevent spam
-    interval = setInterval(() => {
-      if (isMounted) {
-        fetchRealChartData();
-      }
-    }, 60000);
+    loadData();
 
     return () => {
       isMounted = false;
-      if (interval) {
-        clearInterval(interval);
-      }
     };
-  }, [symbol, timeframe, limit]);
+  }, [symbol, timeframe, dataContext]);
 
-  if (loading && realChartData.length === 0) {
+  if (loading && chartData.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-gray-500">Loading chart data...</div>
@@ -95,7 +82,7 @@ export const RealChartDataConnector: React.FC<RealChartDataConnectorProps> = ({
     );
   }
 
-  if (realChartData.length === 0) {
+  if (chartData.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-gray-500">No data available</div>
@@ -103,17 +90,20 @@ export const RealChartDataConnector: React.FC<RealChartDataConnectorProps> = ({
     );
   }
 
-  // Transform MarketData[] to CandleData[] for AdvancedChart
-  const candleData = realChartData.map(data => ({
-    time: typeof data.timestamp === 'number' ? data.timestamp : data.timestamp.getTime(),
-    open: data.open,
-    high: data.high,
-    low: data.low,
-    close: data.close,
-    volume: data.volume
+  // Limit data to requested limit to prevent performance issues
+  const limitedData = limit ? chartData.slice(-limit) : chartData;
+
+  // Transform bars to CandleData[] for AdvancedChart
+  const candleData = limitedData.map(bar => ({
+    time: bar.timestamp,
+    open: bar.open,
+    high: bar.high,
+    low: bar.low,
+    close: bar.close,
+    volume: bar.volume
   }));
 
-  // Pass real data to existing AdvancedChart component
+  // Pass data from context to AdvancedChart component
   return <AdvancedChart data={candleData} symbol={symbol} timeframe={timeframe} />;
 };
 

@@ -22,6 +22,7 @@ import ResponseHandler from '../components/ui/ResponseHandler';
 import { APP_MODE, USE_MOCK_DATA } from '../config/env.js';
 import { getTopPairs, searchPairs, PairItem, toBinanceSymbol, getChangePct } from '../services/marketUniverse';
 import BacktestButton from '../components/backtesting/BacktestButton';
+import { ExchangeSelector } from '../components/ExchangeSelector';
 
 // Helper function to generate sample analysis data
 const generateSampleAnalysisData = (symbol: string): AnalysisData => {
@@ -445,6 +446,11 @@ export const MarketView: React.FC = () => {
                         </div>
                     </div>
                 )}
+
+                {/* Exchange Selector */}
+                <div className="mt-4">
+                    <ExchangeSelector />
+                </div>
             </div>
 
             {/* Market Overview Grid */}

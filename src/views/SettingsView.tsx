@@ -7,6 +7,7 @@ import {
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import { ExchangeSettings } from '../components/settings/ExchangeSettings';
 import TelegramSettingsCard from '../components/settings/TelegramSettingsCard';
+import { ExchangeSelector } from '../components/ExchangeSelector';
 
 const logger = Logger.getInstance();
 
@@ -218,6 +219,11 @@ const SettingsView: React.FC = () => {
           <p className="text-slate-400 text-sm">
             Configure HTS detectors and weighting rules
           </p>
+        </div>
+
+        {/* Exchange Selector */}
+        <div className="mb-6">
+          <ExchangeSelector />
         </div>
 
         {/* Action Buttons */}
