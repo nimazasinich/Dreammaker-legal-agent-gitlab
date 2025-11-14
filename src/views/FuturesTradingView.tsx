@@ -392,7 +392,7 @@ export const FuturesTradingView: React.FC = () => {
 
                   {/* Entry Plan */}
                   {snapshot.entryPlan && snapshot.action !== 'HOLD' && (
-                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl" style={{ borderRadius: '12px' }}>
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
                       <h3 className="text-lg font-bold text-blue-800 mb-3">Entry Plan</h3>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
@@ -436,7 +436,6 @@ export const FuturesTradingView: React.FC = () => {
                           onClick={handlePlaceSuggestedOrder}
                           disabled={loading}
                           className={`w-full mt-4 px-6 py-3 rounded-xl text-white font-bold transition-all ${getActionBgColor(snapshot.action)} disabled:opacity-50`}
-                          style={{ borderRadius: '12px' }}
                         >
                           {loading ? 'Placing...' : `Place Suggested Order (${snapshot.action})`}
                         </button>
@@ -445,7 +444,7 @@ export const FuturesTradingView: React.FC = () => {
                   )}
 
                   {snapshot.action === 'HOLD' && (
-                    <div className="p-4 bg-[color:var(--surface-muted)] rounded-xl text-center" style={{ borderRadius: '12px' }}>
+                    <div className="p-4 bg-[color:var(--surface-muted)] rounded-xl text-center">
                       <p className="text-[color:var(--text-secondary)]">No trading opportunities at the moment. Wait for a qualified signal.</p>
                     </div>
                   )}

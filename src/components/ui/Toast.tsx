@@ -20,10 +20,10 @@ export function showToast(type: ToastType, title: string, message: string) {
   currentToasts = [...currentToasts, newToast];
   toastListeners.forEach(listener => listener(currentToasts));
 
-  // Auto-dismiss after 8 seconds
+  // Auto-dismiss after 5 seconds
   setTimeout(() => {
     dismissToast(id);
-  }, 8000);
+  }, 5000);
 }
 
 export function dismissToast(id: string) {
