@@ -123,6 +123,7 @@ import { readVault, writeVault } from './config/secrets.js';
 // import { optionalMarketRouter } from './routes/optional-market.js';
 // import { optionalOnchainRouter } from './routes/optional-onchain.js';
 import { FuturesWebSocketChannel } from './ws/futuresChannel.js';
+import { ScoreStreamGateway } from './ws/ScoreStreamGateway.js';
 import { FEATURE_FUTURES } from './config/flags.js';
 import { attachHeartbeat } from './server/wsHeartbeat.js';
 import { health } from './server/health.js';
@@ -1683,6 +1684,15 @@ app.post('/api/scoring/weights/reset', async (req, res) => {
 
 app.get('/api/scoring/weights/history', async (req, res) => {
   await scoringController.getAmendmentHistory(req, res);
+});
+
+// Live scoring endpoints
+app.get('/api/scoring/live/:symbol', async (req, res) => {
+  await scoringController.getLiveScore(req, res);
+});
+
+app.get('/api/scoring/stream-status', async (req, res) => {
+  await scoringController.getStreamStatus(req, res);
 });
 
 // Legacy endpoint for backward compatibility
@@ -3462,7 +3472,14 @@ wsServer.on('connection', (ws, req) => {
     futuresChannel.handleConnection(ws);
     return;
   }
-  
+
+  // Handle live score stream channel
+  if (req.url?.includes('/score-stream')) {
+    const scoreStreamGateway = ScoreStreamGateway.getInstance();
+    scoreStreamGateway.handleConnection(ws);
+    return;
+  }
+
   // Add to connected clients set
   connectedClients.add(ws);
   try { wsConnections.inc(); } catch {}
