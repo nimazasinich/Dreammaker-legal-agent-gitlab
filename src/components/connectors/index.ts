@@ -1,18 +1,18 @@
-// Temporary fix for memory leak - disable connector components
-// These components make independent API calls that bypass DataContext
+// Connector components - REFACTORED to use centralized data contexts
+// Memory leak issue FIXED: Now uses DataContext/LiveDataContext instead of independent API calls
 
 import { Logger } from '../../core/Logger.js';
 const logger = Logger.getInstance();
 
-// Comment out these imports to prevent multiple API calls
-/*
-export { RealSignalFeedConnector } from './RealSignalFeedConnector';
+// Re-enabled after refactoring to prevent memory leaks
 export { RealPriceChartConnector } from './RealPriceChartConnector';
 export { RealChartDataConnector } from './RealChartDataConnector';
+export { RealDataProvider, useRealData } from './RealDataConnector';
+
+// TODO: Refactor these remaining connectors to use contexts
+/*
+export { RealSignalFeedConnector } from './RealSignalFeedConnector';
 export { RealPortfolioConnector } from './RealPortfolioConnector';
 */
 
-// Only export RealDataProvider which doesn't conflict
-export { RealDataProvider, useRealData } from './RealDataConnector';
-
-logger.info('🚫 Connector components temporarily disabled to prevent memory leak');
+logger.info('✅ Chart connectors re-enabled (refactored to use DataContext/LiveDataContext)');
