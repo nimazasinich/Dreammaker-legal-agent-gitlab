@@ -56,7 +56,7 @@ export class SystemController {
       // Check Binance if needed (for binance or mixed mode)
       if (primarySource === 'binance' || primarySource === 'mixed') {
         try {
-          await this.binanceService.getPrices(['BTCUSDT'], 2000);
+          await this.binanceService.testConnection();
           providerStatuses.binance = 'up';
         } catch (error: any) {
           this.logger.warn('Binance health check failed', {}, error);

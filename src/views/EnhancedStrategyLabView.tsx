@@ -350,8 +350,9 @@ export const EnhancedStrategyLabView: React.FC = () => {
     handleSimulate();
   };
 
-  const handleDeleteStrategy = (id: string) => {
-    if (confirm('Are you sure you want to delete this strategy?')) {
+  const handleDeleteStrategy = async (id: string) => {
+    const confirmed = await confirm('Delete Strategy', 'Are you sure you want to delete this strategy?', 'danger');
+    if (confirmed) {
       const updated = savedStrategies.filter(s => s.id !== id);
       setSavedStrategies(updated);
       localStorage.setItem('savedStrategies', JSON.stringify(updated));
@@ -446,7 +447,7 @@ export const EnhancedStrategyLabView: React.FC = () => {
         if (importData.name) setCurrentTemplate(importData.name);
 
         // Optionally save as template
-        const shouldSave = confirm(`Strategy loaded successfully! Would you like to save it as a template?`);
+        const shouldSave = await confirm('Save Template', 'Strategy loaded successfully! Would you like to save it as a template?', 'info');
         if (shouldSave) {
           const name = prompt('Enter template name:', importData.name || 'imported-strategy');
           if (name) {

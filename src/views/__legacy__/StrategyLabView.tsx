@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StrategyTemplate } from '../types/index';
-import { Logger } from '../core/Logger';
+import { StrategyTemplate } from '../../types/index';
+import { Logger } from '../../core/Logger';
 
 interface AnimationStage {
   id: number;
