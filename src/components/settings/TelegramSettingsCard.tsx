@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Send, Save, Settings } from 'lucide-react';
 import axios from 'axios';
 import { Logger } from '../../core/Logger.js';
+import { showToast } from '../ui/Toast';
+import { useConfirmModal } from '../ui/ConfirmModal';
 
 type Flags = {
   signals: boolean;
@@ -21,6 +23,7 @@ const api = import.meta.env.VITE_API_BASE || '/api';
 const logger = Logger.getInstance();
 
 export default function TelegramSettingsCard() {
+  const { confirm, ModalComponent } = useConfirmModal();
   const [loading, setLoading] = useState(false);
   const [enabled, setEnabled] = useState(true);
   const [botToken, setBotToken] = useState('');
@@ -67,9 +70,9 @@ export default function TelegramSettingsCard() {
       setConfigured(data.configured);
       setBotToken('');
       setChatId('');
-      alert('Settings saved');
+      showToast('success', 'Settings Saved', 'Telegram settings updated successfully');
     } catch (error) {
-      alert('Failed to save settings');
+      showToast('error', 'Save Failed', 'Failed to save Telegram settings');
       logger.error('Failed to save Telegram config:', {}, error as Error);
     } finally {
       setLoading(false);
@@ -80,9 +83,9 @@ export default function TelegramSettingsCard() {
     setLoading(true);
     try {
       await axios.post(`${api}/telegram/test`);
-      alert('Test notification sent');
+      showToast('success', 'Test Sent', 'Test notification sent to Telegram');
     } catch (error) {
-      alert('Failed to send test message');
+      showToast('error', 'Test Failed', 'Failed to send test message');
       logger.error('Failed to send test message:', {}, error as Error);
     } finally {
       setLoading(false);
@@ -90,14 +93,16 @@ export default function TelegramSettingsCard() {
   };
 
   return (
-    <div
-      className="mb-6 p-6 rounded-xl"
-      style={{
-        background: 'rgba(15, 15, 24, 0.6)',
-        border: '1px solid rgba(99, 102, 241, 0.2)'
-      }}
-    >
-      <div className="mb-4">
+    <>
+      <ModalComponent />
+      <div
+        className="mb-6 p-6 rounded-xl"
+        style={{
+          background: 'rgba(15, 15, 24, 0.6)',
+          border: '1px solid rgba(99, 102, 241, 0.2)'
+        }}
+      >
+        <div className="mb-4">
         <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
           <Settings className="w-6 h-6 text-purple-400" />
         Telegram notifications
@@ -183,7 +188,7 @@ export default function TelegramSettingsCard() {
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

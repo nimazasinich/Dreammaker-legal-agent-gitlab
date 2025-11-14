@@ -3,6 +3,9 @@ import { API_BASE, APP_MODE, STRICT_REAL_DATA } from '../config/env';
 import { StrategyTemplateEditor } from '../components/strategy/StrategyTemplateEditor';
 import ScoreGauge from '../components/strategy/ScoreGauge';
 import { saveStrategyOutput } from '../storage/mlOutputs';
+import { Logger } from '../core/Logger';
+
+const logger = Logger.getInstance();
 
 // Simple animated step header (CSS transitions only)
 function StepHeader({ step, title, active }:{ step:number; title:string; active:boolean }) {
@@ -46,7 +49,7 @@ export default function StrategyBuilderView() {
   }, [selectedTemplate]);
 
   const applyTemplate = async () => {
-    if (!selectedTemplate) { console.warn("Missing data"); }
+    if (!selectedTemplate) return;
     setApplying(true); setErr(null);
     try {
       const r = await fetch(`${API_BASE}/strategy/apply`, {
@@ -55,7 +58,7 @@ export default function StrategyBuilderView() {
         credentials: 'include',
         body: JSON.stringify({ template: selectedTemplate })
       });
-      if (!r.ok) console.error(`apply_${r.status}`);
+      if (!r.ok) logger.error('Failed to apply template', { status: r.status });
     } catch (e:any) {
       setErr(e?.message || 'apply_failed');
     } finally {
@@ -75,7 +78,7 @@ export default function StrategyBuilderView() {
         credentials: 'include',
         body: JSON.stringify({ symbol, timeframe, limit: 500 })
       });
-      if (!r.ok) console.error(`backtest_${r.status}`);
+      if (!r.ok) logger.error('Failed to run backtest', { status: r.status });
       const json = await r.json();
       setBtMetrics(json?.metrics || json);
       saveStrategyOutput(1, { symbol, timeframe, metrics: json?.metrics || json, ts: Date.now() });

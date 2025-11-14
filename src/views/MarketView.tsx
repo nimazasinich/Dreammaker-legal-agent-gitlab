@@ -211,7 +211,7 @@ export const MarketView: React.FC = () => {
                 }));
                 setMarketData(formatted);
             } else {
-                console.error('No market data available from API');
+                logger.error('No market data available from API', {});
                 setError('No market data available. Please ensure backend is running.');
             }
 
@@ -331,6 +331,12 @@ export const MarketView: React.FC = () => {
                             Market Analysis
                         </h1>
                         <p className="text-slate-400 text-xs">Comprehensive market intelligence and trading insights</p>
+                        {error && (
+                            <div className="mt-2 flex items-center gap-2 text-orange-400 text-xs">
+                                <AlertCircle className="w-3 h-3" />
+                                <span>{error}</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-3">

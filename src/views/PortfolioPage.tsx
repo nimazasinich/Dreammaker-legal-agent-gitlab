@@ -5,6 +5,8 @@ import { API_BASE } from '../config/env';
 import { REFRESH_BASE_MS } from '../config/risk';
 import { RealPortfolioConnector } from '../components/connectors/RealPortfolioConnector';
 import RiskCenterPro from '../components/portfolio/RiskCenterPro';
+import { showToast } from '../components/ui/Toast';
+import { useConfirmModal } from '../components/ui/ConfirmModal';
 
 const logger = Logger.getInstance();
 
@@ -23,7 +25,8 @@ interface Position {
 }
 
 export const PortfolioPage: React.FC = () => {
-    const [isLoading, setIsLoading] = useState(false);
+  const { confirm, ModalComponent } = useConfirmModal();
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [marketData, setMarketData] = useState<MarketData[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
@@ -40,8 +43,7 @@ export const PortfolioPage: React.FC = () => {
       // Fetch market data and positions in parallel
       const [marketRes, positionsRes] = await Promise.allSettled([
         fetch(`${API_BASE}/market/data`, { mode: "cors", headers: { "Content-Type": "application/json" } }).then((r) => (r.ok ? r.json() : null)),
-        fetch(`${API_BASE}/
-  .catch(err => { console.warn("API Error, using fallback:", err); return { data: [], fallback: true }; })/positions/open`, { credentials: 'include' }).then((r) =>
+        fetch(`${API_BASE}/positions/open`, { credentials: 'include' }).then((r) =>
           r.ok ? r.json() : null
         ),
       ]);
@@ -77,7 +79,8 @@ export const PortfolioPage: React.FC = () => {
   };
 
   const handleClosePosition = async (id: string) => {
-    if (!confirm('Close this position?')) return;
+    const confirmed = await confirm('Close Position', 'Are you sure you want to close this position?', 'warning');
+    if (!confirmed) return;
 
     setLoading(true);
     try {
@@ -91,12 +94,12 @@ export const PortfolioPage: React.FC = () => {
       const data = await response.json();
       if (data.success) {
         await loadData();
-        alert(data.message || 'Position closed successfully');
+        showToast('success', 'Position Closed', data.message || 'Position closed successfully');
       } else {
-        alert(`Failed to close position: ${data.error}`);
+        showToast('error', 'Close Failed', data.error || 'Failed to close position');
       }
     } catch (error: any) {
-      alert(`Failed to close position: ${error.message}`);
+      showToast('error', 'Close Failed', error.message || 'Failed to close position');
     }
     setLoading(false);
   };
@@ -112,8 +115,10 @@ export const PortfolioPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-6">
-      <div className="max-w-[1600px] mx-auto space-y-6">
+    <>
+      <ModalComponent />
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-6">
+        <div className="max-w-[1600px] mx-auto space-y-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900">Portfolio</h1>
@@ -240,7 +245,7 @@ export const PortfolioPage: React.FC = () => {
           </div>
         </section>
       </div>
-    </div>
+    </>
   );
 };
 
