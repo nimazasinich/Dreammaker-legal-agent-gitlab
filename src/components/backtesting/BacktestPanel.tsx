@@ -489,6 +489,7 @@ export const BacktestPanel: React.FC<BacktestPanelProps> = ({ symbol, timeframe 
           </div>
         )}
       </div>
+    </div>
     </>
   );
 };
