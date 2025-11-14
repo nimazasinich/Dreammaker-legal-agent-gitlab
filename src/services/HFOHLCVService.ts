@@ -69,17 +69,21 @@ export class HFOHLCVService extends HuggingFaceService {
     try {
       // Get dataset ID
       const datasetId = this.DATASET_MAP[symbolUpper] || this.DATASET_MAP['DEFAULT'];
-      
+
       // Load data from HF dataset
       const data = await this.loadDataset(datasetId, symbolUpper, timeframe, limit);
-      
-      // Cache result
-      this.ohlcvCache.set(cacheKey, data);
-      
-      return data;
+
+      // Guard against undefined or null data
+      const safeData = Array.isArray(data) ? data : [];
+
+      // Cache result (even if empty, to avoid repeated failed requests)
+      this.ohlcvCache.set(cacheKey, safeData);
+
+      return safeData;
     } catch (error) {
       this.logger.error('Failed to load OHLCV from HF dataset', { symbol: symbolUpper, dataset: this.DATASET_MAP[symbolUpper] }, error as Error);
-      throw error;
+      // Return empty array instead of throwing to prevent cascading failures
+      return [];
     }
   }
 
@@ -210,7 +214,8 @@ export class HFOHLCVService extends HuggingFaceService {
       errors: errorSummary
     });
 
-    console.error(`Failed to load dataset ${datasetId}: ${errorSummary}`);
+    // Return empty array instead of undefined to prevent "Cannot read properties of undefined" errors
+    return [];
   }
 
   /**

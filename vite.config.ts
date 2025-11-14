@@ -41,6 +41,36 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/signals': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/analysis': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/proxy': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/status': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/health': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/binance': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        secure: false,
+      },
       '^/ws($|/)': {
         target: 'ws://localhost:8001',
         ws: true,

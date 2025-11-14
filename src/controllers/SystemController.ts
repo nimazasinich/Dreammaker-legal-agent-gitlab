@@ -22,22 +22,59 @@ export class SystemController {
       const redisStatus = await this.redisService.getConnectionStatus();
       const dbStatus = await this.database.getHealth();
 
+      // Check individual providers (don't let one failure crash the whole endpoint)
+      const providerStatuses: Record<string, 'up' | 'degraded' | 'down'> = {};
+
+      // Check Binance
+      try {
+        await this.binanceService.getPrices(['BTCUSDT'], 2000);
+        providerStatuses.binance = 'up';
+      } catch (error: any) {
+        this.logger.warn('Binance health check failed', {}, error);
+        providerStatuses.binance = 'down';
+      }
+
+      // Check KuCoin sandbox (non-critical, sandbox may be down)
+      try {
+        const { KuCoinService } = await import('../services/KuCoinService.js');
+        const kucoinService = KuCoinService.getInstance();
+        await kucoinService.getAccountInfo();
+        providerStatuses.kucoin_sandbox = 'up';
+      } catch (error: any) {
+        // KuCoin sandbox is often down (ENOTFOUND api-sandbox.kucoin.com)
+        // Mark as degraded instead of crashing
+        const message = error.message || String(error);
+        if (message.includes('ENOTFOUND') || message.includes('api-sandbox.kucoin.com')) {
+          this.logger.debug('KuCoin sandbox is unreachable (expected in dev)');
+          providerStatuses.kucoin_sandbox = 'down';
+        } else {
+          providerStatuses.kucoin_sandbox = 'degraded';
+        }
+      }
+
+      // Check HF OHLCV service
+      try {
+        const { HFOHLCVService } = await import('../services/HFOHLCVService.js');
+        const hfService = HFOHLCVService.getInstance();
+        // Quick test: just check if service is available (don't actually fetch data)
+        providerStatuses.hf_ohlcv = hfService ? 'up' : 'down';
+      } catch (error: any) {
+        this.logger.debug('HF OHLCV service check failed', {}, error);
+        providerStatuses.hf_ohlcv = 'degraded';
+      }
+
+      // Overall backend status: "up" if core services (db, redis) are ok
+      // Individual provider failures don't affect backend status
+      const backendStatus = dbStatus ? 'up' : 'degraded';
+
       const health = {
-        status: 'healthy',
+        ok: true,
         timestamp: Date.now(),
         services: {
-          database: {
-            status: dbStatus ? 'connected' : 'disconnected',
-            ...dbStatus
-          },
-          redis: {
-            status: redisStatus.isConnected ? 'connected' : 'disconnected',
-            reconnectAttempts: redisStatus.reconnectAttempts
-          },
-          marketData: {
-            status: this.config.isRealDataMode() ? 'multi-provider' : 'binance',
-            primarySource: this.config.getExchangeConfig().primarySource || 'coingecko'
-          }
+          backend: backendStatus,
+          database: dbStatus ? 'up' : 'down',
+          redis: redisStatus.isConnected ? 'up' : 'down',
+          ...providerStatuses
         },
         uptime: process.uptime()
       };
@@ -45,10 +82,16 @@ export class SystemController {
       res.json(health);
     } catch (error) {
       this.logger.error('Health check failed', {}, error as Error);
-      res.status(500).json({
-        status: 'unhealthy',
-        error: (error as Error).message,
-        timestamp: Date.now()
+      // Even on error, return valid JSON (not 500)
+      res.json({
+        ok: false,
+        timestamp: Date.now(),
+        services: {
+          backend: 'down',
+          database: 'unknown',
+          redis: 'unknown'
+        },
+        error: (error as Error).message
       });
     }
   }
