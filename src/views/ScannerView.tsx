@@ -13,7 +13,7 @@ import { TechnicalPatternsScanner } from '../components/scanner/TechnicalPattern
 import { SmartMoneyScanner } from '../components/scanner/SmartMoneyScanner';
 import { NewsSentimentScanner } from '../components/scanner/NewsSentimentScanner';
 import { WhaleActivityScanner } from '../components/scanner/WhaleActivityScanner';
-import { ScannerFeedPanel } from '../components/scanner/ScannerFeedPanel';
+import ScannerFeedPanel from '../components/scanner/ScannerFeedPanel';
 
 type ScannerStatus = 'idle' | 'loading' | 'ready' | 'error';
 type SortField = 'symbol' | 'price' | 'change24h' | 'volume24h' | 'score';

@@ -19,7 +19,9 @@ export type NavigationView =
   | 'positions'
   | 'strategylab'
   | 'strategy-insights'
-  | 'exchange-settings';
+  | 'exchange-settings'
+  | 'monitoring'
+  | 'diagnostics';
 
 interface NavigationContextType {
   currentView: NavigationView;
