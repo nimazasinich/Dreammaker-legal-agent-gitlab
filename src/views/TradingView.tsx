@@ -17,7 +17,11 @@ interface OrderForm {
   takeProfit: number;
 }
 
-const TradingView: React.FC = () => {
+interface TradingViewProps {
+  disabled?: boolean;
+}
+
+const TradingView: React.FC<TradingViewProps> = ({ disabled = false }) => {
   const { state: { dataMode }, setDataMode } = useMode();
   const { tradingMode, setMode, balance, positions, orders, placeOrder, closePosition, cancelOrder, refreshData, isLoading } = useTrading();
   const { confirm, ModalComponent } = useConfirmModal();
@@ -113,7 +117,16 @@ const TradingView: React.FC = () => {
   return (
     <>
       <ModalComponent />
-      <div className="min-h-screen bg-[color:var(--surface-page)] p-6">
+      <div className="min-h-screen bg-[color:var(--surface-page)] p-6" style={disabled ? { opacity: 0.6, pointerEvents: 'none' } : {}}>
+        {disabled && (
+          <div className="max-w-[1800px] mx-auto mb-6 bg-red-100 border-2 border-red-500 rounded-xl p-6 text-center">
+            <h2 className="text-2xl font-bold text-red-900 mb-2">SPOT Trading Interface Disabled</h2>
+            <p className="text-red-800">
+              This interface is currently disabled because SPOT trading is not implemented.
+              Please use the Leverage tab for real trading functionality.
+            </p>
+          </div>
+        )}
         <div className="max-w-[1800px] mx-auto space-y-6">
 
         <div className="flex items-center justify-between">

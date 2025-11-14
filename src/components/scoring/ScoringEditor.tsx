@@ -7,6 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
 import { API_BASE } from '../../config/env.js';
 import axios from 'axios';
+import { showToast } from '../ui/Toast';
+import { useConfirmModal } from '../ui/ConfirmModal';
 
 interface DetectorWeights {
   technical_analysis: {
@@ -56,6 +58,7 @@ interface ScoringSnapshot {
 const logger = Logger.getInstance();
 
 export const ScoringEditor: React.FC = () => {
+  const { confirm, ModalComponent } = useConfirmModal();
   const [detectorWeights, setDetectorWeights] = useState<DetectorWeights>({
     technical_analysis: {
       harmonic: 0.15,
@@ -128,7 +131,7 @@ export const ScoringEditor: React.FC = () => {
       });
 
       if (response.data.success) {
-        alert('Weights updated successfully!');
+        showToast('success', 'Success', 'Weights updated successfully!');
         await loadWeights();
       }
     } catch (err: unknown) {
@@ -139,13 +142,18 @@ export const ScoringEditor: React.FC = () => {
   };
 
   const resetWeights = async () => {
-    if (!confirm('Reset weights to defaults?')) return;
-    
+    const confirmed = await confirm(
+      'Reset Weights',
+      'Are you sure you want to reset all weights to defaults?',
+      'warning'
+    );
+    if (!confirmed) return;
+
     setLoading(true);
     try {
       await axios.post(`${API_BASE}/api/scoring/weights/reset`);
       await loadWeights();
-      alert('Weights reset to defaults');
+      showToast('success', 'Reset Complete', 'Weights reset to defaults');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to reset weights');
     } finally {
@@ -171,8 +179,10 @@ export const ScoringEditor: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between mb-6">
+    <>
+      <ModalComponent />
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Quantum Scoring System</h1>
         <div className="flex gap-2">
           <input
@@ -365,7 +375,8 @@ export const ScoringEditor: React.FC = () => {
             ))}
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
