@@ -724,5 +724,95 @@ export interface ApiConfig {
   };
 }
 
+// ====== Trading Engine Types ======
+
+/** Trade signal from various sources */
+export interface TradeSignal {
+  source: 'strategy-pipeline' | 'live-scoring' | 'manual';
+  symbol: string;
+  action: 'BUY' | 'SELL' | 'HOLD';
+  confidence?: number | null;
+  score?: number | null;
+  timestamp: number;
+}
+
+/** Trade execution result */
+export interface TradeExecutionResult {
+  executed: boolean;
+  reason?: string;
+  order?: PlaceOrderResult | null;
+}
+
+/** Order placement parameters */
+export interface PlaceOrderParams {
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  quantity: number;
+  type?: 'MARKET';
+  leverage?: number;
+  reduceOnly?: boolean;
+}
+
+/** Order placement result */
+export interface PlaceOrderResult {
+  orderId: string;
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  quantity: number;
+  status: 'FILLED' | 'PENDING' | 'REJECTED';
+  price?: number;
+  timestamp: number;
+  error?: string;
+}
+
+/** Position result from exchange */
+export interface PositionResult {
+  symbol: string;
+  side: 'LONG' | 'SHORT';
+  size: number;
+  entryPrice: number;
+  markPrice: number;
+  leverage: number;
+  unrealizedPnl: number;
+  liquidationPrice: number;
+  marginMode: 'CROSS' | 'ISOLATED';
+}
+
+/** Account information from exchange */
+export interface AccountInfo {
+  availableBalance: number;
+  accountEquity: number;
+  unrealisedPNL: number;
+  marginBalance: number;
+}
+
+/** Risk guard configuration */
+export interface RiskGuardConfig {
+  maxPositionSizeUSDT: number;
+  maxDailyLossUSDT: number;
+  maxOpenPositions: number;
+  stopLossMultiplier: number;
+  takeProfitMultiplier: number;
+  leverage: number;
+  minAccountBalanceUSDT: number;
+  maxRiskPerTradePercent: number;
+  requireMarketData: boolean;
+}
+
+/** Risk check input */
+export interface RiskCheckInput {
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  quantityUSDT: number;
+}
+
+/** Risk check result */
+export interface RiskCheckResult {
+  allowed: boolean;
+  reason?: string;
+}
+
+// ====== End Trading Engine Types ======
+
 // Re-export strategy pipeline types
 export * from './strategyPipeline';

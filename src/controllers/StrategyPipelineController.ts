@@ -20,11 +20,17 @@ import { runStrategy1 } from '../strategies/strategy1.js';
 import { runStrategy2 } from '../strategies/strategy2.js';
 import { runStrategy3 } from '../strategies/strategy3.js';
 import { FinalDecision, CategoryScore } from '../types/signals.js';
+import { TradeEngine, TradeSignal } from '../engine/trading/TradeEngine.js';
 import fs from 'fs';
 import path from 'path';
 
 export class StrategyPipelineController {
   private logger = Logger.getInstance();
+  private tradeEngine: TradeEngine;
+
+  constructor() {
+    this.tradeEngine = TradeEngine.getInstance();
+  }
 
   /**
    * Run the complete Strategy 1 → 2 → 3 pipeline
@@ -183,6 +189,79 @@ export class StrategyPipelineController {
       const scoringOverview = this.buildScoringOverview(strategy1Raw, strategy3Raw);
 
       // ==========================================
+      // AUTO-TRADE HOOK (if enabled)
+      // ==========================================
+      let autoTradeResult: any = null;
+      const autoTradeConfig = this.loadAutoTradeConfig();
+
+      if (autoTradeConfig.enabled && strategy3Results.length > 0) {
+        this.logger.info('Auto-trade enabled, attempting to execute top Strategy 3 pick');
+
+        const topCandidate = strategy3Results[0];
+
+        // Check if score meets minimum threshold and action is allowed
+        if (
+          topCandidate.finalStrategyScore >= autoTradeConfig.minScore &&
+          autoTradeConfig.allowedActions.includes(topCandidate.bias as any)
+        ) {
+          // Build trade signal
+          const signal: TradeSignal = {
+            source: 'strategy-pipeline',
+            symbol: topCandidate.symbol,
+            action: topCandidate.bias === 'LONG' ? 'BUY' : topCandidate.bias === 'SHORT' ? 'SELL' : 'HOLD',
+            confidence: topCandidate.confidence,
+            score: topCandidate.finalStrategyScore,
+            timestamp: Date.now()
+          };
+
+          try {
+            const executionResult = await this.tradeEngine.executeSignal(
+              signal,
+              autoTradeConfig.quantityUSDT
+            );
+
+            autoTradeResult = {
+              attempted: true,
+              executed: executionResult.executed,
+              reason: executionResult.reason || null,
+              order: executionResult.order || null
+            };
+
+            this.logger.info('Auto-trade execution result', autoTradeResult);
+          } catch (error) {
+            this.logger.error('Auto-trade execution failed', {}, error as Error);
+            autoTradeResult = {
+              attempted: true,
+              executed: false,
+              reason: `Execution error: ${(error as Error).message}`,
+              order: null
+            };
+          }
+        } else {
+          this.logger.info('Top candidate does not meet auto-trade criteria', {
+            score: topCandidate.finalStrategyScore,
+            minScore: autoTradeConfig.minScore,
+            action: topCandidate.bias,
+            allowedActions: autoTradeConfig.allowedActions
+          });
+          autoTradeResult = {
+            attempted: false,
+            reason: 'Score or action does not meet criteria'
+          };
+        }
+      } else if (!autoTradeConfig.enabled) {
+        autoTradeResult = {
+          attempted: false,
+          reason: 'Auto-trade disabled in config'
+        };
+      } else {
+        autoTradeResult = {
+          attempted: false,
+          reason: 'No Strategy 3 results available'
+        };
+      }
+
+      // ==========================================
       // BUILD FINAL RESULT
       // ==========================================
       const result: StrategyPipelineResult = {
@@ -199,6 +278,7 @@ export class StrategyPipelineController {
           meta: s3Meta
         },
         scoring: scoringOverview,
+        autoTrade: autoTradeResult,
         timestamp: Date.now()
       };
 
@@ -307,6 +387,37 @@ export class StrategyPipelineController {
       this.logger.warn('Failed to load adaptive config', {}, error as Error);
     }
     return false;
+  }
+
+  /**
+   * Load auto-trade config
+   */
+  private loadAutoTradeConfig(): {
+    enabled: boolean;
+    minScore: number;
+    allowedActions: string[];
+    quantityUSDT: number;
+  } {
+    try {
+      const configPath = path.join(process.cwd(), 'config', 'scoring.config.json');
+      if (fs.existsSync(configPath)) {
+        const rawData = fs.readFileSync(configPath, 'utf-8');
+        const config = JSON.parse(rawData);
+        if (config.autoTrade) {
+          return config.autoTrade;
+        }
+      }
+    } catch (error) {
+      this.logger.warn('Failed to load auto-trade config', {}, error as Error);
+    }
+
+    // Default config - disabled
+    return {
+      enabled: false,
+      minScore: 0.80,
+      allowedActions: ['BUY', 'SELL'],
+      quantityUSDT: 100
+    };
   }
 
   /**
