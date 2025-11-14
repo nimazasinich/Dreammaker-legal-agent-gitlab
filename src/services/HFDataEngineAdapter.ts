@@ -506,6 +506,92 @@ export class HFDataEngineAdapter {
   }
 
   // ============================================================================
+  // Unified Controller Interface (Phase 2)
+  // These methods provide a consistent interface for controllers regardless
+  // of the underlying data source (HuggingFace, Binance, KuCoin, etc.)
+  // ============================================================================
+
+  /**
+   * Get market prices - unified method for controllers
+   * Delegates to the primary data source configured in dataSource.ts
+   */
+  async getMarketPrices(limit: number = 50): Promise<APIResponse<MarketPrice[]>> {
+    const primarySource = getPrimarySource();
+
+    // If primary source is HuggingFace or mixed, use HF
+    if (primarySource === 'huggingface' || primarySource === 'mixed') {
+      return this.getTopPrices(limit);
+    }
+
+    // For Binance/KuCoin sources, return NOT_IMPLEMENTED error
+    return {
+      success: false,
+      error: {
+        message: `Primary data source is set to ${primarySource} but only HuggingFace is implemented in this phase.`,
+        code: 'NOT_IMPLEMENTED',
+        details: {
+          primarySource,
+          availableSources: ['huggingface', 'mixed']
+        }
+      },
+      source: 'adapter',
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Get health summary - combines health check with provider status
+   * This is the primary health endpoint for controllers
+   */
+  async getHealthSummary(): Promise<APIResponse<SystemHealth>> {
+    const primarySource = getPrimarySource();
+
+    // If primary source is HuggingFace or mixed, use HF
+    if (primarySource === 'huggingface' || primarySource === 'mixed') {
+      return this.getSystemHealth();
+    }
+
+    // For Binance/KuCoin sources, return basic health with NOT_IMPLEMENTED note
+    return {
+      success: true,
+      data: {
+        backend: 'up',
+        engine: 'not_implemented',
+        timestamp: new Date().toISOString()
+      },
+      source: 'adapter',
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Get sentiment analysis result - unified method for controllers
+   */
+  async getSentiment(text: string): Promise<APIResponse> {
+    const primarySource = getPrimarySource();
+
+    // If primary source is HuggingFace or mixed, use HF
+    if (primarySource === 'huggingface' || primarySource === 'mixed') {
+      return this.runSentimentAnalysis(text);
+    }
+
+    // For Binance/KuCoin sources, return NOT_IMPLEMENTED error
+    return {
+      success: false,
+      error: {
+        message: `Sentiment analysis requires HuggingFace but primary source is ${primarySource}`,
+        code: 'NOT_IMPLEMENTED',
+        details: {
+          primarySource,
+          requiredSource: 'huggingface'
+        }
+      },
+      source: 'adapter',
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  // ============================================================================
   // Utility Methods
   // ============================================================================
 

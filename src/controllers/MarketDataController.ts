@@ -7,6 +7,8 @@ import { SentimentNewsService } from '../services/SentimentNewsService.js';
 import { BinanceService } from '../services/BinanceService.js';
 import { ConfigManager } from '../core/ConfigManager.js';
 import { AdvancedCache } from '../core/AdvancedCache.js';
+import { hfDataEngineAdapter } from '../services/HFDataEngineAdapter.js';
+import { getPrimarySource } from '../config/dataSource.js';
 
 export class MarketDataController {
   private logger = Logger.getInstance();
@@ -19,9 +21,56 @@ export class MarketDataController {
 
   async getPrices(req: Request, res: Response): Promise<void> {
     try {
-      const { symbols } = req.query;
+      const { symbols, limit } = req.query;
       const useRealData = this.config.isRealDataMode();
+      const primarySource = getPrimarySource();
 
+      // If HuggingFace is the primary source or mixed mode, try HF first
+      if (useRealData && (primarySource === 'huggingface' || primarySource === 'mixed')) {
+        const priceLimit = limit ? Number(limit) : 50;
+        const hfPrices = await hfDataEngineAdapter.getMarketPrices(priceLimit);
+
+        if (hfPrices.success && hfPrices.data) {
+          // If user requested specific symbols, filter the results
+          let filteredPrices = hfPrices.data;
+          if (symbols && typeof symbols === 'string') {
+            const requestedSymbols = symbols.split(',').map(s => s.trim().toUpperCase().replace('USDT', ''));
+            filteredPrices = hfPrices.data.filter(p =>
+              requestedSymbols.some(rs => p.symbol.toUpperCase().includes(rs))
+            );
+          }
+
+          res.json({
+            success: true,
+            prices: filteredPrices.map(p => ({
+              symbol: p.symbol,
+              price: p.price,
+              change24h: p.change_24h,
+              changePercent24h: p.change_24h, // HF already provides percentage
+              volume: p.volume_24h,
+              source: 'hf_engine',
+              timestamp: p.last_updated || Date.now()
+            })),
+            primaryDataSource: primarySource,
+            timestamp: Date.now()
+          });
+          return;
+        }
+
+        // If HF fails in mixed mode, fall through to other sources
+        if (primarySource === 'huggingface') {
+          // If HuggingFace is the only source and it failed, return the error
+          res.status(503).json({
+            success: false,
+            error: hfPrices.error?.message || 'HuggingFace data source unavailable',
+            primaryDataSource: primarySource,
+            timestamp: Date.now()
+          });
+          return;
+        }
+      }
+
+      // Fallback to existing multi-provider or Binance logic
       if (useRealData) {
         const symbolList = typeof symbols === 'string'
           ? symbols.split(',').map(s => s.trim().replace('USDT', ''))
@@ -47,6 +96,7 @@ export class MarketDataController {
             source: p.source,
             timestamp: p.timestamp
           })),
+          primaryDataSource: primarySource,
           timestamp: Date.now()
         });
       } else {
@@ -80,6 +130,7 @@ export class MarketDataController {
         res.json({
           success: true,
           prices,
+          primaryDataSource: primarySource,
           timestamp: Date.now()
         });
       }

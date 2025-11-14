@@ -7,6 +7,8 @@ import { RedisService } from '../services/RedisService.js';
 import { MultiProviderMarketDataService } from '../services/MultiProviderMarketDataService.js';
 import { BinanceService } from '../services/BinanceService.js';
 import { AdvancedCache } from '../core/AdvancedCache.js';
+import { hfDataEngineAdapter } from '../services/HFDataEngineAdapter.js';
+import { getPrimarySource } from '../config/dataSource.js';
 
 export class SystemController {
   private logger = Logger.getInstance();
@@ -25,42 +27,61 @@ export class SystemController {
       // Check individual providers (don't let one failure crash the whole endpoint)
       const providerStatuses: Record<string, 'up' | 'degraded' | 'down'> = {};
 
-      // Check Binance
-      try {
-        await this.binanceService.getPrices(['BTCUSDT'], 2000);
-        providerStatuses.binance = 'up';
-      } catch (error: any) {
-        this.logger.warn('Binance health check failed', {}, error);
-        providerStatuses.binance = 'down';
-      }
+      // Get primary data source
+      const primarySource = getPrimarySource();
 
-      // Check KuCoin sandbox (non-critical, sandbox may be down)
-      try {
-        const { KuCoinService } = await import('../services/KuCoinService.js');
-        const kucoinService = KuCoinService.getInstance();
-        await kucoinService.getAccountInfo();
-        providerStatuses.kucoin_sandbox = 'up';
-      } catch (error: any) {
-        // KuCoin sandbox is often down (ENOTFOUND api-sandbox.kucoin.com)
-        // Mark as degraded instead of crashing
-        const message = error.message || String(error);
-        if (message.includes('ENOTFOUND') || message.includes('api-sandbox.kucoin.com')) {
-          this.logger.debug('KuCoin sandbox is unreachable (expected in dev)');
-          providerStatuses.kucoin_sandbox = 'down';
-        } else {
-          providerStatuses.kucoin_sandbox = 'degraded';
+      // Check HuggingFace Data Engine if it's the primary source or mixed mode
+      if (primarySource === 'huggingface' || primarySource === 'mixed') {
+        try {
+          const hfHealth = await hfDataEngineAdapter.getHealthSummary();
+          if (hfHealth.success && hfHealth.data) {
+            providerStatuses.hf_engine = hfHealth.data.engine === 'up' ? 'up' : 'degraded';
+
+            // Add individual HF provider statuses if available
+            if (hfHealth.data.providers) {
+              for (const provider of hfHealth.data.providers) {
+                const key = `hf_${provider.name.toLowerCase()}`;
+                providerStatuses[key] = provider.enabled && provider.status === 'healthy' ? 'up' : 'degraded';
+              }
+            }
+          } else {
+            providerStatuses.hf_engine = 'down';
+          }
+        } catch (error: any) {
+          this.logger.warn('HF Data Engine health check failed', {}, error);
+          providerStatuses.hf_engine = 'down';
         }
       }
 
-      // Check HF OHLCV service
-      try {
-        const { HFOHLCVService } = await import('../services/HFOHLCVService.js');
-        const hfService = HFOHLCVService.getInstance();
-        // Quick test: just check if service is available (don't actually fetch data)
-        providerStatuses.hf_ohlcv = hfService ? 'up' : 'down';
-      } catch (error: any) {
-        this.logger.debug('HF OHLCV service check failed', {}, error);
-        providerStatuses.hf_ohlcv = 'degraded';
+      // Check Binance if needed (for binance or mixed mode)
+      if (primarySource === 'binance' || primarySource === 'mixed') {
+        try {
+          await this.binanceService.getPrices(['BTCUSDT'], 2000);
+          providerStatuses.binance = 'up';
+        } catch (error: any) {
+          this.logger.warn('Binance health check failed', {}, error);
+          providerStatuses.binance = 'down';
+        }
+      }
+
+      // Check KuCoin if needed (for kucoin or mixed mode)
+      if (primarySource === 'kucoin' || primarySource === 'mixed') {
+        try {
+          const { KuCoinService } = await import('../services/KuCoinService.js');
+          const kucoinService = KuCoinService.getInstance();
+          await kucoinService.getAccountInfo();
+          providerStatuses.kucoin_sandbox = 'up';
+        } catch (error: any) {
+          // KuCoin sandbox is often down (ENOTFOUND api-sandbox.kucoin.com)
+          // Mark as degraded instead of crashing
+          const message = error.message || String(error);
+          if (message.includes('ENOTFOUND') || message.includes('api-sandbox.kucoin.com')) {
+            this.logger.debug('KuCoin sandbox is unreachable (expected in dev)');
+            providerStatuses.kucoin_sandbox = 'down';
+          } else {
+            providerStatuses.kucoin_sandbox = 'degraded';
+          }
+        }
       }
 
       // Overall backend status: "up" if core services (db, redis) are ok
@@ -70,6 +91,7 @@ export class SystemController {
       const health = {
         ok: true,
         timestamp: Date.now(),
+        primaryDataSource: primarySource,
         services: {
           backend: backendStatus,
           database: dbStatus ? 'up' : 'down',

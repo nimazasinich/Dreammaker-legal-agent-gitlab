@@ -15,22 +15,29 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export function StatusRibbon() {
-  const { status, error } = useHealthCheck(15000, 4000);
+  const { status, error, providers } = useHealthCheck(15000, 4000);
   const { state: { dataMode, tradingMode, dataSource: contextDataSource }, setDataMode, setTradingMode, setDataSource } = useMode();
   const { dataSource } = useData();
   const { isConnected } = useLiveData();
   const [systemTradingMode, setSystemTradingMode] = useState<TradingMode>('OFF');
   const [systemTradingMarket, setSystemTradingMarket] = useState<TradingMarket>('FUTURES');
+  const [primaryDataSource, setPrimaryDataSource] = useState<string>('huggingface');
 
   // Use context data source or default to 'huggingface'
-  const activeDataSource = contextDataSource || 'huggingface';
+  const activeDataSource = contextDataSource || primaryDataSource;
 
-  // Fetch system trading config from API
+  // Fetch system trading config and primary data source from API
   useEffect(() => {
     const fetchSystemStatus = async () => {
       try {
-        const response = await fetch('/api/system/status');
+        const response = await fetch('/api/system/health');
         const data = await response.json();
+
+        // Get primary data source from health response
+        if (data.primaryDataSource) {
+          setPrimaryDataSource(data.primaryDataSource);
+        }
+
         if (data.trading) {
           setSystemTradingMode(data.trading.mode || 'OFF');
           setSystemTradingMarket(data.trading.market || 'FUTURES');
@@ -63,11 +70,50 @@ export function StatusRibbon() {
           <strong>{t('layout.healthLabel')}:</strong> {status}
         </span>
         {error ? <span className="truncate max-w-xs">{error}</span> : null}
+
+        {/* Provider Status - Show HF engine and exchange statuses */}
+        {providers && (
+          <div className="flex items-center gap-2 text-xs">
+            {providers.hf_engine && (
+              <span
+                className={`px-2 py-0.5 rounded ${
+                  providers.hf_engine === 'up'
+                    ? 'bg-green-100 text-green-800'
+                    : providers.hf_engine === 'degraded'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-red-100 text-red-800'
+                }`}
+                title="HuggingFace Data Engine status"
+              >
+                HF: {providers.hf_engine}
+              </span>
+            )}
+            {providers.binance && (
+              <span
+                className={`px-2 py-0.5 rounded ${
+                  providers.binance === 'up'
+                    ? 'bg-green-100 text-green-800'
+                    : providers.binance === 'degraded'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-red-100 text-red-800'
+                }`}
+                title="Binance API status"
+              >
+                Binance: {providers.binance}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Data Source Indicator */}
-        <DataSourceIndicator source={dataSource} />
+        {/* Primary Data Source Indicator */}
+        <div
+          className="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-300"
+          title={`Primary data source: ${primaryDataSource}`}
+        >
+          <strong>Data:</strong> {primaryDataSource}
+        </div>
 
         {/* System Trading Mode & Market Indicator */}
         <div
