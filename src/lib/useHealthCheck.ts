@@ -2,18 +2,26 @@ import { useEffect, useState } from 'react';
 import { API_BASE } from '../config/env';
 
 type HealthStatus = 'healthy' | 'degraded' | 'down' | 'unknown';
+type ProviderStatus = 'up' | 'degraded' | 'down' | 'unknown';
 
 interface HealthResult {
   status: HealthStatus;
   error: string | null;
+  providers?: Record<string, ProviderStatus>;
 }
 
-const DEFAULT_ENDPOINTS = ['/health', '/status/health'];
+interface HealthResponse {
+  ok: boolean;
+  services?: Record<string, ProviderStatus>;
+  error?: string;
+}
+
+const DEFAULT_ENDPOINTS = ['/api/system/health', '/health', '/status/health'];
 
 export function useHealthCheck(pingMs = 10000, timeoutMs = 3000): HealthResult {
-    const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<HealthStatus>('unknown');
   const [error, setError] = useState<string | null>(null);
+  const [providers, setProviders] = useState<Record<string, ProviderStatus> | undefined>(undefined);
 
   useEffect(() => {
     let isMounted = true;
@@ -28,7 +36,7 @@ export function useHealthCheck(pingMs = 10000, timeoutMs = 3000): HealthResult {
       return `${base}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     });
 
-    const fetchWithTimeout = async (url: string): Promise<HealthStatus> => {
+    const fetchWithTimeout = async (url: string): Promise<{ status: HealthStatus; providers?: Record<string, ProviderStatus> }> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -40,22 +48,43 @@ export function useHealthCheck(pingMs = 10000, timeoutMs = 3000): HealthResult {
 
         // 2xx = healthy
         if (response.ok) {
-          await response.json().catch(() => ({}));
-          return 'healthy';
+          try {
+            const data: HealthResponse = await response.json();
+            // Extract per-provider status from new health format
+            if (data.services) {
+              if (isMounted) {
+                setProviders(data.services);
+              }
+              // Overall status: healthy if backend is up
+              const backendStatus = data.services.backend || 'unknown';
+              return {
+                status: backendStatus === 'up' ? 'healthy' : (backendStatus === 'down' ? 'down' : 'degraded'),
+                providers: data.services
+              };
+            }
+            return { status: 'healthy' };
+          } catch (parseError) {
+            // JSON parse error, but response was OK
+            return { status: 'healthy' };
+          }
         }
 
         // 5xx = server error = down
         if (response.status >= 500) {
           console.error(`Server error: HTTP ${response.status}`);
+          return { status: 'down' };
         }
 
         // 4xx = client error = degraded
         if (response.status >= 400) {
-          return 'degraded';
+          return { status: 'degraded' };
         }
 
         // Other non-OK status
         console.error(`HTTP ${response.status}`);
+        return { status: 'degraded' };
+      } catch (err) {
+        throw err;
       } finally {
         clearTimeout(timeoutId);
       }
@@ -66,17 +95,26 @@ export function useHealthCheck(pingMs = 10000, timeoutMs = 3000): HealthResult {
 
       for (const endpoint of endpoints) {
         try {
-          const healthStatus = await fetchWithTimeout(endpoint);
+          const result = await fetchWithTimeout(endpoint);
           if (isMounted) {
-            setStatus(healthStatus);
-            if (healthStatus === 'healthy') {
+            setStatus(result.status);
+            if (result.providers) {
+              setProviders(result.providers);
+            }
+            if (result.status === 'healthy') {
               return; // Stop checking other endpoints on first healthy response
             }
             // If degraded, continue checking other endpoints
           }
         } catch (err: any) {
           if (isMounted) {
-            setError(err instanceof Error ? err.message : String(err));
+            // Check for backend unreachable errors
+            const message = err instanceof Error ? err.message : String(err);
+            if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
+              setError('Backend is not reachable on port 8001 – please ensure the server is running.');
+            } else {
+              setError(message);
+            }
           }
         }
       }
@@ -96,7 +134,7 @@ export function useHealthCheck(pingMs = 10000, timeoutMs = 3000): HealthResult {
     };
   }, [pingMs, timeoutMs]);
 
-  return { status, error };
+  return { status, error, providers };
 }
 
 export default useHealthCheck;

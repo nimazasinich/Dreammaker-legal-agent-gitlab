@@ -84,8 +84,8 @@ npm run dev
 
 The application will be available at:
 - **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:3001
-- **WebSocket**: ws://localhost:3001
+- **Backend API**: http://localhost:8001
+- **WebSocket**: ws://localhost:8001
 
 ### 4. Production Build
 
@@ -103,7 +103,7 @@ All environment variables are documented in `.env.example`. Key configurations:
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `PORT` | Backend server port | `3001` | No |
+| `PORT` | Backend server port | `8001` | No |
 | `NODE_ENV` | Environment mode | `development` | No |
 | `DISABLE_REDIS` | Disable Redis caching | `false` | No |
 | `FEATURE_FUTURES` | Enable futures trading | `false` | No |

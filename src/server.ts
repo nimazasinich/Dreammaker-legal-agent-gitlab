@@ -1381,7 +1381,7 @@ app.get('/api/market/coingecko-prices', async (req, res) => {
     // Fallback to real-prices endpoint
     try {
       const { symbols } = req.query;
-      const fallbackUrl = `http://localhost:${process.env.PORT || 8000}/api/market/real-prices?symbols=${symbols}`;
+      const fallbackUrl = `http://localhost:${process.env.PORT || 8001}/api/market/real-prices?symbols=${symbols}`;
       const fallbackResponse = await fetch(fallbackUrl, { mode: "cors", headers: { "Content-Type": "application/json" } });
       
       if (fallbackResponse.ok) {
@@ -3794,7 +3794,7 @@ async function startServer() {
     }
 
     // Determine port with optional auto-fallback
-    const preferred = Number(process.env.PORT) || 8000;
+    const preferred = Number(process.env.PORT) || 8001;
     const auto = String(process.env.PORT_AUTO || 'false').toLowerCase() === 'true';
     PORT = auto ? await getAvailablePort(preferred) : preferred;
 
