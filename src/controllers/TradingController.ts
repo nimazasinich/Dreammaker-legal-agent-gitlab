@@ -4,7 +4,8 @@ import { Logger } from '../core/Logger.js';
 import { RealTradingService } from '../services/RealTradingService.js';
 import { OrderManagementService } from '../services/OrderManagementService.js';
 import { ConfigManager } from '../core/ConfigManager.js';
-import { TradeEngine, TradeSignal } from '../engine/trading/TradeEngine.js';
+import { TradeEngine } from '../engine/trading/TradeEngine.js';
+import { TradeSignal } from '../types/index.js';
 import { ExchangeClient } from '../services/exchange/ExchangeClient.js';
 
 export class TradingController {

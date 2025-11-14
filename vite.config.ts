@@ -83,6 +83,23 @@ export default defineConfig({
     sourcemap: false,
     minify: 'esbuild',
     rollupOptions: {
+      external: [
+        'path',
+        'fs',
+        'fs/promises',
+        'crypto',
+        'os',
+        'net',
+        'tls',
+        'dns',
+        'stream',
+        'util',
+        'events',
+        'assert',
+        'url',
+        'better-sqlite3',
+        'ioredis'
+      ],
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
