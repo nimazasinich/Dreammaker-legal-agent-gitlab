@@ -18,7 +18,9 @@ import {
   AlertCircle,
   CheckCircle,
   RefreshCw,
-  Settings
+  Settings,
+  Radio,
+  Zap
 } from 'lucide-react';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -133,6 +135,9 @@ const StrategyInsightsView: React.FC = () => {
               scoring={data.scoring}
               isAdaptiveEnabled={isAdaptiveEnabled}
             />
+
+            {/* Live Score Section */}
+            <LiveScoreSection />
 
             {/* Tuning Result Panel */}
             <TuningResultPanel />
@@ -667,12 +672,247 @@ const ActionBadge: React.FC<{ action: string }> = ({ action }) => {
   );
 };
 
-const CategoryPill: React.FC<{ label: string; value: number }> = ({ label, value }) => {
+const CategoryPill: React.FC<{ label: string; value: number | null | undefined }> = ({ label, value }) => {
   return (
     <div className="text-center p-2 bg-muted/30 rounded-lg">
       <div className="text-xs text-muted uppercase">{label}</div>
-      <div className={`text-sm font-semibold ${getScoreColor(value)}`}>
-        {fmt(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      <div className={`text-sm font-semibold ${value !== null && value !== undefined ? getScoreColor(value) : 'text-muted'}`}>
+        {value !== null && value !== undefined
+          ? fmt(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          : 'No data'}
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// Live Score Section
+// ==========================================
+const LiveScoreSection: React.FC = () => {
+  const [liveScore, setLiveScore] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT');
+
+  const fetchLiveScore = async (symbol: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/scoring/live/${symbol}?timeframe=1h`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setLiveScore(data.data);
+      } else {
+        setError('Failed to fetch live score');
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveScore(selectedSymbol);
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(() => {
+      fetchLiveScore(selectedSymbol);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [selectedSymbol]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+          <Radio className="w-5 h-5 text-accent animate-pulse" />
+          Live Scoring
+        </h2>
+        <div className="flex items-center gap-3">
+          <select
+            value={selectedSymbol}
+            onChange={(e) => setSelectedSymbol(e.target.value)}
+            className="px-3 py-2 bg-surface border border-border rounded-lg text-sm"
+          >
+            <option value="BTCUSDT">BTC/USDT</option>
+            <option value="ETHUSDT">ETH/USDT</option>
+            <option value="BNBUSDT">BNB/USDT</option>
+            <option value="ADAUSDT">ADA/USDT</option>
+            <option value="SOLUSDT">SOL/USDT</option>
+          </select>
+          <button
+            onClick={() => fetchLiveScore(selectedSymbol)}
+            disabled={loading}
+            className="px-3 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50"
+          >
+            {loading ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <div className="text-sm text-red-500">Error: {error}</div>
+        </div>
+      )}
+
+      {loading && !liveScore && (
+        <div className="flex items-center justify-center py-8">
+          <LoadingSpinner />
+        </div>
+      )}
+
+      {liveScore && (
+        <div className="bg-surface border border-border rounded-lg p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Final Score */}
+            <div className="p-4 bg-muted/20 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted">Final Score</span>
+                <Zap className="w-4 h-4 text-accent" />
+              </div>
+              <div className={`text-3xl font-bold ${getScoreColor(liveScore.finalScore || 0)}`}>
+                {liveScore.finalScore !== null
+                  ? fmt(liveScore.finalScore, { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+                  : 'N/A'}
+              </div>
+              <div className="text-xs text-muted mt-1">
+                {liveScore.action || 'No action'}
+              </div>
+            </div>
+
+            {/* Confidence */}
+            <div className="p-4 bg-muted/20 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted">Confidence</span>
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              </div>
+              <div className="text-3xl font-bold text-foreground">
+                {liveScore.confidence !== null
+                  ? `${fmt(liveScore.confidence * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
+                  : 'N/A'}
+              </div>
+              <div className="text-xs text-muted mt-1">
+                Based on {liveScore.meta?.candleCount || 0} candles
+              </div>
+            </div>
+
+            {/* Data Quality */}
+            <div className="p-4 bg-muted/20 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted">Data Quality</span>
+                <Activity className="w-4 h-4 text-accent" />
+              </div>
+              <div className="text-3xl font-bold text-foreground">
+                {liveScore.meta?.dataSource === 'real' ? (
+                  <span className="text-green-500">REAL</span>
+                ) : (
+                  <span className="text-orange-500">MOCK</span>
+                )}
+              </div>
+              <div className="text-xs text-muted mt-1">
+                {liveScore.meta?.errors?.length || 0} error(s)
+              </div>
+            </div>
+          </div>
+
+          {/* Category Scores */}
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Category Breakdown</h3>
+            <div className="grid grid-cols-5 gap-3">
+              <CategoryPill
+                label="Core"
+                value={liveScore.categoryScores?.core}
+              />
+              <CategoryPill
+                label="SMC"
+                value={liveScore.categoryScores?.smc}
+              />
+              <CategoryPill
+                label="Patterns"
+                value={liveScore.categoryScores?.patterns}
+              />
+              <CategoryPill
+                label="Sentiment"
+                value={liveScore.categoryScores?.sentiment}
+              />
+              <CategoryPill
+                label="ML"
+                value={liveScore.categoryScores?.ml}
+              />
+            </div>
+          </div>
+
+          {/* Detector Scores */}
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-3">Detector Details</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              <DetectorBadge
+                label="Smart Money"
+                score={liveScore.detectorScores?.smartMoney?.score}
+              />
+              <DetectorBadge
+                label="Elliott"
+                score={liveScore.detectorScores?.elliott?.score}
+              />
+              <DetectorBadge
+                label="Harmonic"
+                score={liveScore.detectorScores?.harmonic?.score}
+              />
+              <DetectorBadge
+                label="Sentiment"
+                score={liveScore.detectorScores?.sentiment}
+              />
+              <DetectorBadge
+                label="Whale Activity"
+                score={liveScore.detectorScores?.whaleActivity}
+              />
+            </div>
+          </div>
+
+          {/* Errors */}
+          {liveScore.meta?.errors && liveScore.meta.errors.length > 0 && (
+            <div className="mt-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+              <div className="text-xs font-semibold text-orange-500 mb-1">
+                Data Collection Issues:
+              </div>
+              <ul className="text-xs text-orange-400 list-disc list-inside">
+                {liveScore.meta.errors.map((err: string, idx: number) => (
+                  <li key={idx}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Timestamp */}
+          <div className="mt-4 text-xs text-muted text-right">
+            Last updated: {new Date(liveScore.timestamp).toLocaleTimeString()}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ==========================================
+// Helper Components (for Live Score)
+// ==========================================
+const DetectorBadge: React.FC<{ label: string; score: number | null | undefined }> = ({
+  label,
+  score
+}) => {
+  return (
+    <div className="text-center p-2 bg-muted/30 rounded-lg">
+      <div className="text-xs text-muted uppercase">{label}</div>
+      <div className={`text-sm font-semibold ${score !== null && score !== undefined ? getScoreColor(score) : 'text-muted'}`}>
+        {score !== null && score !== undefined
+          ? fmt(score, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          : 'No data'}
       </div>
     </div>
   );
