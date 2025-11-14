@@ -71,41 +71,9 @@ export function DataProvider({
   const ignoreRef = useRef(false);
   const inflightOHLCVRef = useRef<{ cancel?: () => void } | null>(null);
 
-  // Preflight check for OHLCV readiness (optional but recommended in Online mode)
+  // Preflight check disabled to reduce initial queries
   const checkOHLCVReadiness = async (s: string, tf: string): Promise<boolean> => {
-    // Only do preflight check in online/real mode
-    if (!requiresRealData() && APP_MODE !== 'online') {
-      return true; // Skip check for demo/offline modes
-    }
-
-    try {
-      const normalizedSymbol = toBinanceSymbol(s);
-      const readinessUrl = `${API_BASE}/market/ohlcv/ready?symbol=${encodeURIComponent(
-        normalizedSymbol
-      )}&tf=${encodeURIComponent(tf)}&min=50`;
-
-      const response = await fetch(readinessUrl, {
-        method: 'HEAD',
-        signal: AbortSignal.timeout(5000), // افزایش به 5 ثانیه برای preflight
-      });
-
-      if (response.ok) {
-        return true; // OHLCV is ready
-      }
-
-      // If preflight endpoint doesn't exist (404), allow the main fetch to proceed
-      if (response.status === 404) {
-        logger.info('OHLCV readiness check not available (404), proceeding with fetch');
-        return true;
-      }
-
-      logger.warn(`OHLCV not ready for ${s} ${tf} (status: ${response.status})`);
-      return false;
-    } catch (err) {
-      // If preflight fails (network error, timeout), allow main fetch to proceed
-      logger.warn('OHLCV preflight check failed, proceeding with fetch', err);
-      return true;
-    }
+    return true; // Skip preflight checks to reduce queries
   };
 
   const loadOHLCVData = async (s = symbol, tf = timeframe) => {
@@ -279,32 +247,24 @@ export function DataProvider({
     }
   };
 
-  // Load OHLCV data on mode/symbol/timeframe change
+  // Load OHLCV data only on explicit symbol/timeframe change (not on initial mount)
   useEffect(() => {
+    if (!mountedRef.current) return; // Skip initial mount
     loadOHLCVData();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [dataMode, symbol, timeframe]);
+  }, [symbol, timeframe]);
 
-  // Initial load - با کنترل بهتر برای کاهش درخواست‌های API
+  // Initial load - DISABLED to reduce queries on startup
   useEffect(() => {
     mountedRef.current = true;
     ignoreRef.current = false;
-    
-    const disableInitial = import.meta.env.VITE_DISABLE_INITIAL_LOAD === 'true';
-    if (!disableInitial) {
-      loadAllData();
-    } else {
-      logger.info('⏸️ Initial load disabled. Data will load on demand.');
-      setLoading(false);
-    }
 
-    // Auto-refresh - فقط در حالت online و با فاصله زمانی بیشتر
-    const refreshMs = Number(import.meta.env.VITE_REFRESH_MS || 60000);
-    intervalRef.current = setInterval(() => {
-      if (mountedRef.current && !loadingRef.current) {
-        loadAllData();
-      }
-    }, refreshMs);
+    // Initial load is now disabled by default - data loads on demand
+    logger.info('⏸️ Initial load disabled. Data will load on demand.');
+    setLoading(false);
+
+    // Auto-refresh disabled to reduce unnecessary queries
+    // Users can manually refresh when needed
 
     return () => {
       mountedRef.current = false;

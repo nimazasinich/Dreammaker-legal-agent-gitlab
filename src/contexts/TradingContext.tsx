@@ -38,9 +38,8 @@ export const TradingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const kucoinService = KuCoinFuturesService.getInstance();
   const virtualService = VirtualTradingService.getInstance();
 
-  useEffect(() => {
-    refreshData();
-  }, [tradingMode]);
+  // Removed auto-refresh on mount to reduce initial queries
+  // Data will be loaded on-demand when user navigates to trading views
 
   const setMode = (m: TradingMode) => {
     setTradingMode(m);
