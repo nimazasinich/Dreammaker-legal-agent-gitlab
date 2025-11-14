@@ -389,6 +389,7 @@ export const StrategyTemplateEditor: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
     </>
   );
 };

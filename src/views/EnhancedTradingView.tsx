@@ -420,6 +420,7 @@ export const EnhancedTradingView: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
     </>
   );
 };

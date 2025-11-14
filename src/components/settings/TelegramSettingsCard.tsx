@@ -188,6 +188,7 @@ export default function TelegramSettingsCard() {
           </button>
         </div>
       </div>
+    </div>
     </>
   );
 }
