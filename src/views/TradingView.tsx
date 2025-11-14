@@ -119,11 +119,11 @@ const TradingView: React.FC<TradingViewProps> = ({ disabled = false }) => {
       <ModalComponent />
       <div className="min-h-screen bg-[color:var(--surface-page)] p-6" style={disabled ? { opacity: 0.6, pointerEvents: 'none' } : {}}>
         {disabled && (
-          <div className="max-w-[1800px] mx-auto mb-6 bg-red-100 border-2 border-red-500 rounded-xl p-6 text-center">
+          <div className="max-w-[1800px] mx-auto mb-6 bg-red-100 border-2 border-red-500 rounded-xl p-6 text-center shadow-md">
             <h2 className="text-2xl font-bold text-red-900 mb-2">SPOT Trading Interface Disabled</h2>
-            <p className="text-red-800">
+            <p className="text-red-800 leading-relaxed">
               This interface is currently disabled because SPOT trading is not implemented.
-              Please use the Leverage tab for real trading functionality.
+              Please use the <strong>Leverage</strong> tab for real Futures trading functionality on KuCoin testnet.
             </p>
           </div>
         )}
