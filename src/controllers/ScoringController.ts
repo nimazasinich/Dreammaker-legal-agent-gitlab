@@ -9,12 +9,16 @@ import { Database } from '../data/Database.js';
 import { QuantumScoringService } from '../scoring/service.js';
 import { WeightParliament } from '../scoring/weights.js';
 import { MarketContext } from '../scoring/types.js';
+import { ScoringLiveService } from '../engine/live/ScoringLiveService.js';
+import { ScoreStreamGateway } from '../ws/ScoreStreamGateway.js';
 
 export class ScoringController {
   private logger = Logger.getInstance();
   private database = Database.getInstance();
   private scoringService = QuantumScoringService.getInstance();
   private weightParliament = WeightParliament.getInstance();
+  private liveScoring = ScoringLiveService.getInstance();
+  private scoreStreamGateway = ScoreStreamGateway.getInstance();
 
   /**
    * Get enhanced snapshot with confluence, entry plan, and context
@@ -331,6 +335,71 @@ export class ScoringController {
       this.logger.error('Failed to get amendment history', {}, error as Error);
       res.status(500).json({
         error: 'Failed to get amendment history',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * Get live scoring for a symbol
+   * GET /api/scoring/live/:symbol?timeframe=1h
+   */
+  async getLiveScore(req: Request, res: Response): Promise<void> {
+    try {
+      const { symbol } = req.params;
+      const { timeframe = '1h' } = req.query;
+
+      if (!symbol) {
+        res.status(400).json({
+          error: 'Symbol parameter is required',
+          example: '/api/scoring/live/BTCUSDT?timeframe=1h'
+        });
+        return;
+      }
+
+      const upperSymbol = symbol.toUpperCase();
+
+      this.logger.info('Generating live score', { symbol: upperSymbol, timeframe });
+
+      const liveScore = await this.liveScoring.generateLiveScore(
+        upperSymbol,
+        timeframe as string,
+        200
+      );
+
+      res.json({
+        success: true,
+        data: liveScore,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to get live score', { symbol: req.params.symbol }, error as Error);
+      res.status(500).json({
+        error: 'Failed to get live score',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * Get WebSocket stream status
+   * GET /api/scoring/stream-status
+   */
+  async getStreamStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const status = this.scoreStreamGateway.getStatus();
+      const latestScores = this.scoreStreamGateway.getAllLatestScores();
+
+      res.json({
+        success: true,
+        status,
+        latestScores,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to get stream status', {}, error as Error);
+      res.status(500).json({
+        error: 'Failed to get stream status',
         message: (error as Error).message
       });
     }
