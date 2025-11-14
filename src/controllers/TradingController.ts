@@ -4,16 +4,22 @@ import { Logger } from '../core/Logger.js';
 import { RealTradingService } from '../services/RealTradingService.js';
 import { OrderManagementService } from '../services/OrderManagementService.js';
 import { ConfigManager } from '../core/ConfigManager.js';
+import { TradeEngine, TradeSignal } from '../engine/trading/TradeEngine.js';
+import { ExchangeClient } from '../services/exchange/ExchangeClient.js';
 
 export class TradingController {
   private logger = Logger.getInstance();
   private realTradingService: RealTradingService;
   private orderManagement: OrderManagementService;
   private config = ConfigManager.getInstance();
+  private tradeEngine: TradeEngine;
+  private exchangeClient: ExchangeClient;
 
   constructor() {
     this.realTradingService = new RealTradingService();
     this.orderManagement = OrderManagementService.getInstance();
+    this.tradeEngine = TradeEngine.getInstance();
+    this.exchangeClient = ExchangeClient.getInstance();
   }
 
   async analyzeMarket(req: Request, res: Response): Promise<void> {
@@ -152,6 +158,95 @@ export class TradingController {
       this.logger.error('Failed to cancel order', { id: req.params.id }, error as Error);
       res.status(500).json({
         error: 'Failed to cancel order',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  // ===== TESTNET TRADING ENGINE ENDPOINTS =====
+
+  /**
+   * Execute a manual trade on testnet
+   * POST /api/trade/execute
+   *
+   * Body:
+   * {
+   *   symbol: string (e.g., "BTCUSDT"),
+   *   action: "BUY" | "SELL",
+   *   quantityUSDT?: number (optional, defaults to 100)
+   * }
+   */
+  async executeTrade(req: Request, res: Response): Promise<void> {
+    try {
+      const { symbol, action, quantityUSDT } = req.body;
+
+      // Validate required fields
+      if (!symbol || !action) {
+        res.status(400).json({
+          success: false,
+          error: 'Missing required fields: symbol, action'
+        });
+        return;
+      }
+
+      // Validate action
+      if (!['BUY', 'SELL'].includes(action)) {
+        res.status(400).json({
+          success: false,
+          error: 'Invalid action. Must be BUY or SELL'
+        });
+        return;
+      }
+
+      // Build trade signal
+      const signal: TradeSignal = {
+        source: 'manual',
+        symbol: symbol,
+        action: action,
+        confidence: null,
+        score: null,
+        timestamp: Date.now()
+      };
+
+      // Execute trade
+      const result = await this.tradeEngine.executeSignal(signal, quantityUSDT);
+
+      res.json({
+        success: result.executed,
+        data: result,
+        timestamp: Date.now()
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to execute trade', { body: req.body }, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to execute trade',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * Get open positions from testnet
+   * GET /api/trade/open-positions
+   */
+  async getOpenPositions(req: Request, res: Response): Promise<void> {
+    try {
+      const positions = await this.exchangeClient.getOpenPositions();
+
+      res.json({
+        success: true,
+        data: positions,
+        count: positions.length,
+        timestamp: Date.now()
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to get open positions', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get open positions',
         message: (error as Error).message
       });
     }
