@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { Activity, ArrowDownRight, ArrowUpRight, RefreshCw, TrendingUp, Wifi, WifiOff, Search, Plus, X, Filter, SlidersHorizontal, ChevronDown, ChevronUp, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Activity, ArrowDownRight, ArrowUpRight, RefreshCw, TrendingUp, Wifi, WifiOff, Search, Plus, X, Filter, SlidersHorizontal, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, Brain, Target, DollarSign, Newspaper, Waves, Radio } from 'lucide-react';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import dataManager from '../services/dataManager';
 import { t } from '../i18n';
@@ -8,11 +8,18 @@ import { Signal } from '../lib/signalEngine';
 import BacktestButton from '../components/backtesting/BacktestButton';
 import { useData } from '../contexts/DataContext';
 import { buildWebSocketUrl } from '../config/env';
+import { AISignalsScanner } from '../components/scanner/AISignalsScanner';
+import { TechnicalPatternsScanner } from '../components/scanner/TechnicalPatternsScanner';
+import { SmartMoneyScanner } from '../components/scanner/SmartMoneyScanner';
+import { NewsSentimentScanner } from '../components/scanner/NewsSentimentScanner';
+import { WhaleActivityScanner } from '../components/scanner/WhaleActivityScanner';
+import { ScannerFeedPanel } from '../components/scanner/ScannerFeedPanel';
 
 type ScannerStatus = 'idle' | 'loading' | 'ready' | 'error';
 type SortField = 'symbol' | 'price' | 'change24h' | 'volume24h' | 'score';
 type SortDir = 'asc' | 'desc';
 type TimeframeOption = '15m' | '1h' | '4h' | '1d';
+type ScannerTab = 'overview' | 'ai-signals' | 'patterns' | 'smart-money' | 'sentiment' | 'whales' | 'feed';
 
 interface ScannerRow {
   symbol: string;
@@ -78,7 +85,10 @@ const ScannerView: React.FC = () => {
   const globalSymbol = dataContext?.symbol ?? 'BTC/USDT';
   const globalTimeframe = dataContext?.timeframe ?? '1h';
 
-    const [isLoading, setIsLoading] = useState(false);
+  // Tab state
+  const [activeTab, setActiveTab] = useState<ScannerTab>('overview');
+
+  const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<ScannerStatus>('idle');
   const [rows, setRows] = useState<ScannerRow[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -589,8 +599,101 @@ const ScannerView: React.FC = () => {
           )}
         </section>
 
-        {/* KPI Cards */}
-        <section className="grid gap-4 lg:grid-cols-4">
+        {/* Tab Navigation */}
+        <section className="card-base rounded-2xl shadow-sm overflow-hidden">
+          <div className="flex flex-wrap border-b border-[color:var(--border)]">
+            <button
+              type="button"
+              onClick={() => setActiveTab('overview')}
+              className={`flex-1 min-w-[140px] px-4 py-3 text-sm font-medium transition-colors border-b-2 flex items-center justify-center gap-2 ${
+                activeTab === 'overview'
+                  ? 'border-[color:var(--primary-600)] text-[color:var(--primary-600)] bg-[color:var(--primary-50)]'
+                  : 'border-transparent text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] hover:bg-[color:var(--surface-muted)]'
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              <span>Market Overview</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('ai-signals')}
+              className={`flex-1 min-w-[140px] px-4 py-3 text-sm font-medium transition-colors border-b-2 flex items-center justify-center gap-2 ${
+                activeTab === 'ai-signals'
+                  ? 'border-[color:var(--primary-600)] text-[color:var(--primary-600)] bg-[color:var(--primary-50)]'
+                  : 'border-transparent text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] hover:bg-[color:var(--surface-muted)]'
+              }`}
+            >
+              <Brain className="w-4 h-4" />
+              <span>AI Signals</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('patterns')}
+              className={`flex-1 min-w-[140px] px-4 py-3 text-sm font-medium transition-colors border-b-2 flex items-center justify-center gap-2 ${
+                activeTab === 'patterns'
+                  ? 'border-[color:var(--primary-600)] text-[color:var(--primary-600)] bg-[color:var(--primary-50)]'
+                  : 'border-transparent text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] hover:bg-[color:var(--surface-muted)]'
+              }`}
+            >
+              <Target className="w-4 h-4" />
+              <span>Patterns</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('smart-money')}
+              className={`flex-1 min-w-[140px] px-4 py-3 text-sm font-medium transition-colors border-b-2 flex items-center justify-center gap-2 ${
+                activeTab === 'smart-money'
+                  ? 'border-[color:var(--primary-600)] text-[color:var(--primary-600)] bg-[color:var(--primary-50)]'
+                  : 'border-transparent text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] hover:bg-[color:var(--surface-muted)]'
+              }`}
+            >
+              <DollarSign className="w-4 h-4" />
+              <span>Smart Money</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('sentiment')}
+              className={`flex-1 min-w-[140px] px-4 py-3 text-sm font-medium transition-colors border-b-2 flex items-center justify-center gap-2 ${
+                activeTab === 'sentiment'
+                  ? 'border-[color:var(--primary-600)] text-[color:var(--primary-600)] bg-[color:var(--primary-50)]'
+                  : 'border-transparent text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] hover:bg-[color:var(--surface-muted)]'
+              }`}
+            >
+              <Newspaper className="w-4 h-4" />
+              <span>Sentiment</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('whales')}
+              className={`flex-1 min-w-[140px] px-4 py-3 text-sm font-medium transition-colors border-b-2 flex items-center justify-center gap-2 ${
+                activeTab === 'whales'
+                  ? 'border-[color:var(--primary-600)] text-[color:var(--primary-600)] bg-[color:var(--primary-50)]'
+                  : 'border-transparent text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] hover:bg-[color:var(--surface-muted)]'
+              }`}
+            >
+              <Waves className="w-4 h-4" />
+              <span>Whales</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('feed')}
+              className={`flex-1 min-w-[140px] px-4 py-3 text-sm font-medium transition-colors border-b-2 flex items-center justify-center gap-2 ${
+                activeTab === 'feed'
+                  ? 'border-[color:var(--primary-600)] text-[color:var(--primary-600)] bg-[color:var(--primary-50)]'
+                  : 'border-transparent text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] hover:bg-[color:var(--surface-muted)]'
+              }`}
+            >
+              <Radio className="w-4 h-4" />
+              <span>Scanner Feed</span>
+            </button>
+          </div>
+        </section>
+
+        {/* Tab Content */}
+        {activeTab === 'overview' && (
+          <>
+            {/* KPI Cards */}
+            <section className="grid gap-4 lg:grid-cols-4">
           <div className="card-base rounded-xl px-5 py-4 bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
             <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Buy Signals</p>
             <div className="mt-2 flex items-center gap-2 text-2xl font-semibold text-emerald-900 tabular-nums">
@@ -773,6 +876,50 @@ const ScannerView: React.FC = () => {
             </>
           )}
         </section>
+          </>
+        )}
+
+        {/* AI Signals Tab */}
+        {activeTab === 'ai-signals' && (
+          <section className="card-base rounded-2xl shadow-sm p-6">
+            <AISignalsScanner />
+          </section>
+        )}
+
+        {/* Technical Patterns Tab */}
+        {activeTab === 'patterns' && (
+          <section className="card-base rounded-2xl shadow-sm p-6">
+            <TechnicalPatternsScanner />
+          </section>
+        )}
+
+        {/* Smart Money Tab */}
+        {activeTab === 'smart-money' && (
+          <section className="card-base rounded-2xl shadow-sm p-6">
+            <SmartMoneyScanner />
+          </section>
+        )}
+
+        {/* News Sentiment Tab */}
+        {activeTab === 'sentiment' && (
+          <section className="card-base rounded-2xl shadow-sm p-6">
+            <NewsSentimentScanner />
+          </section>
+        )}
+
+        {/* Whale Activity Tab */}
+        {activeTab === 'whales' && (
+          <section className="card-base rounded-2xl shadow-sm p-6">
+            <WhaleActivityScanner />
+          </section>
+        )}
+
+        {/* Scanner Feed Tab */}
+        {activeTab === 'feed' && (
+          <section className="card-base rounded-2xl shadow-sm p-6">
+            <ScannerFeedPanel />
+          </section>
+        )}
       </div>
     </ErrorBoundary>
   );
