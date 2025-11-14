@@ -289,7 +289,7 @@ export const PositionsView: React.FC = () => {
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200" style={{ borderRadius: '14px' }}>
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
           {activeTab === 'positions' && (
             <div className="overflow-x-auto">
               {positions.length === 0 ? (
@@ -300,16 +300,16 @@ export const PositionsView: React.FC = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Symbol</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Side</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Symbol</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Side</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Size</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Entry</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Mark</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">SL</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">TP</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">TP</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Leverage</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">PnL</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -347,7 +347,6 @@ export const PositionsView: React.FC = () => {
                               onClick={() => handleClosePosition(pos.id)}
                               disabled={loading}
                               className="px-3 py-1 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition-all disabled:opacity-50"
-                              style={{ borderRadius: '8px' }}
                             >
                               Close
                             </button>
@@ -355,7 +354,6 @@ export const PositionsView: React.FC = () => {
                               onClick={() => handleReducePosition(pos.id)}
                               disabled={loading}
                               className="px-3 py-1 bg-orange-500 text-white rounded-lg text-xs font-semibold hover:bg-orange-600 transition-all disabled:opacity-50"
-                              style={{ borderRadius: '8px' }}
                             >
                               Reduce
                             </button>
@@ -363,7 +361,6 @@ export const PositionsView: React.FC = () => {
                               onClick={() => handleReversePosition(pos.id)}
                               disabled={loading}
                               className="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs font-semibold hover:bg-blue-600 transition-all disabled:opacity-50"
-                              style={{ borderRadius: '8px' }}
                             >
                               Reverse
                             </button>
@@ -387,14 +384,14 @@ export const PositionsView: React.FC = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Order ID</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Symbol</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Side</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Type</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Order ID</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Symbol</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Side</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Type</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Size</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Price</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -420,7 +417,6 @@ export const PositionsView: React.FC = () => {
                             onClick={() => handleCancelOrder(order.id)}
                             disabled={loading}
                             className="px-3 py-1 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition-all disabled:opacity-50"
-                            style={{ borderRadius: '8px' }}
                           >
                             Cancel
                           </button>

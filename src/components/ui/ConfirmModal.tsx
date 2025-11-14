@@ -22,6 +22,20 @@ export function ConfirmModal({
   onConfirm,
   onCancel
 }: ConfirmModalProps) {
+  // Handle ESC key to close modal
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+      }
+    };
+
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
   const variantStyles = {
