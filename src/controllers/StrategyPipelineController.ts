@@ -20,7 +20,8 @@ import { runStrategy1 } from '../strategies/strategy1.js';
 import { runStrategy2 } from '../strategies/strategy2.js';
 import { runStrategy3 } from '../strategies/strategy3.js';
 import { FinalDecision, CategoryScore } from '../types/signals.js';
-import { TradeEngine, TradeSignal } from '../engine/trading/TradeEngine.js';
+import { TradeEngine } from '../engine/trading/TradeEngine.js';
+import { TradeSignal } from '../types/index.js';
 import fs from 'fs';
 import path from 'path';
 
