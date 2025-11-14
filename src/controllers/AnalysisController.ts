@@ -102,7 +102,7 @@ export class AnalysisController {
         'internal',
         error,
         'Failed to analyze Smart Money Concepts',
-        { symbol: req.body.symbol, timeframe, bars }
+        { symbol: req.body.symbol, timeframe: req.body.timeframe, bars: req.body.bars }
       );
     }
   }
@@ -139,7 +139,7 @@ export class AnalysisController {
         'internal',
         error,
         'Failed to analyze Elliott Wave',
-        { symbol: req.body.symbol, timeframe, bars }
+        { symbol: req.body.symbol, timeframe: req.body.timeframe, bars: req.body.bars }
       );
     }
   }

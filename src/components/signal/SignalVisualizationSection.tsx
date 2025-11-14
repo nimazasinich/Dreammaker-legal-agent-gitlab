@@ -247,6 +247,7 @@ export const SignalVisualizationSection: React.FC<SignalVisualizationSectionProp
           />
         </div>
       )}
+    </div>
     </>
   );
 };

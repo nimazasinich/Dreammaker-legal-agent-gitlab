@@ -80,6 +80,7 @@ import { SentimentNewsService } from './services/SentimentNewsService.js';
 import { RealTradingService } from './services/RealTradingService.js';
 import { HFSentimentService } from './services/HFSentimentService.js';
 import { HFOHLCVService } from './services/HFOHLCVService.js';
+import type { AdapterErrorResponse } from './services/hf/HFMarketAdapter.js';
 import { DynamicWeightingService } from './services/DynamicWeightingService.js';
 import { SocialAggregationService } from './services/SocialAggregationService.js';
 import { FearGreedService } from './services/FearGreedService.js';
@@ -1910,18 +1911,24 @@ app.get('/market/candlestick/:symbol', async (req, res) => {
           v: Number(k.volume)
         }));
         return res.json(data);
-      } else if (primarySource === 'huggingface') {
-        // If HF is the only source and it failed, return error
-        logger.warn('HF candlestick request failed', { symbol, error: hfResult.message });
-        return res.status(hfResult.status).json({
-          ok: false,
-          provider: hfResult.provider,
-          reason: hfResult.reason,
-          error: hfResult.message
-        });
       }
-      // If mixed mode, fall through to database/fallback
-      logger.debug('HF failed in mixed mode, falling back', { symbol });
+
+      // Handle error case
+      if (!hfResult.ok) {
+        const errorResult = hfResult as AdapterErrorResponse; // Explicitly type as AdapterErrorResponse
+        if (primarySource === 'huggingface') {
+          // If HF is the only source and it failed, return error
+          logger.warn('HF candlestick request failed', { symbol, error: errorResult.message });
+          return res.status(errorResult.status).json({
+            ok: false,
+            provider: errorResult.provider,
+            reason: errorResult.reason,
+            error: errorResult.message
+          });
+        }
+        // If mixed mode, fall through to database/fallback
+        logger.debug('HF failed in mixed mode, falling back', { symbol });
+      }
     }
 
     // First try database cache
@@ -2001,16 +2008,22 @@ app.get('/market/ohlcv', async (req, res) => {
           v: Number(k.volume)
         }));
         return res.json(data);
-      } else if (primarySource === 'huggingface') {
-        logger.warn('HF OHLCV request failed', { symbol, error: hfResult.message });
-        return res.status(hfResult.status).json({
-          ok: false,
-          provider: hfResult.provider,
-          reason: hfResult.reason,
-          error: hfResult.message
-        });
       }
-      logger.debug('HF failed in mixed mode, falling back', { symbol });
+
+      // Handle error case
+      if (!hfResult.ok) {
+        const errorResult = hfResult as AdapterErrorResponse; // Explicitly type as AdapterErrorResponse
+        if (primarySource === 'huggingface') {
+          logger.warn('HF OHLCV request failed', { symbol, error: errorResult.message });
+          return res.status(errorResult.status).json({
+            ok: false,
+            provider: errorResult.provider,
+            reason: errorResult.reason,
+            error: errorResult.message
+          });
+        }
+        logger.debug('HF failed in mixed mode, falling back', { symbol });
+      }
     }
 
     const cachedData = await database.getMarketData(
@@ -2083,16 +2096,22 @@ app.get('/market/prices', async (req, res) => {
         }
 
         return res.json(prices);
-      } else if (primarySource === 'mixed') {
-        logger.debug('HF failed in mixed mode, falling back to local');
-      } else {
-        logger.warn('HF prices request failed', { error: hfResult.message });
-        return res.status(hfResult.status).json({
-          ok: false,
-          provider: hfResult.provider,
-          reason: hfResult.reason,
-          error: hfResult.message
-        });
+      }
+
+      // Handle error case
+      if (!hfResult.ok) {
+        const errorResult = hfResult as AdapterErrorResponse; // Explicitly type as AdapterErrorResponse
+        if (primarySource === 'mixed') {
+          logger.debug('HF failed in mixed mode, falling back to local');
+        } else {
+          logger.warn('HF prices request failed', { error: errorResult.message });
+          return res.status(errorResult.status).json({
+            ok: false,
+            provider: errorResult.provider,
+            reason: errorResult.reason,
+            error: errorResult.message
+          });
+        }
       }
     }
 
