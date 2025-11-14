@@ -7,7 +7,7 @@
  * - Adaptive weight status
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   PlayCircle,
   TrendingUp,
@@ -17,7 +17,8 @@ import {
   Activity,
   AlertCircle,
   CheckCircle,
-  RefreshCw
+  RefreshCw,
+  Settings
 } from 'lucide-react';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -132,6 +133,9 @@ const StrategyInsightsView: React.FC = () => {
               scoring={data.scoring}
               isAdaptiveEnabled={isAdaptiveEnabled}
             />
+
+            {/* Tuning Result Panel */}
+            <TuningResultPanel />
 
             {/* Strategy Tables */}
             <Strategy1Table data={data.strategy1.symbols} meta={data.strategy1.meta} />
@@ -471,6 +475,170 @@ const Strategy3Table: React.FC<Strategy3TableProps> = ({ data, meta }) => {
           </div>
         ))}
       </div>
+    </div>
+  );
+};
+
+// ==========================================
+// Tuning Result Panel
+// ==========================================
+
+const TuningResultPanel: React.FC = () => {
+  const [tuningResult, setTuningResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadLatestTuning = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/tuning/latest');
+      const data = await response.json();
+
+      if (data.success && data.result) {
+        setTuningResult(data.result);
+      } else {
+        setTuningResult(null);
+        setError('No tuning runs found');
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!tuningResult && !loading && !error) {
+    return (
+      <div className="p-4 bg-surface border border-border rounded-lg">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Settings className="w-4 h-4 text-accent" />
+            Auto-Tuning Results
+          </h3>
+        </div>
+        <button
+          onClick={loadLatestTuning}
+          className="px-3 py-2 bg-accent text-accent-foreground rounded-md text-sm hover:bg-accent/90 transition-colors"
+        >
+          Load Latest Tuning Result
+        </button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="p-4 bg-surface border border-border rounded-lg">
+        <div className="flex items-center gap-2">
+          <RefreshCw className="w-4 h-4 animate-spin text-accent" />
+          <span className="text-sm text-muted">Loading tuning result...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-surface border border-border rounded-lg">
+        <div className="flex items-center gap-2 text-muted">
+          <AlertCircle className="w-4 h-4" />
+          <span className="text-sm">{error}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!tuningResult) return null;
+
+  const baseline = tuningResult.baselineMetrics;
+  const best = tuningResult.bestCandidate?.metrics;
+  const metric = tuningResult.metric;
+
+  // Calculate improvement
+  let improvement: number | null = null;
+  let improvementText = 'N/A';
+
+  if (baseline && best && baseline[metric] !== null && best[metric] !== null) {
+    const baseValue = baseline[metric] as number;
+    const bestValue = best[metric] as number;
+    improvement = bestValue - baseValue;
+
+    if (improvement > 0) {
+      improvementText = `+${fmt(improvement, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}`;
+    } else if (improvement < 0) {
+      improvementText = fmt(improvement, { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+    } else {
+      improvementText = 'No change';
+    }
+  }
+
+  return (
+    <div className="p-4 bg-surface border border-border rounded-lg">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Settings className="w-4 h-4 text-accent" />
+          Latest Tuning Result
+        </h3>
+        <div className="text-xs text-muted">
+          {tuningResult.mode.toUpperCase()} mode · {tuningResult.candidatesTested} candidates tested
+        </div>
+      </div>
+
+      {tuningResult.error ? (
+        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-md">
+          <div className="text-sm text-red-500">Error: {tuningResult.error}</div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-4">
+          {/* Metric */}
+          <div>
+            <div className="text-xs text-muted uppercase mb-1">Metric</div>
+            <div className="text-sm font-medium text-foreground">{metric}</div>
+          </div>
+
+          {/* Baseline */}
+          {baseline && baseline[metric] !== null ? (
+            <div>
+              <div className="text-xs text-muted uppercase mb-1">Baseline</div>
+              <div className="text-sm font-medium text-foreground">
+                {fmt(baseline[metric] as number, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="text-xs text-muted uppercase mb-1">Baseline</div>
+              <div className="text-sm text-muted">No data</div>
+            </div>
+          )}
+
+          {/* Best */}
+          {best && best[metric] !== null ? (
+            <div>
+              <div className="text-xs text-muted uppercase mb-1">Tuned</div>
+              <div className={`text-sm font-medium ${improvement && improvement > 0 ? 'text-green-500' : 'text-foreground'}`}>
+                {fmt(best[metric] as number, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+                {improvement !== null && (
+                  <span className="text-xs ml-2">({improvementText})</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="text-xs text-muted uppercase mb-1">Tuned</div>
+              <div className="text-sm text-muted">No valid candidate</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!best && !tuningResult.error && (
+        <div className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-md">
+          <div className="text-xs text-yellow-600">
+            No reliable data (insufficient trades or history)
+          </div>
+        </div>
+      )}
     </div>
   );
 };

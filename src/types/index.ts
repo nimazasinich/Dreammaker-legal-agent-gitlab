@@ -384,6 +384,64 @@ export interface BacktestResult {
   annualizedReturn?: number;
 }
 
+// Tuning Types
+export interface TuningMetrics {
+  sharpe?: number | null;
+  winRate?: number | null;
+  pnl?: number | null;
+}
+
+export interface ScoringConfig {
+  version: string;
+  weights: Record<string, number>;
+  categories?: {
+    core?: { weight: number; detectors: string[] };
+    smc?: { weight: number; detectors: string[] };
+    patterns?: { weight: number; detectors: string[] };
+    sentiment?: { weight: number; detectors: string[] };
+    ml?: { weight: number; detectors: string[] };
+  };
+  thresholds?: {
+    buyScore: number;
+    sellScore: number;
+    minConfidence: number;
+  };
+}
+
+export interface TuningRunResult {
+  id: string;
+  mode: 'grid' | 'ga';
+  startedAt: string;
+  finishedAt: string | null;
+  metric: 'sharpe' | 'winRate' | 'pnl';
+  baselineMetrics: TuningMetrics | null;
+  bestCandidate: {
+    config: ScoringConfig;
+    metrics: TuningMetrics;
+  } | null;
+  candidatesTested: number;
+  error?: string | null;
+}
+
+export interface TuningConfig {
+  enabled: boolean;
+  mode: 'grid' | 'ga';
+  maxCandidates: number;
+  maxGenerations: number;
+  populationSize: number;
+  metric: 'sharpe' | 'winRate' | 'pnl';
+  backtestDefaults: {
+    symbolUniverse: string[];
+    timeframe: string;
+    lookbackDays: number;
+    initialBalance: number;
+  };
+  promotion: {
+    autoPromote: boolean;
+    tunedConfigPath: string;
+  };
+}
+
 export interface SystemHealth {
   timestamp: number;
   performance: {
