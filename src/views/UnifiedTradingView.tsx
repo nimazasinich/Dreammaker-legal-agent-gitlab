@@ -4,6 +4,7 @@ import { Wallet, TrendingUp } from 'lucide-react';
 // Import existing trading views - do not modify these files
 import TradingView from './TradingView';
 import { FuturesTradingView } from './FuturesTradingView';
+import { ExchangeSelector } from '../components/ExchangeSelector';
 
 type TabKey = 'spot' | 'futures';
 
@@ -63,6 +64,11 @@ export default function UnifiedTradingView({ initialTab = 'spot' }: Props) {
           })}
         </nav>
       </header>
+
+      {/* Exchange Selector */}
+      <div className="mb-4">
+        <ExchangeSelector />
+      </div>
 
       {/* CRITICAL: render exactly ONE page at a time to mimic separate routes */}
       {tab === 'spot'    && <TradingView />}

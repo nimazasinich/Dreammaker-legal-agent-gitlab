@@ -1,7 +1,8 @@
 // src/components/connectors/RealPriceChartConnector.tsx
 import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
-import { realDataManager, RealPriceData } from '../../services/RealDataManager';
+import { MarketData } from '../../types';
+import { useLiveData } from '../LiveDataContext';
 import { PriceChart } from '../market/PriceChart';
 
 interface RealPriceChartConnectorProps {
@@ -10,7 +11,10 @@ interface RealPriceChartConnectorProps {
 }
 
 /**
- * RealPriceChartConnector - Wraps PriceChart component with real-time price data
+ * RealPriceChartConnector - Wraps PriceChart component with real-time price data from LiveDataContext
+ *
+ * REFACTORED: Now uses centralized LiveDataContext instead of creating independent subscriptions.
+ * This fixes the memory leak caused by duplicate WebSocket subscriptions and polling intervals.
  */
 
 const logger = Logger.getInstance();
@@ -19,69 +23,56 @@ export const RealPriceChartConnector: React.FC<RealPriceChartConnectorProps> = (
   symbols,
   height = 300
 }) => {
-  const [realPrices, setRealPrices] = useState<RealPriceData[]>([]);
+  const liveDataContext = useLiveData();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [latestPrices, setLatestPrices] = useState<Map<string, MarketData>>(new Map());
 
   useEffect(() => {
     let isMounted = true;
-    const unsubscribers: Array<() => void> = [];
 
-    const fetchRealPrices = async () => {
-      if (!isMounted) { console.warn("Missing data"); }
-      
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch REAL price data from backend
-        const prices = await realDataManager.fetchRealPrices(symbols);
-        if (isMounted) {
-          setRealPrices(prices);
-        }
-      } catch (err) {
-        if (isMounted) {
-          logger.error('Failed to fetch prices:', {}, err);
-          setError(err instanceof Error ? err.message : 'Failed to fetch prices');
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
+    if (!liveDataContext) {
+      logger.warn('LiveDataContext not available');
+      setLoading(false);
+      return;
+    }
 
-    // Initial fetch
-    fetchRealPrices();
+    try {
+      setLoading(true);
+      setError(null);
 
-    // Subscribe to real-time price updates for each symbol
-    symbols.forEach(symbol => {
-      const unsubscribe = realDataManager.subscribeToPrice(symbol, (price) => {
-        if (isMounted) {
-          setRealPrices((prev) => {
-            const filtered = prev.filter(p => p.symbol !== price.symbol);
-            return [...filtered, price];
+      // Subscribe to market data for all symbols
+      const unsubscribe = liveDataContext.subscribeToMarketData(symbols, (data: MarketData) => {
+        if (isMounted && data.symbol) {
+          setLatestPrices(prev => {
+            const updated = new Map(prev);
+            updated.set(data.symbol, data);
+            return updated;
           });
         }
       });
-      unsubscribers.push(unsubscribe);
-    });
 
-    // Set up periodic updates (every 5 seconds)
-    const interval = setInterval(() => {
       if (isMounted) {
-        fetchRealPrices();
+        setLoading(false);
       }
-    }, 5000);
 
-    return () => {
-      isMounted = false;
-      unsubscribers.forEach(unsubscribe => unsubscribe());
-      clearInterval(interval);
-    };
-  }, [symbols]);
+      // Cleanup: unsubscribe when component unmounts or symbols change
+      return () => {
+        isMounted = false;
+        if (unsubscribe) {
+          unsubscribe();
+        }
+      };
+    } catch (err) {
+      if (isMounted) {
+        logger.error('Failed to subscribe to price data:', {}, err);
+        setError(err instanceof Error ? err.message : 'Failed to subscribe to price data');
+        setLoading(false);
+      }
+    }
+  }, [symbols.join(','), liveDataContext]); // Use join to prevent array reference changes
 
-  if (loading && realPrices.length === 0) {
+  if (loading && latestPrices.size === 0) {
     return (
       <div className="flex items-center justify-center" style={{ height }}>
         <div className="text-gray-500">Loading price data...</div>
@@ -97,7 +88,7 @@ export const RealPriceChartConnector: React.FC<RealPriceChartConnectorProps> = (
     );
   }
 
-  if (realPrices.length === 0) {
+  if (latestPrices.size === 0) {
     return (
       <div className="flex items-center justify-center" style={{ height }}>
         <div className="text-gray-500">No price data available</div>
@@ -105,21 +96,22 @@ export const RealPriceChartConnector: React.FC<RealPriceChartConnectorProps> = (
     );
   }
 
-  // Convert RealPriceData to format expected by PriceChart (CandlestickData)
-  // Since we only have price data, we'll use the same price for OHLC
-  const chartData = (realPrices || []).map(price => ({
-    timestamp: price.timestamp,
-    open: price.price,
-    high: price.price,
-    low: price.price,
-    close: price.price,
-    volume: price.volume || 0
+  // Convert Map<string, MarketData> to format expected by PriceChart (CandlestickData)
+  const chartData = Array.from(latestPrices.values()).map(marketData => ({
+    timestamp: typeof marketData.timestamp === 'number'
+      ? marketData.timestamp
+      : marketData.timestamp.getTime(),
+    open: marketData.open || marketData.price,
+    high: marketData.high || marketData.price,
+    low: marketData.low || marketData.price,
+    close: marketData.close || marketData.price,
+    volume: marketData.volume || 0
   }));
 
   // Use the first symbol for the chart
   const chartSymbol = symbols[0] || 'BTCUSDT';
 
-  // Pass real data to existing PriceChart component
+  // Pass data from LiveDataContext to PriceChart component
   return <PriceChart symbol={chartSymbol} data={chartData} autoFetch={false} />;
 };
 
