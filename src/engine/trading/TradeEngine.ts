@@ -1,5 +1,5 @@
 /**
- * TradeEngine - Core trading execution engine
+ * TradeEngine - Core trading execution engine (SPOT + FUTURES)
  *
  * Accepts trade signals from:
  * - Strategy Pipeline (Strategy 3)
@@ -8,7 +8,8 @@
  *
  * All trades are:
  * - Risk-guarded
- * - Testnet-only
+ * - Market-aware (SPOT vs FUTURES)
+ * - Mode-aware (OFF / DRY_RUN / TESTNET)
  * - Honest about success/failure (NO FAKE FILLS)
  */
 
@@ -16,22 +17,8 @@ import { Logger } from '../../core/Logger.js';
 import { ExchangeClient, PlaceOrderParams, PlaceOrderResult } from '../../services/exchange/ExchangeClient.js';
 import { RiskGuard } from './RiskGuard.js';
 import { Database } from '../../data/Database.js';
-import { getTradingMode } from '../../config/systemConfig.js';
-
-export interface TradeSignal {
-  source: 'strategy-pipeline' | 'live-scoring' | 'manual';
-  symbol: string;
-  action: 'BUY' | 'SELL' | 'HOLD';
-  confidence?: number | null;
-  score?: number | null;
-  timestamp: number;
-}
-
-export interface TradeExecutionResult {
-  executed: boolean;
-  reason?: string;
-  order?: PlaceOrderResult | null;
-}
+import { getTradingMode, getTradingMarket } from '../../config/systemConfig.js';
+import { TradeSignal, TradeExecutionResult, TradingMarket } from '../../types/index.js';
 
 /**
  * TradeEngine - Executes trade signals with risk management
@@ -62,20 +49,22 @@ export class TradeEngine {
   /**
    * Execute a trade signal
    *
-   * @param signal Trade signal to execute
+   * @param signal Trade signal to execute (with optional market override)
    * @param quantityUSDT Optional trade size in USDT (defaults to 100)
-   * @returns TradeExecutionResult with execution status
+   * @returns TradeExecutionResult with execution status and market type
    */
   async executeSignal(signal: TradeSignal, quantityUSDT?: number): Promise<TradeExecutionResult> {
     const tradeSize = quantityUSDT || this.defaultTradeSize;
     const tradingMode = getTradingMode();
+    const tradingMarket = signal.market || getTradingMarket();
 
     this.logger.info('Executing trade signal', {
       source: signal.source,
       symbol: signal.symbol,
       action: signal.action,
       quantityUSDT: tradeSize,
-      tradingMode
+      tradingMode,
+      tradingMarket
     });
 
     // 0. Check trading mode (system-level control)
@@ -85,7 +74,8 @@ export class TradeEngine {
       });
       return {
         executed: false,
-        reason: 'trading-disabled'
+        reason: 'trading-disabled',
+        market: tradingMarket
       };
     }
 
@@ -96,25 +86,29 @@ export class TradeEngine {
       });
       return {
         executed: false,
-        reason: 'Signal action is HOLD'
+        reason: 'Signal action is HOLD',
+        market: tradingMarket
       };
     }
 
-    // 2. Run risk guard check
+    // 2. Run risk guard check (market-aware)
     const riskCheck = await this.riskGuard.checkTradeRisk({
       symbol: signal.symbol,
       side: signal.action,
-      quantityUSDT: tradeSize
+      quantityUSDT: tradeSize,
+      market: tradingMarket
     });
 
     if (!riskCheck.allowed) {
       this.logger.warn('Trade blocked by risk guard', {
         symbol: signal.symbol,
+        market: tradingMarket,
         reason: riskCheck.reason
       });
       return {
         executed: false,
-        reason: `blocked-by-risk-guard: ${riskCheck.reason}`
+        reason: `blocked-by-risk-guard: ${riskCheck.reason}`,
+        market: tradingMarket
       };
     }
 
@@ -125,7 +119,8 @@ export class TradeEngine {
       if (!marketData || marketData.length === 0) {
         return {
           executed: false,
-          reason: 'Market data unavailable for symbol'
+          reason: 'Market data unavailable for symbol',
+          market: tradingMarket
         };
       }
       currentPrice = marketData[0].close;
@@ -133,35 +128,47 @@ export class TradeEngine {
       this.logger.error('Failed to get market data', { symbol: signal.symbol }, error);
       return {
         executed: false,
-        reason: 'Failed to get market data'
+        reason: 'Failed to get market data',
+        market: tradingMarket
       };
     }
 
     // 4. Calculate quantity in base currency
     const quantity = tradeSize / currentPrice;
 
-    // 5. Get leverage from risk guard config
+    // 5. Get leverage from risk guard config (FUTURES only)
     const riskConfig = this.riskGuard.getConfig();
-    const leverage = riskConfig.leverage || 3;
+    const leverage = tradingMarket === 'FUTURES'
+      ? (riskConfig.futures?.leverage || riskConfig.leverage || 3)
+      : undefined; // No leverage for SPOT
 
-    // 6. Place order (real or simulated based on trading mode)
+    // 6. Place order (real or simulated based on trading mode and market)
     const orderParams: PlaceOrderParams = {
       symbol: signal.symbol,
       side: signal.action,
       quantity: quantity,
       type: 'MARKET',
       leverage: leverage,
-      reduceOnly: false
+      reduceOnly: false,
+      market: tradingMarket
     };
 
     let orderResult: PlaceOrderResult;
 
     if (tradingMode === 'DRY_RUN') {
       // Simulate order without calling exchange
-      this.logger.info('DRY_RUN mode: Simulating order execution', { params: orderParams });
+      // Use different orderId prefix for SPOT vs FUTURES
+      const marketPrefix = tradingMarket === 'SPOT' ? 'DRY_SPOT' :
+                          tradingMarket === 'FUTURES' ? 'DRY_FUTURES' :
+                          'DRY_BOTH';
+
+      this.logger.info('DRY_RUN mode: Simulating order execution', {
+        params: orderParams,
+        market: tradingMarket
+      });
 
       orderResult = {
-        orderId: `DRY_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+        orderId: `${marketPrefix}_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         symbol: signal.symbol,
         side: signal.action,
         quantity: quantity,
@@ -175,17 +182,22 @@ export class TradeEngine {
         symbol: signal.symbol,
         side: signal.action,
         quantity: quantity,
-        price: currentPrice
+        price: currentPrice,
+        market: tradingMarket
       });
     } else {
       // TESTNET mode - place real order via exchange
       try {
         orderResult = await this.exchangeClient.placeOrder(orderParams);
       } catch (error: any) {
-        this.logger.error('Failed to place order', { params: orderParams }, error);
+        this.logger.error('Failed to place order', {
+          params: orderParams,
+          market: tradingMarket
+        }, error);
         return {
           executed: false,
-          reason: `Order placement failed: ${error.message}`
+          reason: `Order placement failed: ${error.message}`,
+          market: tradingMarket
         };
       }
 
@@ -193,12 +205,14 @@ export class TradeEngine {
       if (orderResult.status === 'REJECTED') {
         this.logger.warn('Order rejected by exchange', {
           symbol: signal.symbol,
+          market: tradingMarket,
           error: orderResult.error
         });
         return {
           executed: false,
           reason: `Order rejected: ${orderResult.error}`,
-          order: orderResult
+          order: orderResult,
+          market: tradingMarket
         };
       }
     }
@@ -215,7 +229,9 @@ export class TradeEngine {
         timestamp: orderResult.timestamp,
         source: signal.source,
         confidence: signal.confidence,
-        score: signal.score
+        score: signal.score,
+        market: tradingMarket,
+        tradingMode: tradingMode
       });
     } catch (error: any) {
       this.logger.error('Failed to save order to database', {}, error);
@@ -228,12 +244,15 @@ export class TradeEngine {
       symbol: signal.symbol,
       side: signal.action,
       quantity: quantity,
-      status: orderResult.status
+      status: orderResult.status,
+      market: tradingMarket,
+      tradingMode: tradingMode
     });
 
     return {
       executed: true,
-      order: orderResult
+      order: orderResult,
+      market: tradingMarket
     };
   }
 

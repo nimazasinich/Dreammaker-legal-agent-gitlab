@@ -13,7 +13,7 @@
 
 import { Request, Response } from 'express';
 import { Logger } from '../core/Logger.js';
-import { getSystemConfig, isFeatureEnabled, getTradingMode } from '../config/systemConfig.js';
+import { getSystemConfig, isFeatureEnabled, getTradingMode, getTradingMarket } from '../config/systemConfig.js';
 import { ScoreStreamGateway } from '../ws/ScoreStreamGateway.js';
 import { TuningStorage } from '../engine/tuning/TuningStorage.js';
 import { ExchangeClient } from '../services/exchange/ExchangeClient.js';
@@ -86,11 +86,14 @@ export class SystemStatusController {
       }
 
       // 5. Build response
+      const tradingMarket = getTradingMarket();
+
       const response: SystemStatusResponse = {
         environment: systemConfig.modes.environment,
         features: systemConfig.features,
         trading: {
           mode: tradingMode,
+          market: tradingMarket,
           health: tradingHealth
         },
         liveScoring: {
@@ -107,6 +110,7 @@ export class SystemStatusController {
       this.logger.debug('System status retrieved', {
         environment: response.environment,
         tradingMode: response.trading.mode,
+        tradingMarket: response.trading.market,
         tradingHealth: response.trading.health
       });
 

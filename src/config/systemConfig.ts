@@ -10,6 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Logger } from '../core/Logger.js';
+import { TradingMode, TradingMarket } from '../types/index.js';
 
 export interface SystemConfig {
   features: {
@@ -21,7 +22,12 @@ export interface SystemConfig {
   };
   modes: {
     environment: 'DEV' | 'STAGING' | 'PROD';
-    trading: 'OFF' | 'DRY_RUN' | 'TESTNET';
+    trading: TradingMode;
+  };
+  trading?: {
+    environment: 'DEV' | 'STAGING' | 'PROD';
+    mode: TradingMode;
+    market: TradingMarket;
   };
 }
 
@@ -157,9 +163,19 @@ class SystemConfigManager {
   /**
    * Get current trading mode
    */
-  getTradingMode(): 'OFF' | 'DRY_RUN' | 'TESTNET' {
+  getTradingMode(): TradingMode {
     const config = this.loadConfig();
-    return config.modes.trading;
+    // Prefer new trading.mode over legacy modes.trading
+    return config.trading?.mode || config.modes.trading;
+  }
+
+  /**
+   * Get current trading market
+   */
+  getTradingMarket(): TradingMarket {
+    const config = this.loadConfig();
+    // Default to FUTURES if not specified
+    return config.trading?.market || 'FUTURES';
   }
 
   /**
@@ -184,8 +200,11 @@ export const isFeatureEnabled = (feature: keyof SystemConfig['features']): boole
 export const getEnvironment = (): 'DEV' | 'STAGING' | 'PROD' =>
   systemConfigManager.getEnvironment();
 
-export const getTradingMode = (): 'OFF' | 'DRY_RUN' | 'TESTNET' =>
+export const getTradingMode = (): TradingMode =>
   systemConfigManager.getTradingMode();
+
+export const getTradingMarket = (): TradingMarket =>
+  systemConfigManager.getTradingMarket();
 
 export const reloadSystemConfig = (): void =>
   systemConfigManager.reload();
