@@ -3,7 +3,7 @@
  * Comprehensive test suite for Quantum Scoring System
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ConstitutionalConverter } from '../scoring/converter.js';
 import { WeightParliament } from '../scoring/weights.js';
 import { SupremeJudicialCombiner } from '../scoring/combiner.js';

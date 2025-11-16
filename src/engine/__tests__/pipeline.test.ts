@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { runStrategyPipeline } from '../pipeline';
 import { aggregateScores, DEFAULT_WEIGHTS } from '../scoreAggregator';
 import { Bar, CoreSignal } from '../../types/signals';

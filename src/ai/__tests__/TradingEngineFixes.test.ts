@@ -3,7 +3,7 @@
  * Tests validate that all critical issues have been resolved
  */
 
-import { describe, test, expect, beforeEach, afterAll } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterAll } from 'vitest';
 import { TrainingEngine } from '../ai/TrainingEngine.js';
 import { BullBearAgent } from '../ai/BullBearAgent.js';
 import { ContinuousLearningService } from '../services/ContinuousLearningService.js';

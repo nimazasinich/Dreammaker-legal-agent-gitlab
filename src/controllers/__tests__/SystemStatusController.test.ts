@@ -33,7 +33,8 @@ vi.mock('../../config/systemConfig.js', () => ({
     };
     return features[feature] || false;
   }),
-  getTradingMode: vi.fn(() => 'DRY_RUN')
+  getTradingMode: vi.fn(() => 'DRY_RUN'),
+  getTradingMarket: vi.fn(() => 'FUTURES')
 }));
 
 vi.mock('../../ws/ScoreStreamGateway.js', () => ({

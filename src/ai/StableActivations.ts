@@ -31,69 +31,100 @@ export class StableActivations {
 
   /**
    * Stable LeakyReLU with configurable slope and clipping
+   * Supports both single numbers and arrays
    */
-  leakyRelu(x: number[]): number[] {
-    return (x || []).map(val => {
-      // Pre-activation clipping
-      const clippedInput = Math.max(-this.config.preClipBound, Math.min(this.config.preClipBound, val));
-      
-      // LeakyReLU activation
-      const activated = clippedInput > 0 ? clippedInput : this.config.leakyReluSlope * clippedInput;
-      
-      // Post-activation clipping
-      return Math.max(-this.config.postClipBound, Math.min(this.config.postClipBound, activated));
-    });
+  leakyRelu(x: number[]): number[];
+  leakyRelu(x: number): number;
+  leakyRelu(x: number | number[]): number | number[] {
+    if (typeof x === 'number') {
+      return this.leakyReluSingle(x);
+    }
+    return (x || []).map(val => this.leakyReluSingle(val));
+  }
+
+  // Alias for camelCase consistency (tests use leakyReLU)
+  leakyReLU(x: number[]): number[];
+  leakyReLU(x: number): number;
+  leakyReLU(x: number | number[]): number | number[] {
+    return this.leakyRelu(x as any);
+  }
+
+  private leakyReluSingle(val: number): number {
+    // Pre-activation clipping
+    const clippedInput = Math.max(-this.config.preClipBound, Math.min(this.config.preClipBound, val));
+
+    // LeakyReLU activation
+    const activated = clippedInput > 0 ? clippedInput : this.config.leakyReluSlope * clippedInput;
+
+    // Post-activation clipping
+    return Math.max(-this.config.postClipBound, Math.min(this.config.postClipBound, activated));
   }
 
   /**
    * Stable Sigmoid with saturation handling
+   * Supports both single numbers and arrays
    */
-  sigmoid(x: number[]): number[] {
-    return (x || []).map(val => {
-      // Pre-activation clipping to prevent overflow
-      const clippedInput = Math.max(-this.config.preClipBound, Math.min(this.config.preClipBound, val));
-      
-      // Stable sigmoid computation
-      let result: number;
-      if (clippedInput >= 0) {
-        const exp_neg = Math.exp(-clippedInput);
-        result = 1.0 / (1.0 + exp_neg);
-      } else {
-        const exp_pos = Math.exp(clippedInput);
-        result = exp_pos / (1.0 + exp_pos);
-      }
-      
-      // Handle saturation
-      if (result < 1e-7) result = 1e-7;
-      if (result > 1 - 1e-7) result = 1 - 1e-7;
-      
-      return result;
-    });
+  sigmoid(x: number[]): number[];
+  sigmoid(x: number): number;
+  sigmoid(x: number | number[]): number | number[] {
+    if (typeof x === 'number') {
+      return this.sigmoidSingle(x);
+    }
+    return (x || []).map(val => this.sigmoidSingle(val));
+  }
+
+  private sigmoidSingle(val: number): number {
+    // Pre-activation clipping to prevent overflow
+    const clippedInput = Math.max(-this.config.preClipBound, Math.min(this.config.preClipBound, val));
+
+    // Stable sigmoid computation
+    let result: number;
+    if (clippedInput >= 0) {
+      const exp_neg = Math.exp(-clippedInput);
+      result = 1.0 / (1.0 + exp_neg);
+    } else {
+      const exp_pos = Math.exp(clippedInput);
+      result = exp_pos / (1.0 + exp_pos);
+    }
+
+    // Handle saturation
+    if (result < 1e-7) result = 1e-7;
+    if (result > 1 - 1e-7) result = 1 - 1e-7;
+
+    return result;
   }
 
   /**
    * Stable Tanh with saturation handling
+   * Supports both single numbers and arrays
    */
-  tanh(x: number[]): number[] {
-    return (x || []).map(val => {
-      // Pre-activation clipping
-      const clippedInput = Math.max(-this.config.preClipBound, Math.min(this.config.preClipBound, val));
-      
-      // Stable tanh computation
-      let result: number;
-      if (Math.abs(clippedInput) < 1e-7) {
-        result = clippedInput; // Linear approximation for very small values
-      } else {
-        const exp_2x = Math.exp(2 * clippedInput);
-        result = (exp_2x - 1) / (exp_2x + 1);
-      }
-      
-      // Handle saturation
-      if (result < -1 + 1e-7) result = -1 + 1e-7;
-      if (result > 1 - 1e-7) result = 1 - 1e-7;
-      
-      return result;
-    });
+  tanh(x: number[]): number[];
+  tanh(x: number): number;
+  tanh(x: number | number[]): number | number[] {
+    if (typeof x === 'number') {
+      return this.tanhSingle(x);
+    }
+    return (x || []).map(val => this.tanhSingle(val));
+  }
+
+  private tanhSingle(val: number): number {
+    // Pre-activation clipping
+    const clippedInput = Math.max(-this.config.preClipBound, Math.min(this.config.preClipBound, val));
+
+    // Stable tanh computation
+    let result: number;
+    if (Math.abs(clippedInput) < 1e-7) {
+      result = clippedInput; // Linear approximation for very small values
+    } else {
+      const exp_2x = Math.exp(2 * clippedInput);
+      result = (exp_2x - 1) / (exp_2x + 1);
+    }
+
+    // Handle saturation
+    if (result < -1 + 1e-7) result = -1 + 1e-7;
+    if (result > 1 - 1e-7) result = 1 - 1e-7;
+
+    return result;
   }
 
   /**
