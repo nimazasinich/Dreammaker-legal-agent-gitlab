@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Logger } from '../../core/Logger.js';
 import { MarketData } from '../../types';
 import { TrendingUp, TrendingDown } from 'lucide-react';
@@ -24,10 +24,17 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
     const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [marketData, setMarketData] = useState<MarketData[]>(propMarketData || []);
+  const fetchingRef = useRef(false);
   
   const symbolsKey = useMemo(() => symbols.join(','), [symbols]);
 
   const fetchMarketData = useCallback(async () => {
+    // Prevent concurrent fetches
+    if (fetchingRef.current) {
+      return;
+    }
+    
+    fetchingRef.current = true;
     try {
       const symbolsParam = symbols.join(',');
       const response = await dataManager.fetchData<{
@@ -58,6 +65,8 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
       }
     } catch (error) {
       if (import.meta.env.DEV) logger.error('Failed to fetch market data:', {}, error);
+    } finally {
+      fetchingRef.current = false;
     }
   }, [symbols.join(',')]); // Use symbols.join instead of symbols array
 
@@ -68,15 +77,19 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
   }, [propMarketData]);
 
   useEffect(() => {
+    if (!autoFetch) {
+      return; // Don't fetch if autoFetch is disabled
+    }
+    
     let isMounted = true;
     let interval: NodeJS.Timeout | null = null;
     
     // Initial fetch
     fetchMarketData();
     
-    if (refreshInterval > 0) {
+    if (refreshInterval > 0 && autoFetch) {
       interval = setInterval(() => {
-        if (isMounted) {
+        if (isMounted && autoFetch) {
           fetchMarketData();
         }
       }, refreshInterval);
@@ -88,7 +101,7 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
         clearInterval(interval);
       }
     };
-  }, [autoFetch, refreshInterval, symbolsKey]); // Removed fetchMarketData from deps
+  }, [autoFetch, refreshInterval, symbolsKey, fetchMarketData]);
 
   if (!marketData.length) {
     if (autoFetch) {
