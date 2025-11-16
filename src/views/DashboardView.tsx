@@ -125,6 +125,16 @@ export const DashboardView: React.FC = () => {
     const [currentSymbol, setCurrentSymbol] = useState<string>('BTCUSDT');
     const [currentTimeframe, setCurrentTimeframe] = useState<string>('1h');
 
+    // Initial data load on mount - only if data is not already loaded
+    useEffect(() => {
+        // Only trigger initial load if we don't have data and we're not already loading
+        if (!dataLoading && !portfolioData && !marketPricesData && !aiSignalsData) {
+            logger.info('🔄 Dashboard: Triggering initial data load');
+            refreshAllData();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run once on mount
+
     // Sync data from context to local state
     useEffect(() => {
         if (portfolioData) {
@@ -210,33 +220,51 @@ export const DashboardView: React.FC = () => {
 
     // Fetch AI Signals for TopSignalsPanel
     useEffect(() => {
+        let isMounted = true;
+        let interval: NodeJS.Timeout | null = null;
+        
         const fetchPanelSignals = async () => {
             try {
                 const signals = await realDataManager.getAISignals(10);
-                setAiSignalsForPanel(signals);
+                if (isMounted) {
+                    setAiSignalsForPanel(signals);
+                }
             } catch (error) {
-                logger.warn('Failed to fetch signals for panel:', error);
+                if (isMounted) {
+                    logger.warn('Failed to fetch signals for panel:', error);
+                }
             }
         };
 
+        // Initial fetch
         fetchPanelSignals();
 
         // Refresh every 30 seconds if auto-refresh is enabled
-        const interval = setInterval(() => {
-            if (autoRefresh) {
-                fetchPanelSignals();
-            }
-        }, 30000);
+        if (autoRefresh) {
+            interval = setInterval(() => {
+                if (isMounted && autoRefresh) {
+                    fetchPanelSignals();
+                }
+            }, 30000);
+        }
 
-        return () => clearInterval(interval);
+        return () => {
+            isMounted = false;
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
     }, [autoRefresh]);
 
-    // Handle manual refresh
+    // Handle manual refresh - prevent duplicate calls
     const handleRefresh = useCallback(() => {
+        if (isRefreshing || dataLoading) {
+            return; // Already refreshing, skip
+        }
         setIsRefreshing(true);
         refreshAllData();
         setTimeout(() => setIsRefreshing(false), 1000);
-    }, [refreshAllData]);
+    }, [refreshAllData, isRefreshing, dataLoading]);
 
     // Helper functions
     const formatVolume = (volume: number): string => {
@@ -390,7 +418,7 @@ export const DashboardView: React.FC = () => {
         <div className="w-full min-h-full animate-fade-in">
             {/* Market Ticker */}
             <div className="mb-6">
-                <MarketTicker autoFetch={true} refreshInterval={30000} />
+                <MarketTicker autoFetch={autoRefresh} refreshInterval={30000} />
             </div>
 
             <style>{`

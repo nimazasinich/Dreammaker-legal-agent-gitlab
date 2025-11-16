@@ -141,6 +141,12 @@ export function DataProvider({
       return;
     }
 
+    // Don't load if component is unmounted or ignored
+    if (!mountedRef.current || ignoreRef.current) {
+      logger.info('⏸️ Component unmounted or ignored, skipping load');
+      return;
+    }
+
     // Cancel previous requests if any
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -282,6 +288,12 @@ export function DataProvider({
   }, []);
 
   const refresh = (next?: { symbol?: string; timeframe?: string }) => {
+    // Prevent refresh if already loading
+    if (loadingRef.current) {
+      logger.info('⏳ Refresh skipped - already loading');
+      return;
+    }
+    
     if (next?.symbol) setSymbol(next.symbol);
     if (next?.timeframe) setTimeframe(next.timeframe);
     loadOHLCVData(next?.symbol ?? symbol, next?.timeframe ?? timeframe);
