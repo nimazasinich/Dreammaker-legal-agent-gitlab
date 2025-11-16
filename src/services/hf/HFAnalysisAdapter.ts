@@ -112,12 +112,12 @@ export class HFAnalysisAdapter {
 
   /**
    * SMC (Smart Money Concepts) Analysis
-   * SMC analysis is intentionally handled by local analyzers, not the HF Data Engine.
    */
   async analyzeSMC(symbol: string, timeframe: string): Promise<AdapterResponse<any>> {
     const endpoint = '/analysis/smc';
 
-    // SMC analysis is intentionally handled by local analyzers, not the HF Data Engine.
+    // Intentionally NOT implemented: SMC analysis runs in local technical analysis services, not via HF.
+    // See docs/hf-engine-scope.md and the local SMCAnalyzer for the authoritative implementation.
     return this.createError(
       endpoint,
       'SMC analysis via HuggingFace is not implemented. Use local technical analysis services.',
@@ -128,12 +128,12 @@ export class HFAnalysisAdapter {
 
   /**
    * Elliott Wave Analysis
-   * Elliott Wave analysis is intentionally handled by local analyzers, not the HF Data Engine.
    */
   async analyzeElliott(symbol: string, timeframe: string): Promise<AdapterResponse<any>> {
     const endpoint = '/analysis/elliott';
 
-    // Elliott Wave analysis is intentionally handled by local analyzers, not the HF Data Engine.
+    // Intentionally NOT implemented: Elliott Wave analysis runs in local technical analysis services, not via HF.
+    // See docs/hf-engine-scope.md and the local ElliottWaveAnalyzer for the authoritative implementation.
     return this.createError(
       endpoint,
       'Elliott Wave analysis via HuggingFace is not implemented. Use local technical analysis services.',

@@ -98,12 +98,12 @@ export class HFSignalsAdapter {
 
   /**
    * Get signals for a specific symbol
-   * This operation is intentionally not implemented for HF; signals are managed locally.
    */
   async getSignalsForSymbol(symbol: string): Promise<AdapterResponse<any>> {
     const endpoint = `/signals/${symbol}`;
 
-    // This operation is intentionally not implemented for HF; signals are managed locally.
+    // Intentionally NOT implemented: signal generation runs in local SignalEngine, not via HF.
+    // See docs/hf-engine-scope.md and the local SignalEngine for the authoritative implementation.
     return this.createError(
       endpoint,
       'Signal generation via HuggingFace is not implemented. Use local signal generation services.',
@@ -114,7 +114,6 @@ export class HFSignalsAdapter {
 
   /**
    * Analyze symbol and generate signals
-   * This operation is intentionally not implemented for HF; signals are managed locally.
    */
   async analyzeAndGenerateSignals(
     symbol: string,
@@ -122,7 +121,8 @@ export class HFSignalsAdapter {
   ): Promise<AdapterResponse<any>> {
     const endpoint = '/api/signals/analyze';
 
-    // This operation is intentionally not implemented for HF; signals are managed locally.
+    // Intentionally NOT implemented: ML-based signal generation runs in local SignalEngine, not via HF.
+    // See docs/hf-engine-scope.md and the local SignalEngine for the authoritative implementation.
     return this.createError(
       endpoint,
       'ML-based signal generation via HuggingFace is not yet implemented.',
