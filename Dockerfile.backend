@@ -1,0 +1,56 @@
+# Dockerfile.backend
+# Production-optimized backend container for DreammakerCryptoSignalAndTrader
+# Builds and runs the Node.js/Express server with TypeScript compilation
+
+# ---- Build Stage ----
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependency manifests
+COPY package*.json ./
+
+# Install all dependencies (including dev for build)
+RUN npm ci
+
+# Copy source code and configuration
+COPY tsconfig.json tsconfig.server.json ./
+COPY src/ ./src/
+
+# Build TypeScript server code
+RUN npm run build:server
+
+# ---- Production Runtime Stage ----
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+
+# Set production environment
+ENV NODE_ENV=production
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --omit=dev && \
+    npm cache clean --force
+
+# Copy compiled server code from builder
+COPY --from=builder /app/dist ./dist
+
+# Create data directories
+RUN mkdir -p /app/data /app/config && \
+    chown -R node:node /app
+
+# Switch to non-root user for security
+USER node
+
+# Expose backend port (configurable via PORT env var)
+EXPOSE 8001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8001/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
+
+# Start the server
+CMD ["node", "dist/server.js"]

@@ -1,204 +1,594 @@
-# Deployment Checklist for Hugging Face Spaces
+# Deployment Checklist
 
-## ✅ Pre-Deployment Checklist
+This comprehensive checklist ensures safe, reliable deployment of the DreammakerCryptoSignalAndTrader application to staging and production environments.
 
-### 1. Code & Configuration
-- [x] Hugging Face token configured in `.env.local` (local development)
-- [x] Dockerfile.huggingface optimized for HF Spaces
-- [x] Node 20 Alpine base image
-- [x] Build dependencies installed (python3, make, g++, gcc, musl-dev)
-- [x] TypeScript build configuration fixed (noEmitOnError: false)
-- [x] better-sqlite3 properly compiled
+## Pre-Deployment Checklist
 
-### 2. Hugging Face Spaces Setup
+### 1. Before You Start
 
-**Required Settings:**
+#### Infrastructure Readiness
 
-1. **Space Configuration**
-   - SDK: Docker
-   - Docker file: `Dockerfile.huggingface`
-   - Port: 7860 (automatically configured)
+- [ ] **HF Engine endpoint is healthy**
+  ```bash
+  curl -f https://really-amin-datasourceforcryptocurrency.hf.space/health
+  ```
 
-2. **Repository Secrets** (Add in HF Space Settings)
-   ```
-   HUGGINGFACE_API_KEY=your_huggingface_token_here
-   HF_TOKEN=your_huggingface_token_here
-   HF_TOKEN_B64=your_base64_encoded_token_here
-   ```
+- [ ] **Exchange endpoints are reachable**
+  - [ ] Testnet (staging): `https://api-sandbox-futures.kucoin.com`
+  - [ ] Mainnet (production): `https://api-futures.kucoin.com`
 
-   **Note:** Your actual tokens are stored securely in `.env.local` (gitignored).
-   Copy them from there to add as HF Space secrets.
+- [ ] **Backend server is provisioned**
+  - [ ] Adequate resources (2+ CPU, 4GB+ RAM recommended)
+  - [ ] Ports 8001 (backend), 80/443 (frontend) are available
+  - [ ] SSL certificates are valid (for production HTTPS)
 
-3. **Environment Variables** (Optional - in HF Space Settings)
-   ```
-   NODE_ENV=production
-   PORT=7860
-   VITE_APP_MODE=demo
-   DISABLE_REDIS=true
-   ```
+- [ ] **Database/storage is configured**
+  - [ ] `/data` directory is writable
+  - [ ] `/config` directory is writable
+  - [ ] Backups are configured (if applicable)
 
-### 3. Deployment Steps
+#### Secrets Management
 
-1. **Push to GitHub**
-   ```bash
-   # Already done ✓
-   git push origin claude/setup-huggingface-token-011CUyHaREirvVBcRqfJEkhR
-   ```
+- [ ] **All secrets are secured**
+  - [ ] NO secrets committed to Git
+  - [ ] Secrets stored in vault/secrets manager
+  - [ ] Environment variables configured for runtime injection
 
-2. **Create Hugging Face Space**
-   - Go to https://huggingface.co/new-space
-   - Choose "Docker" as SDK
-   - Link your GitHub repository
-   - Select branch: `claude/setup-huggingface-token-011CUyHaREirvVBcRqfJEkhR`
+- [ ] **Required API keys are valid**
+  - [ ] `HF_TOKEN` / `HUGGINGFACE_API_KEY`
+  - [ ] `KUCOIN_FUTURES_KEY`
+  - [ ] `KUCOIN_FUTURES_SECRET`
+  - [ ] `KUCOIN_FUTURES_PASSPHRASE`
+  - [ ] `REDIS_PASSWORD` (if using Redis)
 
-3. **Configure Space Settings**
-   - Add repository secrets (see above)
-   - Set visibility (Public for demo, Private if using real API keys)
-   - Enable hardware (CPU Basic is sufficient for demo mode)
-
-4. **Trigger Build**
-   - HF Spaces will automatically build on push
-   - Monitor build logs in Space settings
-   - Expected build time: 10-15 minutes
-
-### 4. Post-Deployment Verification
-
-**Health Checks:**
-```bash
-# Check application health
-curl https://YOUR_SPACE.hf.space/api/health
-
-# Check HF services
-curl https://YOUR_SPACE.hf.space/api/hf/health
-
-# Check available endpoints
-curl https://YOUR_SPACE.hf.space/api/hf/registry
-```
-
-**Test HF Integration:**
-```bash
-# Test sentiment analysis
-curl -X POST https://YOUR_SPACE.hf.space/api/hf/sentiment/single \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Bitcoin is bullish today with strong momentum!"}'
-
-# Test OHLCV data (if available)
-curl "https://YOUR_SPACE.hf.space/api/hf/ohlcv?symbol=BTCUSDT&timeframe=1h&limit=10"
-```
-
-## 🔍 Troubleshooting
-
-### Build Fails at npm install
-
-**Symptom:** Build fails with "Cannot find module" or native binding errors
-
-**Solution:**
-- Ensure Dockerfile.huggingface has all build dependencies
-- Check that `npm rebuild better-sqlite3` is executed
-- Verify Node version is 20-alpine
-
-### Build Fails at TypeScript Compilation
-
-**Symptom:** Build fails with hundreds of TypeScript errors
-
-**Solution:**
-- Verify `tsconfig.server.json` has `noEmitOnError: false`
-- Check that `npm run build` completes despite errors
-- Ensure `dist/` folder is created with compiled JS files
-
-### Application Starts but Crashes
-
-**Symptom:** Build succeeds but application crashes on startup
-
-**Solution:**
-- Check Space logs for error messages
-- Verify environment variables are set correctly
-- Ensure PORT=7860 is configured
-- Check that all required dependencies are in package.json
-
-### HF Token Not Working
-
-**Symptom:** Hugging Face API calls fail with 401/403 errors
-
-**Solution:**
-- Verify token is added to Space secrets
-- Check token format (should start with `hf_`)
-- Ensure token has correct permissions
-- Test token at https://huggingface.co/settings/tokens
-
-## 📊 Expected Build Output
-
-**Successful Build:**
-```
-✓ Installing dependencies (3-5 minutes)
-✓ Building client (vite build) (2-3 minutes)
-✓ Building server (tsc) (1-2 minutes)
-  - May show TypeScript warnings (expected)
-  - Should complete with "Exit code: 0"
-✓ Creating production image (2-3 minutes)
-✓ Starting application
-✓ Health check passing
-```
-
-**Total Time:** ~10-15 minutes
-
-## 🎯 Success Criteria
-
-- [ ] Build completes without errors
-- [ ] Application starts successfully
-- [ ] Health endpoint responds: `GET /api/health`
-- [ ] Frontend loads at Space URL
-- [ ] HF services available: `GET /api/hf/health`
-- [ ] Sentiment analysis works: `POST /api/hf/sentiment/single`
-
-## 📝 Additional Notes
-
-### Demo Mode vs Online Mode
-
-**Demo Mode** (Default - No API keys needed):
-- Uses mock data with realistic patterns
-- Full UI/UX demonstration
-- No external API calls
-- Perfect for public Spaces
-
-**Online Mode** (Requires API keys):
-- Real market data from multiple providers
-- Requires API keys for CoinMarketCap, CryptoCompare, etc.
-- Set `VITE_APP_MODE=online` and `APP_MODE=online`
-- **Important:** Keep Space PRIVATE if using real API keys!
-
-### Security Reminders
-
-⚠️ **Never commit secrets to git!**
-- Use `.env.local` for local development (gitignored)
-- Use HF Space secrets for production
-- Rotate tokens regularly
-- Monitor API usage and rate limits
-
-### Performance Tips
-
-For better performance on free tier:
-- Enable demo mode (no API calls)
-- Disable Redis (uses in-memory cache)
-- Limit concurrent requests
-- Increase cache TTL values
-
-## 🔗 Useful Links
-
-- [Hugging Face Spaces Documentation](https://huggingface.co/docs/hub/spaces)
-- [Docker Spaces Guide](https://huggingface.co/docs/hub/spaces-sdks-docker)
-- [Project Documentation](../README.md)
-- [HF Integration Guide](./HUGGINGFACE_SETUP.md)
-
-## 🆘 Support
-
-If you encounter issues:
-1. Check build logs in HF Space settings
-2. Review this checklist
-3. Consult [HUGGINGFACE_SETUP.md](./HUGGINGFACE_SETUP.md)
-4. Open an issue on GitHub
+- [ ] **Exchange credentials are tested**
+  ```bash
+  # Test KuCoin credentials (adjust for your environment)
+  curl -X GET "https://api-sandbox-futures.kucoin.com/api/v1/account-overview" \
+    -H "KC-API-KEY: $KUCOIN_FUTURES_KEY" \
+    -H "KC-API-PASSPHRASE: $KUCOIN_FUTURES_PASSPHRASE"
+  ```
 
 ---
 
-**Last Updated:** 2025-11-10
-**Status:** Ready for Deployment ✅
+### 2. Code Quality & CI Status
+
+#### Version Control
+
+- [ ] **Working branch is up to date**
+  ```bash
+  git fetch origin
+  git status
+  ```
+
+- [ ] **All changes are committed**
+  ```bash
+  git status
+  # Should show "nothing to commit, working tree clean"
+  ```
+
+- [ ] **Latest commit hash is recorded**
+  ```bash
+  git rev-parse HEAD
+  ```
+
+#### CI Pipeline Status
+
+- [ ] **Latest CI run is green** ✅
+  - Check: https://github.com/your-repo/actions
+  - All jobs passed:
+    - [ ] Lint
+    - [ ] Type check
+    - [ ] Tests
+    - [ ] Build client
+    - [ ] Build server
+    - [ ] Docker build test
+
+- [ ] **No pending security alerts**
+  - Check: GitHub Security tab
+  - Run: `npm audit --production`
+
+#### Local Validation
+
+- [ ] **Lint passes locally**
+  ```bash
+  npm run lint
+  ```
+
+- [ ] **Type check passes**
+  ```bash
+  npm run typecheck
+  ```
+
+- [ ] **All tests pass**
+  ```bash
+  npm test
+  ```
+
+- [ ] **Build succeeds**
+  ```bash
+  npm run build
+  # Check that dist/ directory is created
+  ls -la dist/
+  ```
+
+---
+
+### 3. Configuration Validation
+
+#### Runtime Profile Selection
+
+- [ ] **Correct profile is selected**
+  - [ ] Staging: Using `env.staging`
+  - [ ] Production: Using `env.production`
+
+- [ ] **Data policy is enforced**
+  ```bash
+  # Verify these settings in your env file:
+  grep "VITE_APP_MODE=online" env.production
+  grep "VITE_STRICT_REAL_DATA=true" env.production
+  grep "VITE_USE_MOCK_DATA=false" env.production
+  grep "VITE_ALLOW_FAKE_DATA=false" env.production
+  ```
+
+- [ ] **Exchange endpoints are correct**
+  - [ ] Staging uses TESTNET URLs
+  - [ ] Production uses MAINNET URLs
+  ```bash
+  grep "FUTURES_BASE_URL" env.production
+  ```
+
+#### Environment Configuration
+
+- [ ] **API endpoints are correct**
+  ```bash
+  # Staging
+  grep "VITE_API_BASE" env.staging
+  # Production
+  grep "VITE_API_BASE" env.production
+  ```
+
+- [ ] **Backend configuration is appropriate**
+  - [ ] `WATCHED_SYMBOLS` includes desired symbols
+  - [ ] `STARTUP_INTERVALS` matches requirements
+  - [ ] `STARTUP_HIST_LIMIT` is reasonable (500 for prod, 200 for staging)
+
+- [ ] **Frontend configuration is optimized**
+  - [ ] `VITE_REFRESH_MS` is set (60000 for prod, 120000 for staging)
+  - [ ] `VITE_WS_CONNECT_ON_START=false` (to avoid initial load spike)
+  - [ ] `VITE_DISABLE_INITIAL_LOAD=true` (user-initiated data fetch)
+
+- [ ] **Resilience settings are configured**
+  - [ ] `AXIOS_MAX_RETRIES` is set (5 for prod, 3 for staging)
+  - [ ] `BOOT_PRIMARY_ONLY=true` (for production reliability)
+  - [ ] `BOOT_WINDOW_MS` is sufficient (180000 for prod)
+
+---
+
+### 4. Build & Docker
+
+#### Docker Images
+
+- [ ] **Backend image builds successfully**
+  ```bash
+  docker build -f Dockerfile.backend -t dreammaker-backend:latest .
+  ```
+
+- [ ] **Frontend image builds successfully**
+  ```bash
+  docker build -f Dockerfile.frontend -t dreammaker-frontend:latest .
+  ```
+
+- [ ] **Images are tagged appropriately**
+  ```bash
+  # Tag with version
+  docker tag dreammaker-backend:latest dreammaker-backend:1.0.0
+  docker tag dreammaker-frontend:latest dreammaker-frontend:1.0.0
+  ```
+
+- [ ] **Images are pushed to registry** (for remote deployment)
+  ```bash
+  docker push your-registry.com/dreammaker-backend:1.0.0
+  docker push your-registry.com/dreammaker-frontend:1.0.0
+  ```
+
+#### Docker Compose
+
+- [ ] **docker-compose.prod.yml is configured**
+  - [ ] All environment variables are set
+  - [ ] Volume mounts are correct
+  - [ ] Port mappings are appropriate
+  - [ ] Network configuration is valid
+
+- [ ] **Compose stack starts locally**
+  ```bash
+  docker compose -f docker-compose.prod.yml up -d
+  ```
+
+- [ ] **All services are healthy**
+  ```bash
+  docker compose -f docker-compose.prod.yml ps
+  # All services should show "healthy" status
+  ```
+
+- [ ] **Backend health check passes**
+  ```bash
+  curl -f http://localhost:8001/api/health
+  ```
+
+- [ ] **Frontend health check passes**
+  ```bash
+  curl -f http://localhost/health
+  ```
+
+---
+
+### 5. Smoke Tests (Critical)
+
+Run the production smoke test suite as defined in [PRODUCTION_SMOKE_TEST_PLAN.md](./PRODUCTION_SMOKE_TEST_PLAN.md).
+
+#### Short Suite (Minimum Required)
+
+- [ ] **Frontend loads successfully**
+  - Open browser to application URL
+  - Verify page loads without errors
+  - Check browser console for errors
+
+- [ ] **Navigation works**
+  - [ ] Dashboard loads
+  - [ ] Futures Scanner loads
+  - [ ] Open Positions loads
+  - [ ] Settings panel opens
+
+- [ ] **Data policy is enforced**
+  - [ ] Application mode shows "Online - Real Data"
+  - [ ] No mock data warnings in console
+
+- [ ] **Backend API is responsive**
+  ```bash
+  curl http://localhost:8001/api/health
+  curl http://localhost:8001/api/system/metrics
+  ```
+
+- [ ] **WebSocket connection works**
+  - Open DevTools Network tab
+  - Check for WebSocket connection (ws:// or wss://)
+  - Verify "connected" status in UI
+
+#### Extended Suite (Recommended)
+
+- [ ] **HF Data Engine integration**
+  - [ ] Historical data loads for BTC
+  - [ ] Error states are handled gracefully
+  - [ ] Fallback behavior works if HF Engine is unavailable
+
+- [ ] **Exchange integration**
+  - [ ] Exchange status shows "Connected" or appropriate status
+  - [ ] Trading mode is correct (OFF / DRY_RUN / TESTNET / LIVE)
+  - [ ] No unauthorized API calls
+
+- [ ] **Risk guards are active**
+  - [ ] Max position size is enforced
+  - [ ] Max leverage is capped
+  - [ ] Account balance checks are working
+
+- [ ] **UI error states**
+  - [ ] Disconnect HF Engine → UI shows error state
+  - [ ] Disconnect exchange → UI shows error state
+  - [ ] Invalid API key → UI shows appropriate message
+
+---
+
+### 6. Observability & Monitoring
+
+#### Logging
+
+- [ ] **Log levels are appropriate**
+  - Staging: `LOG_LEVEL=debug`
+  - Production: `LOG_LEVEL=info`
+
+- [ ] **Logs are accessible**
+  ```bash
+  docker compose -f docker-compose.prod.yml logs -f
+  docker logs dreammaker-backend
+  docker logs dreammaker-frontend
+  ```
+
+- [ ] **No sensitive data in logs**
+  - Review recent logs
+  - Check for API keys, tokens, or credentials
+
+#### Metrics (if enabled)
+
+- [ ] **Metrics endpoint is accessible**
+  ```bash
+  curl http://localhost:8001/api/metrics
+  ```
+
+- [ ] **Key metrics are exposed**
+  - HTTP request count
+  - Response times
+  - WebSocket connections
+  - Data fetch success/failure rates
+
+#### Health Checks
+
+- [ ] **Backend health endpoint**
+  ```bash
+  curl http://localhost:8001/api/health
+  # Should return 200 OK with status
+  ```
+
+- [ ] **Frontend health endpoint**
+  ```bash
+  curl http://localhost/health
+  # Should return 200 OK
+  ```
+
+- [ ] **Uptime monitoring is configured** (optional but recommended)
+  - Set up external monitoring service
+  - Configure alerts for downtime
+
+---
+
+### 7. Security Hardening
+
+#### Container Security
+
+- [ ] **Containers run as non-root**
+  ```bash
+  docker exec dreammaker-backend whoami
+  # Should NOT be "root"
+  ```
+
+- [ ] **Security headers are enabled**
+  ```bash
+  curl -I http://localhost/
+  # Check for X-Frame-Options, X-Content-Type-Options, etc.
+  ```
+
+- [ ] **Rate limiting is active**
+  - `RATE_LIMIT_ENABLED=true`
+  - `RATE_LIMIT_MAX_REQUESTS` is set appropriately
+
+#### Network Security
+
+- [ ] **Firewall rules are configured**
+  - Only necessary ports are exposed
+  - Internal services are not publicly accessible
+
+- [ ] **HTTPS is enabled** (production only)
+  - SSL certificate is valid
+  - HTTP redirects to HTTPS
+
+- [ ] **CORS is configured properly**
+  - Only allowed origins can access API
+
+---
+
+### 8. Rollback Plan
+
+#### Backup Current State
+
+- [ ] **Current version is documented**
+  ```bash
+  git describe --tags
+  # Record current version/commit
+  ```
+
+- [ ] **Database/data is backed up**
+  ```bash
+  docker run --rm -v $(pwd)/data:/data -v $(pwd)/backup:/backup \
+    alpine tar czf /backup/data-backup-$(date +%Y%m%d-%H%M%S).tar.gz -C /data .
+  ```
+
+- [ ] **Previous Docker images are tagged and saved**
+  ```bash
+  docker tag dreammaker-backend:latest dreammaker-backend:previous
+  docker tag dreammaker-frontend:latest dreammaker-frontend:previous
+  ```
+
+#### Rollback Procedure
+
+- [ ] **Rollback steps are documented**
+  1. Stop new deployment
+  2. Pull previous images
+  3. Start with previous configuration
+  4. Verify services are healthy
+
+- [ ] **Rollback can be executed quickly**
+  ```bash
+  # Example rollback script
+  docker compose -f docker-compose.prod.yml down
+  docker pull your-registry.com/dreammaker-backend:previous
+  docker pull your-registry.com/dreammaker-frontend:previous
+  docker compose -f docker-compose.prod.yml up -d
+  ```
+
+---
+
+### 9. Deployment Execution
+
+#### Pre-Deployment Communication
+
+- [ ] **Team is notified** (if applicable)
+  - Deployment time window
+  - Expected downtime (if any)
+  - Contact person for issues
+
+- [ ] **Maintenance mode enabled** (optional)
+  - Display maintenance page if needed
+  - Redirect traffic if rolling update
+
+#### Deployment Steps
+
+- [ ] **Pull latest images**
+  ```bash
+  docker compose -f docker-compose.prod.yml pull
+  ```
+
+- [ ] **Stop old containers**
+  ```bash
+  docker compose -f docker-compose.prod.yml down
+  ```
+
+- [ ] **Start new containers**
+  ```bash
+  docker compose -f docker-compose.prod.yml up -d
+  ```
+
+- [ ] **Wait for services to be healthy**
+  ```bash
+  docker compose -f docker-compose.prod.yml ps
+  # Wait until all services show "healthy"
+  ```
+
+- [ ] **Verify deployment**
+  - Check health endpoints
+  - Review logs for errors
+  - Test key functionality
+
+#### Post-Deployment Verification
+
+- [ ] **All services are running**
+  ```bash
+  docker compose -f docker-compose.prod.yml ps
+  ```
+
+- [ ] **No errors in logs**
+  ```bash
+  docker compose -f docker-compose.prod.yml logs --tail=100
+  ```
+
+- [ ] **Smoke tests pass** (re-run short suite)
+  - [ ] Frontend loads
+  - [ ] Backend API responds
+  - [ ] WebSocket connects
+  - [ ] Key features work
+
+---
+
+### 10. Post-Deployment
+
+#### Monitoring
+
+- [ ] **Watch logs for 15 minutes**
+  ```bash
+  docker compose -f docker-compose.prod.yml logs -f
+  ```
+
+- [ ] **Monitor resource usage**
+  ```bash
+  docker stats dreammaker-backend dreammaker-frontend
+  ```
+
+- [ ] **Check for errors or warnings**
+  - Review application logs
+  - Check error tracking service (if configured)
+
+#### Documentation
+
+- [ ] **Deployment is recorded**
+  - Date/time of deployment
+  - Version deployed (git commit/tag)
+  - Who performed deployment
+  - Any issues encountered
+
+- [ ] **Update status page** (if applicable)
+  - Mark deployment as complete
+  - Update version number
+
+- [ ] **Tag release in Git** (production only)
+  ```bash
+  git tag -a v1.0.0 -m "Production release v1.0.0"
+  git push origin v1.0.0
+  ```
+
+#### Cleanup
+
+- [ ] **Remove old images** (after confirming new deployment is stable)
+  ```bash
+  docker image prune -a -f
+  ```
+
+- [ ] **Clean up temporary files**
+  ```bash
+  rm -rf tmp/ .cache/
+  ```
+
+---
+
+## Environment-Specific Notes
+
+### Staging Deployment
+
+**Key differences**:
+- Use `env.staging`
+- Testnet exchange endpoints
+- More lenient error handling
+- Can be redeployed frequently
+
+**Checklist additions**:
+- [ ] Staging database is fresh/clean
+- [ ] Test data is loaded (if applicable)
+- [ ] More verbose logging enabled
+
+### Production Deployment
+
+**Key differences**:
+- Use `env.production`
+- Mainnet exchange endpoints (REAL MONEY)
+- Strict error handling
+- Deploy only after thorough testing
+
+**Checklist additions**:
+- [ ] **CRITICAL**: Verify MAINNET endpoints
+- [ ] **CRITICAL**: Confirm real credentials are correct
+- [ ] **CRITICAL**: Risk limits are properly configured
+- [ ] Deployment window is during low-traffic time
+- [ ] Customer notification sent (if applicable)
+- [ ] Backup deployment team member is available
+
+---
+
+## Troubleshooting Common Issues
+
+### Deployment Fails
+
+**Issue**: Container fails to start
+
+**Steps**:
+1. Check logs: `docker logs dreammaker-backend`
+2. Verify environment variables: `docker exec dreammaker-backend env`
+3. Check file permissions: `ls -la data/ config/`
+4. Rollback if necessary
+
+### Health Checks Fail
+
+**Issue**: Services start but health checks fail
+
+**Steps**:
+1. Check backend: `curl http://localhost:8001/api/health`
+2. Review logs for errors
+3. Verify external dependencies (HF Engine, exchange)
+4. Check network connectivity
+
+### Data Loading Issues
+
+**Issue**: Application can't load data from HF Engine
+
+**Steps**:
+1. Test HF Engine directly: `curl https://really-amin-datasourceforcryptocurrency.hf.space/health`
+2. Check `HF_TOKEN` is valid
+3. Review backend logs for API errors
+4. Verify network/firewall settings
+
+---
+
+## Related Documentation
+
+- [Runtime Profiles](./runtime-profiles.md) - Environment configuration details
+- [Docker Deployment](./docker-deployment.md) - Docker build and run instructions
+- [CI/CD Guide](./ci-cd.md) - Automated testing and building
+- [Production Smoke Test Plan](./PRODUCTION_SMOKE_TEST_PLAN.md) - Detailed testing procedures
+- [Logging and Observability](./logging-and-observability.md) - Monitoring and debugging

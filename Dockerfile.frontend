@@ -1,0 +1,78 @@
+# Dockerfile.frontend
+# Production-optimized frontend container for DreammakerCryptoSignalAndTrader
+# Builds the React/Vite frontend and serves it with NGINX
+
+# ---- Build Stage ----
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependency manifests
+COPY package*.json ./
+
+# Install all dependencies
+RUN npm ci
+
+# Copy source code and configuration
+COPY . .
+
+# Build the frontend (Vite static build)
+# This creates the dist/ directory with optimized static assets
+RUN npm run build:client
+
+# ---- Production Runtime Stage ----
+FROM nginx:alpine AS runtime
+
+# Copy built static files from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy NGINX configuration (if custom config exists)
+# Create a basic nginx config if deploy/nginx.conf doesn't exist
+RUN if [ ! -f /etc/nginx/conf.d/default.conf.bak ]; then \
+      mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.bak; \
+    fi
+
+# Create a production-optimized NGINX config
+RUN echo 'server {' > /etc/nginx/conf.d/default.conf && \
+    echo '  listen 80;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  server_name _;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  root /usr/share/nginx/html;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  index index.html;' >> /etc/nginx/conf.d/default.conf && \
+    echo '' >> /etc/nginx/conf.d/default.conf && \
+    echo '  # Compression' >> /etc/nginx/conf.d/default.conf && \
+    echo '  gzip on;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;' >> /etc/nginx/conf.d/default.conf && \
+    echo '' >> /etc/nginx/conf.d/default.conf && \
+    echo '  # Security headers' >> /etc/nginx/conf.d/default.conf && \
+    echo '  add_header X-Frame-Options "SAMEORIGIN" always;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  add_header X-Content-Type-Options "nosniff" always;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  add_header X-XSS-Protection "1; mode=block" always;' >> /etc/nginx/conf.d/default.conf && \
+    echo '' >> /etc/nginx/conf.d/default.conf && \
+    echo '  # SPA routing - fallback to index.html' >> /etc/nginx/conf.d/default.conf && \
+    echo '  location / {' >> /etc/nginx/conf.d/default.conf && \
+    echo '    try_files $uri $uri/ /index.html;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  }' >> /etc/nginx/conf.d/default.conf && \
+    echo '' >> /etc/nginx/conf.d/default.conf && \
+    echo '  # Cache static assets' >> /etc/nginx/conf.d/default.conf && \
+    echo '  location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {' >> /etc/nginx/conf.d/default.conf && \
+    echo '    expires 1y;' >> /etc/nginx/conf.d/default.conf && \
+    echo '    add_header Cache-Control "public, immutable";' >> /etc/nginx/conf.d/default.conf && \
+    echo '  }' >> /etc/nginx/conf.d/default.conf && \
+    echo '' >> /etc/nginx/conf.d/default.conf && \
+    echo '  # Health check endpoint' >> /etc/nginx/conf.d/default.conf && \
+    echo '  location /health {' >> /etc/nginx/conf.d/default.conf && \
+    echo '    access_log off;' >> /etc/nginx/conf.d/default.conf && \
+    echo '    return 200 "healthy\n";' >> /etc/nginx/conf.d/default.conf && \
+    echo '    add_header Content-Type text/plain;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  }' >> /etc/nginx/conf.d/default.conf && \
+    echo '}' >> /etc/nginx/conf.d/default.conf
+
+# Expose HTTP port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
+
+# Start NGINX
+CMD ["nginx", "-g", "daemon off;"]
