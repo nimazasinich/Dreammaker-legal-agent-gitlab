@@ -72,6 +72,8 @@ export function DataProvider({
   const abortControllerRef = useRef<AbortController | null>(null);
   const ignoreRef = useRef(false);
   const inflightOHLCVRef = useRef<{ cancel?: () => void } | null>(null);
+  const bootstrapDoneRef = useRef(false);
+  const lastBootstrapTimeRef = useRef<number>(0);
 
   // Preflight check disabled to reduce initial queries
   const checkOHLCVReadiness = async (s: string, tf: string): Promise<boolean> => {
@@ -136,7 +138,7 @@ export function DataProvider({
       .finally(() => setLoading(false));
   };
 
-  const loadAllData = async () => {
+  const loadAllData = async (forceRefresh = false) => {
     // Prevent duplicate requests
     if (loadingRef.current) {
       logger.info('⏳ Already loading data, skipping...', { data: 'skipping' });
@@ -146,6 +148,14 @@ export function DataProvider({
     // Don't load if component is unmounted or ignored
     if (!mountedRef.current || ignoreRef.current) {
       logger.info('⏸️ Component unmounted or ignored, skipping load');
+      return;
+    }
+
+    // THROTTLE: Prevent rapid successive loads on startup (unless forced)
+    const now = Date.now();
+    const timeSinceLastBootstrap = now - lastBootstrapTimeRef.current;
+    if (!forceRefresh && timeSinceLastBootstrap < 5000) {
+      logger.info('🛑 Throttled: Too soon since last bootstrap', { timeSinceLastBootstrap });
       return;
     }
 
@@ -164,8 +174,9 @@ export function DataProvider({
 
     try {
       logger.info('🔄 Loading all data...', { data: new Date().toISOString() });
+      lastBootstrapTimeRef.current = Date.now();
 
-      // Load prices - سیمبل‌های اصلی برای داده‌های واقعی
+      // PHASE 1: Load critical data only (prices + portfolio)
       const priceSymbols = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP'];
       const pricesData = await realDataManager.getPrices(priceSymbols);
 
@@ -181,10 +192,23 @@ export function DataProvider({
         setDataSource('real');
       }
 
-      // Load other data - داده‌های واقعی
-      const [portfolio, positions, signals, statistics, metrics] = await Promise.all([
+      // PHASE 2: Load portfolio and positions (critical)
+      const [portfolio, positions] = await Promise.all([
         realDataManager.getPortfolio().catch(() => null),
         realDataManager.getPositions().catch(() => []),
+      ]);
+
+      // Check if request was aborted or component unmounted after critical data
+      if (abortController.signal.aborted || ignoreRef.current) {
+        logger.info('⏹️ Request aborted after critical data load');
+        return;
+      }
+
+      // PHASE 3: Load secondary data with slight delay (non-critical)
+      // This staggers the requests to avoid hitting rate limits
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const [signals, statistics, metrics] = await Promise.all([
         realDataManager.getSignals().catch(() => []),
         Promise.resolve({ accuracy: 0.85, totalSignals: 150 }),
         Promise.resolve([]),
@@ -207,8 +231,9 @@ export function DataProvider({
         });
 
         setLastUpdate(new Date());
+        bootstrapDoneRef.current = true;
 
-        logger.info('✅ All data loaded successfully', {
+        logger.info('✅ All data loaded successfully (staggered)', {
           portfolio: !!portfolio,
           positions: positions.length,
           prices: pricesData.length,
@@ -266,13 +291,14 @@ export function DataProvider({
   useEffect(() => {
     mountedRef.current = true;
     ignoreRef.current = false;
+    bootstrapDoneRef.current = false;
 
     // Load data on mount with slight delay to avoid race conditions
     // This ensures providers are fully initialized before data fetching
     const initTimer = setTimeout(() => {
-      if (mountedRef.current && !ignoreRef.current) {
-        logger.info('🔄 DataContext: Initial load starting');
-        loadAllData();
+      if (mountedRef.current && !ignoreRef.current && !bootstrapDoneRef.current) {
+        logger.info('🔄 DataContext: Initial bootstrap starting');
+        loadAllData(false); // false = respect throttle
       }
     }, 100); // 100ms delay for provider stabilization
 
@@ -332,7 +358,7 @@ export function DataProvider({
     if (next?.symbol) setSymbol(next.symbol);
     if (next?.timeframe) setTimeframe(next.timeframe);
     loadOHLCVData(next?.symbol ?? symbol, next?.timeframe ?? timeframe);
-    loadAllData();
+    loadAllData(true); // true = force refresh (user-initiated)
   };
 
   return (

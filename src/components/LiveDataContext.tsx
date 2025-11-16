@@ -53,6 +53,7 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
     let isMounted = true;
     let checkInterval: NodeJS.Timeout | null = null;
     let unsubscribeLiquidation: (() => void) | null = null;
+    let startupDelay: NodeJS.Timeout | null = null;
 
     // Subscribe to liquidation risk alerts
     unsubscribeLiquidation = dataManager.subscribe('liquidation_risk', [], (data: any) => {
@@ -91,21 +92,33 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
       console.log('ℹ️ WebSocket auto-connect disabled (VITE_WS_CONNECT_ON_START=false)');
     }
 
-    // Monitor connection status periodically
-    checkInterval = setInterval(() => {
-      if (!isMounted) {
-        if (checkInterval) clearInterval(checkInterval);
-        return;
-      }
-      const ws = (dataManager as any).ws;
-      const connected = ws && ws.readyState === WebSocket.OPEN;
-      setIsConnected(connected);
-    }, 5000); // Check every 5 seconds
+    // OPTIMIZED: Delay connection status checks during startup to reduce overhead
+    // Wait 30 seconds before starting periodic checks (avoids startup noise)
+    startupDelay = setTimeout(() => {
+      if (!isMounted) return;
+      
+      // Monitor connection status periodically (less frequent)
+      checkInterval = setInterval(() => {
+        if (!isMounted) {
+          if (checkInterval) clearInterval(checkInterval);
+          return;
+        }
+        const ws = (dataManager as any).ws;
+        const connected = ws && ws.readyState === WebSocket.OPEN;
+        setIsConnected(connected);
+      }, 15000); // Reduced frequency: Check every 15 seconds (was 5)
+    }, 30000); // Wait 30 seconds before starting checks
 
     return () => {
       isMounted = false;
       
-      // Clear interval first
+      // Clear startup delay
+      if (startupDelay) {
+        clearTimeout(startupDelay);
+        startupDelay = null;
+      }
+      
+      // Clear interval
       if (checkInterval) {
         clearInterval(checkInterval);
         checkInterval = null;
