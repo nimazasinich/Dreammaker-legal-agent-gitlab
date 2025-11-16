@@ -523,7 +523,7 @@ export class HFDataEngineAdapter {
       return this.getTopPrices(limit);
     }
 
-    // For Binance/KuCoin sources, return NOT_IMPLEMENTED error
+    // Intentional: see docs/hf-engine-scope.md – direct provider integrations are used; HF proxy endpoints are not part of this build.
     return {
       success: false,
       error: {
@@ -575,7 +575,7 @@ export class HFDataEngineAdapter {
       return this.runSentimentAnalysis(text);
     }
 
-    // For Binance/KuCoin sources, return NOT_IMPLEMENTED error
+    // Intentional: see docs/hf-engine-scope.md – sentiment analysis is an HF-specific feature, not available via other providers.
     return {
       success: false,
       error: {

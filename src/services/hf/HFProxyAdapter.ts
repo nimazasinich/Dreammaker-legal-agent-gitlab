@@ -80,6 +80,7 @@ export class HFProxyAdapter {
   async getNews(symbol?: string, limit: number = 10): Promise<AdapterResponse<any[]>> {
     const endpoint = '/proxy/news';
 
+    // Intentional: see docs/hf-engine-scope.md – direct provider integrations are used; HF proxy endpoints are not part of this build.
     return this.createError(
       endpoint,
       'News aggregation via HuggingFace is not yet implemented. Use alternative news services.',
@@ -95,6 +96,7 @@ export class HFProxyAdapter {
   async getFearGreedIndex(): Promise<AdapterResponse<any>> {
     const endpoint = '/proxy/fear-greed';
 
+    // Intentional: see docs/hf-engine-scope.md – direct provider integrations are used; HF proxy endpoints are not part of this build.
     return this.createError(
       endpoint,
       'Fear & Greed Index via HuggingFace is not yet implemented. Use Alternative.me API.',
@@ -110,6 +112,7 @@ export class HFProxyAdapter {
   async getSocialSentiment(symbol: string): Promise<AdapterResponse<any>> {
     const endpoint = '/proxy/social-sentiment';
 
+    // Intentional: see docs/hf-engine-scope.md – direct provider integrations are used; HF proxy endpoints are not part of this build.
     return this.createError(
       endpoint,
       'Social sentiment aggregation via HuggingFace is not yet implemented.',

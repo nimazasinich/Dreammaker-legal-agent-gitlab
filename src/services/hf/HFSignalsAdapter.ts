@@ -84,6 +84,7 @@ export class HFSignalsAdapter {
   ): Promise<AdapterResponse<any[]>> {
     const endpoint = '/signals/history';
 
+    // Intentional: see docs/hf-engine-scope.md – signals are generated and stored locally, not via HuggingFace.
     return this.createError(
       endpoint,
       'Signal history via HuggingFace is not implemented. Signals are stored locally.',
@@ -99,6 +100,7 @@ export class HFSignalsAdapter {
   async getSignalsForSymbol(symbol: string): Promise<AdapterResponse<any>> {
     const endpoint = `/signals/${symbol}`;
 
+    // Intentional: see docs/hf-engine-scope.md – signals are generated and stored locally, not via HuggingFace.
     return this.createError(
       endpoint,
       'Signal generation via HuggingFace is not implemented. Use local signal generation services.',
@@ -117,6 +119,7 @@ export class HFSignalsAdapter {
   ): Promise<AdapterResponse<any>> {
     const endpoint = '/api/signals/analyze';
 
+    // Intentional: see docs/hf-engine-scope.md – signals are generated and stored locally, not via HuggingFace.
     return this.createError(
       endpoint,
       'ML-based signal generation via HuggingFace is not yet implemented.',
