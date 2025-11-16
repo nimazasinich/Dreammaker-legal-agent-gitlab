@@ -85,23 +85,39 @@ export class WebSocketManager {
       };
 
       this.ws.onerror = (error) => {
-        logger.error('WebSocket error', {}, new Error('WebSocket connection error'));
+        logger.error('WebSocket connection error', {
+          url: wsUrl,
+          readyState: this.ws?.readyState,
+          reconnectAttempt: this.reconnectAttempts
+        }, new Error('WebSocket connection error'));
         this.isConnected = false;
         this.notifyConnectionState(false);
       };
 
       this.ws.onclose = (event) => {
-        logger.info('WebSocket closed', {
-          code: event.code,
-          reason: event.reason,
-          wasClean: event.wasClean
+        const wasClean = event.wasClean;
+        const code = event.code;
+        const reason = event.reason || 'Unknown reason';
+        
+        logger.warn('WebSocket closed', {
+          code,
+          reason,
+          wasClean,
+          reconnectAttempt: this.reconnectAttempts,
+          maxAttempts: this.maxReconnectAttempts
         });
+        
         this.isConnected = false;
         this.notifyConnectionState(false);
 
         // Auto-reconnect unless it was an intentional close
         if (!this.isIntentionalClose && this.reconnectAttempts < this.maxReconnectAttempts) {
           this.scheduleReconnect();
+        } else if (!this.isIntentionalClose && this.reconnectAttempts >= this.maxReconnectAttempts) {
+          logger.error('WebSocket reconnection failed after max attempts', {
+            maxAttempts: this.maxReconnectAttempts,
+            url: wsUrl
+          });
         }
       };
     } catch (error) {
