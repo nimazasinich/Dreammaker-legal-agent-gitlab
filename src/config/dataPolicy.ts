@@ -25,69 +25,93 @@ function getEnv(key: string): string | undefined {
 }
 
 /**
- * Application Mode
+ * Resolve application mode from environment variables
+ * Defaults to 'online' if not specified or invalid
+ */
+export function resolveAppMode(): AppMode {
+  const raw = getEnv('VITE_APP_MODE') || getEnv('APP_MODE') || 'online';
+  if (raw === 'demo' || raw === 'test' || raw === 'online') {
+    return raw;
+  }
+  return 'online';
+}
+
+/**
+ * Application Mode (backward compatibility - uses resolveAppMode internally)
  * - online: Production mode with real data only
  * - demo: Demo mode with mock fixtures
  * - test: Test mode with flexible data sources
  */
-export const APP_MODE: AppMode =
-  (getEnv('VITE_APP_MODE') as AppMode) || (getEnv('APP_MODE') as AppMode) || 'online';
+export const APP_MODE: AppMode = resolveAppMode();
 
 /**
- * Strict Real Data Mode
+ * Check if strict real data mode is enabled
+ * Returns true in online mode, or if VITE_STRICT_REAL_DATA=true
+ */
+export function isStrictRealData(): boolean {
+  const mode = resolveAppMode();
+  if (mode === 'online') return true;
+  return getEnv('VITE_STRICT_REAL_DATA') === 'true' || getEnv('STRICT_REAL_DATA') === 'true';
+}
+
+/**
+ * Check if mock data can be used
+ * Returns true in demo mode, or in test mode if VITE_USE_MOCK_DATA=true
+ * Returns false in online mode
+ */
+export function canUseMockData(): boolean {
+  const mode = resolveAppMode();
+  if (mode === 'online') return false;
+  if (mode === 'demo') return true;
+  // test mode
+  return getEnv('VITE_USE_MOCK_DATA') === 'true' || getEnv('USE_MOCK_DATA') === 'true';
+}
+
+/**
+ * Check if synthetic data can be used
+ * Returns true only in test mode if VITE_ALLOW_FAKE_DATA=true
+ */
+export function canUseSyntheticData(): boolean {
+  const mode = resolveAppMode();
+  if (mode !== 'test') return false;
+  return getEnv('VITE_ALLOW_FAKE_DATA') === 'true' || getEnv('ALLOW_FAKE_DATA') === 'true';
+}
+
+/**
+ * Strict Real Data Mode (backward compatibility)
  * When true: Only real data is allowed, fail fast on errors
  * When false: Allow fallbacks based on mode
  */
-export const STRICT_REAL_DATA =
-  (getEnv('VITE_STRICT_REAL_DATA') === 'true') || (getEnv('STRICT_REAL_DATA') === 'true') || APP_MODE === 'online';
+export const STRICT_REAL_DATA = isStrictRealData();
 
 /**
- * Use Mock Data
+ * Use Mock Data (backward compatibility)
  * When true: Use mock fixtures instead of real APIs
  * Automatically enabled in demo mode
  */
-export const USE_MOCK_DATA =
-  (getEnv('VITE_USE_MOCK_DATA') === 'true') || (getEnv('USE_MOCK_DATA') === 'true') || APP_MODE === 'demo';
+export const USE_MOCK_DATA = canUseMockData();
 
 /**
- * Allow Fake/Synthetic Data
+ * Allow Fake/Synthetic Data (backward compatibility)
  * When true: Allow generation of synthetic data
  * Only allowed in test mode with explicit flag
  */
-export const ALLOW_FAKE_DATA =
-  ((getEnv('VITE_ALLOW_FAKE_DATA') === 'true') || (getEnv('ALLOW_FAKE_DATA') === 'true')) && APP_MODE === 'test';
+export const ALLOW_FAKE_DATA = canUseSyntheticData();
 
 /**
  * Hard Guardrails - Policy Enforcement
  * Throws errors if policy is violated at startup
  */
 export function assertPolicy(): void {
-  if (APP_MODE === 'online') {
-    if (USE_MOCK_DATA) {
-      console.error(
-        '[DATA POLICY VIOLATION] Mock data is forbidden in online mode. ' +
-        'Set VITE_USE_MOCK_DATA=false or use VITE_APP_MODE=demo'
-      );
-    }
-    if (ALLOW_FAKE_DATA) {
-      console.error(
-        '[DATA POLICY VIOLATION] Fake/synthetic data is forbidden in online mode. ' +
-        'Set VITE_ALLOW_FAKE_DATA=false'
-      );
-    }
-  }
+  const mode = resolveAppMode();
+  const useMock = getEnv('VITE_USE_MOCK_DATA') === 'true' || getEnv('USE_MOCK_DATA') === 'true';
+  const allowFake = getEnv('VITE_ALLOW_FAKE_DATA') === 'true' || getEnv('ALLOW_FAKE_DATA') === 'true';
 
-  if (APP_MODE === 'demo') {
-    if (!USE_MOCK_DATA) {
-      console.warn(
-        '[DATA POLICY WARNING] Demo mode should use mock data. ' +
-        'Consider setting VITE_USE_MOCK_DATA=true'
-      );
-    }
-    if (ALLOW_FAKE_DATA) {
-      console.warn(
-        '[DATA POLICY WARNING] Synthetic data should not be used in demo mode. ' +
-        'Demo mode uses mock fixtures only.'
+  if (mode === 'online') {
+    if (useMock || allowFake) {
+      throw new Error(
+        'Online mode requires STRICT_REAL_DATA and forbids mock/synthetic data. ' +
+        'Set VITE_USE_MOCK_DATA=false and VITE_ALLOW_FAKE_DATA=false or change VITE_APP_MODE.'
       );
     }
   }
@@ -107,24 +131,19 @@ export function getDataSourceLabel(): string {
 }
 
 /**
- * Check if synthetic data generation is allowed
- */
-export function canUseSyntheticData(): boolean {
-  return ALLOW_FAKE_DATA && APP_MODE === 'test';
-}
-
-/**
- * Check if mock fixtures should be used
+ * Check if mock fixtures should be used (backward compatibility)
+ * @deprecated Use canUseMockData() instead
  */
 export function shouldUseMockFixtures(): boolean {
-  return USE_MOCK_DATA || APP_MODE === 'demo';
+  return canUseMockData();
 }
 
 /**
- * Check if only real data is allowed
+ * Check if only real data is allowed (backward compatibility)
+ * @deprecated Use isStrictRealData() instead
  */
 export function requiresRealData(): boolean {
-  return STRICT_REAL_DATA || APP_MODE === 'online';
+  return isStrictRealData();
 }
 
 // Log policy configuration on module load

@@ -1,6 +1,7 @@
 import { Logger } from '../core/Logger.js';
 import { DataMode } from '../types/modes';
 import { API_BASE } from '../config/env.js';
+import { isStrictRealData, canUseMockData, canUseSyntheticData } from '../config/dataPolicy.js';
 import axios from 'axios';
 
 export interface RealPriceData {
@@ -175,9 +176,20 @@ export class RealDataManager {
                 }
             } catch (fallbackError) {
                 this.logger.error('All price sources failed', { symbol }, fallbackError as Error);
+                
+                // If strict real data mode is enabled, fail fast
+                if (isStrictRealData()) {
+                    throw new Error(
+                        `Unable to obtain real price data for ${symbol}. ` +
+                        `All real data sources failed. Strict real data mode requires real data only.`
+                    );
+                }
             }
             
-            // Return null instead of throwing to allow graceful degradation
+            // Return null only if not in strict real data mode (allows graceful degradation in demo/test)
+            if (isStrictRealData()) {
+                throw new Error(`Unable to obtain real price data for ${symbol} in strict real data mode.`);
+            }
             return null as any;
         }
     }
@@ -236,7 +248,16 @@ export class RealDataManager {
                 return data;
             } catch (fallbackError) {
                 this.logger.error('All OHLCV sources failed', { symbol, timeframe }, fallbackError as Error);
-                // Return empty array instead of throwing to allow graceful degradation
+                
+                // If strict real data mode is enabled, fail fast
+                if (isStrictRealData()) {
+                    throw new Error(
+                        `Unable to obtain real OHLCV data for ${symbol} ${timeframe}. ` +
+                        `All real data sources failed. Strict real data mode requires real data only.`
+                    );
+                }
+                
+                // Return empty array only if not in strict real data mode (allows graceful degradation in demo/test)
                 return [];
             }
         }
