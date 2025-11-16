@@ -8,8 +8,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ScoringTuner } from '../tuning/ScoringTuner';
 import { TuningConfig, ScoringConfig, BacktestResult, MarketData } from '../../types/index';
 
-// Mock the BacktestService
-vi.mock('../../services/backtestService', () => ({
+// Mock the BacktestService - must use .js extension to match actual import
+vi.mock('../../services/backtestService.js', () => ({
   BacktestService: vi.fn().mockImplementation(() => ({
     runWalkForwardBacktest: vi.fn().mockResolvedValue({
       sharpeRatio: 1.2,
@@ -26,8 +26,8 @@ vi.mock('../../services/backtestService', () => ({
   }))
 }));
 
-// Mock the RealMarketDataService
-vi.mock('../../services/RealMarketDataService', () => ({
+// Mock the RealMarketDataService - must use .js extension to match actual import
+vi.mock('../../services/RealMarketDataService.js', () => ({
   RealMarketDataService: {
     getInstance: vi.fn().mockReturnValue({
       getHistoricalData: vi.fn().mockResolvedValue([

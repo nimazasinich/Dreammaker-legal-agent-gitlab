@@ -5,7 +5,7 @@
  * Covers authentication, symbol mapping, WebSocket, rate limiting
  */
 
-import { describe, test, expect, beforeEach, afterAll, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterAll, vi } from 'vitest';
 import { KuCoinService } from '../KuCoinService';
 
 describe('KuCoinService', () => {

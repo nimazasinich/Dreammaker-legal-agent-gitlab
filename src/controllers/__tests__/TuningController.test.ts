@@ -9,8 +9,14 @@ import { Request, Response } from 'express';
 import { TuningController } from '../TuningController';
 import { TuningRunResult } from '../../types/index';
 
-// Mock the ScoringTuner
-vi.mock('../../engine/tuning/ScoringTuner', () => ({
+// Mock the systemConfig - path from test file to src/config/
+vi.mock('../../config/systemConfig.js', () => ({
+  isFeatureEnabled: vi.fn().mockReturnValue(true),
+  getTradingMode: vi.fn().mockReturnValue('DRY_RUN')
+}));
+
+// Mock the ScoringTuner - path from test file to src/engine/tuning/
+vi.mock('../../engine/tuning/ScoringTuner.js', () => ({
   ScoringTuner: {
     getInstance: vi.fn().mockReturnValue({
       loadTuningConfig: vi.fn().mockReturnValue({
@@ -60,8 +66,8 @@ vi.mock('../../engine/tuning/ScoringTuner', () => ({
   }
 }));
 
-// Mock the TuningStorage
-vi.mock('../../engine/tuning/TuningStorage', () => ({
+// Mock the TuningStorage - path from test file to src/engine/tuning/
+vi.mock('../../engine/tuning/TuningStorage.js', () => ({
   TuningStorage: {
     getInstance: vi.fn().mockReturnValue({
       saveResult: vi.fn().mockResolvedValue(undefined),
@@ -227,7 +233,7 @@ describe('TuningController', () => {
     });
 
     it('should return 404 for non-existent ID', async () => {
-      const tuningStorage = require('../../engine/tuning/TuningStorage').TuningStorage.getInstance();
+      const tuningStorage = require('../../engine/tuning/TuningStorage.js').TuningStorage.getInstance();
       tuningStorage.getResult.mockResolvedValueOnce(null);
 
       mockRequest.params = { id: 'non-existent' };
@@ -275,7 +281,7 @@ describe('TuningController', () => {
     });
 
     it('should handle no results gracefully', async () => {
-      const tuningStorage = require('../../engine/tuning/TuningStorage').TuningStorage.getInstance();
+      const tuningStorage = require('../../engine/tuning/TuningStorage.js').TuningStorage.getInstance();
       tuningStorage.getLatest.mockResolvedValueOnce(null);
 
       await controller.getLatest(mockRequest as Request, mockResponse as Response);
@@ -328,7 +334,7 @@ describe('TuningController', () => {
     });
 
     it('should return 404 if result does not exist', async () => {
-      const tuningStorage = require('../../engine/tuning/TuningStorage').TuningStorage.getInstance();
+      const tuningStorage = require('../../engine/tuning/TuningStorage.js').TuningStorage.getInstance();
       tuningStorage.deleteResult.mockResolvedValueOnce(false);
 
       mockRequest.params = { id: 'non-existent' };

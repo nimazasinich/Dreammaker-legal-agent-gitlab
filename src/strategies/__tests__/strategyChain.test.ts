@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { runStrategy3 } from '../strategy3';
 import { saveStrategyOutput, loadStrategyOutput } from '../../storage/mlOutputs';
 
