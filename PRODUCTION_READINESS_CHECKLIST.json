@@ -1,0 +1,232 @@
+{
+  "version": "1.0",
+  "generated": "2025-11-16",
+  "project": "DreammakerCryptoSignalAndTrader",
+  "summary": {
+    "total": 9,
+    "completed": 4,
+    "in_progress": 2,
+    "not_started": 3
+  },
+  "categories": {
+    "critical": {
+      "priority": "🔴 CRITICAL",
+      "description": "Must be resolved before production deployment",
+      "items": [
+        {
+          "id": "CRITICAL-1",
+          "title": "SPOT Trading Decision",
+          "status": "completed",
+          "impact": "Eliminates the biggest conceptual leak in the system",
+          "decision": "Futures-only release (fastest, safest path)",
+          "tasks": [
+            {
+              "description": "Config set to FUTURES in system.config.json",
+              "completed": true
+            },
+            {
+              "description": "UI cleaned up to remove SPOT tab",
+              "completed": true
+            },
+            {
+              "description": "Documentation updated",
+              "completed": true
+            },
+            {
+              "description": "SpotNotAvailable component kept for future use",
+              "completed": true
+            }
+          ]
+        },
+        {
+          "id": "CRITICAL-2",
+          "title": "Route Surface Stabilization",
+          "status": "completed",
+          "impact": "Eliminates confusion about implemented routes",
+          "tasks": [
+            {
+              "description": "Documented 19 commented routes in server.ts",
+              "completed": true
+            },
+            {
+              "description": "Created docs/routes.md",
+              "completed": true
+            },
+            {
+              "description": "Separated active vs planned routes",
+              "completed": true
+            }
+          ]
+        },
+        {
+          "id": "CRITICAL-3",
+          "title": "Data Policy Lock for Real Trading",
+          "status": "completed",
+          "impact": "Ensures no fake data in production",
+          "tasks": [
+            {
+              "description": "Documented production env vars",
+              "completed": true
+            },
+            {
+              "description": "Created docs/production-env-config.md",
+              "completed": true
+            },
+            {
+              "description": "Verified alignment with no-fake-data philosophy",
+              "completed": true
+            }
+          ]
+        }
+      ]
+    },
+    "high_value": {
+      "priority": "🟡 HIGH",
+      "description": "1-2 focused sessions to enhance clarity and reliability",
+      "items": [
+        {
+          "id": "HIGH-1",
+          "title": "Data Flow Documentation",
+          "status": "completed",
+          "impact": "Clarifies actual runtime pipeline vs architecture",
+          "tasks": [
+            {
+              "description": "Created docs/data-flow.md with realistic flow",
+              "completed": true
+            },
+            {
+              "description": "Documented provider fallback strategy",
+              "completed": true
+            },
+            {
+              "description": "Separated used vs architected providers",
+              "completed": true
+            }
+          ]
+        },
+        {
+          "id": "HIGH-2",
+          "title": "HF Adapter Scope Clarification",
+          "status": "in_progress",
+          "impact": "Prevents future attempts to fix intentional non-implementations",
+          "tasks": [
+            {
+              "description": "Created docs/hf-engine-scope.md",
+              "completed": true
+            },
+            {
+              "description": "Add inline comments in hf/*Adapter.ts referencing doc",
+              "completed": false
+            },
+            {
+              "description": "Verify authoritative implementations",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "id": "HIGH-3",
+          "title": "Auto-Refresh with User Control",
+          "status": "not_started",
+          "impact": "Balances real-time data with performance",
+          "tasks": [
+            {
+              "description": "Re-enable refresh with 30-60s intervals",
+              "completed": false
+            },
+            {
+              "description": "Add settings toggle in SettingsView",
+              "completed": false
+            },
+            {
+              "description": "Keep WebSocket as primary, polling as fallback",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    },
+    "medium_term": {
+      "priority": "🟢 MEDIUM",
+      "description": "Refinement and developer experience improvements",
+      "items": [
+        {
+          "id": "MEDIUM-1",
+          "title": "URL-Based Navigation",
+          "status": "not_started",
+          "impact": "Enables deep links without React Router migration",
+          "tasks": [
+            {
+              "description": "Add URL hash sync to NavigationProvider",
+              "completed": false
+            },
+            {
+              "description": "Implement bidirectional sync",
+              "completed": false
+            },
+            {
+              "description": "Test browser back/forward",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "id": "MEDIUM-2",
+          "title": "Minimum Test Skeleton",
+          "status": "not_started",
+          "impact": "Locks critical behavior, prevents regressions",
+          "tasks": [
+            {
+              "description": "Create RiskGuard.test.ts with passing/failing cases",
+              "completed": false,
+              "file": "src/services/__tests__/RiskGuard.test.ts"
+            },
+            {
+              "description": "Create TradeEngine.test.ts with mode checks",
+              "completed": false,
+              "file": "src/services/__tests__/TradeEngine.test.ts"
+            }
+          ]
+        },
+        {
+          "id": "MEDIUM-3",
+          "title": "Exchange Selector Cleanup",
+          "status": "not_started",
+          "impact": "Removes confusion about operational exchanges",
+          "tasks": [
+            {
+              "description": "Audit which exchanges are functional",
+              "completed": false
+            },
+            {
+              "description": "Update UI to mark non-trading exchanges",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "next_actions": {
+    "immediate": [
+      "Complete SPOT trading cleanup",
+      "Document routes and data flow",
+      "Document production env vars"
+    ],
+    "next_session": [
+      "Review and update HF adapter inline docs",
+      "Implement auto-refresh settings UI",
+      "Add minimum test skeleton"
+    ],
+    "future": [
+      "Add URL hash routing",
+      "Audit exchange selector state",
+      "Expand test coverage"
+    ]
+  },
+  "philosophy": {
+    "honesty": "Prioritize honesty over completeness. Mark unimplemented features clearly.",
+    "safety": "All real trading goes through testnet first. Production requires explicit config.",
+    "integrity": "HF Engine is primary source. No synthetic data in production."
+  }
+}
