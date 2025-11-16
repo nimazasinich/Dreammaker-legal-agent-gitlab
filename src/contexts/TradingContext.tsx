@@ -4,7 +4,7 @@ import { VirtualTradingService } from '../services/VirtualTradingService';
 import { Logger } from '../core/Logger';
 import { useMode } from './ModeContext';
 import { TradingMode } from '../types/modes';
-import { getAutoRefreshSettings } from '../hooks/useAutoRefreshSettings';
+import { useRefreshSettings } from './RefreshSettingsContext';
 
 const logger = Logger.getInstance();
 
@@ -30,6 +30,7 @@ export const TradingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const { state, setTradingMode } = useMode();
   const tradingMode = state.tradingMode;
   const isVirtual = tradingMode === 'virtual';
+  const { autoRefreshEnabled, intervalSeconds } = useRefreshSettings();
 
   const [balance, setBalance] = useState(100000);
   const [positions, setPositions] = useState<any[]>([]);
@@ -38,33 +39,15 @@ export const TradingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const mountedRef = useRef(true);
+  const isLoadingRef = useRef(false);
 
   const kucoinService = KuCoinFuturesService.getInstance();
   const virtualService = VirtualTradingService.getInstance();
 
-  // Auto-refresh: Enabled if user has turned it on in settings
-  // Respects user preference from localStorage
   useEffect(() => {
     mountedRef.current = true;
-
-    const autoRefreshSettings = getAutoRefreshSettings();
-    if (autoRefreshSettings.enabled) {
-      const intervalMs = autoRefreshSettings.intervalSeconds * 1000;
-      logger.info('🔄 Trading auto-refresh enabled', { intervalSeconds: autoRefreshSettings.intervalSeconds });
-      
-      intervalRef.current = setInterval(() => {
-        if (mountedRef.current && !isLoading) {
-          logger.info('🔄 Trading auto-refresh triggered');
-          refreshData();
-        }
-      }, intervalMs);
-    }
-
     return () => {
       mountedRef.current = false;
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
     };
   }, []);
 
@@ -77,6 +60,7 @@ export const TradingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const refreshData = async () => {
+    isLoadingRef.current = true;
     setIsLoading(true);
     try {
       if (isVirtual) {
@@ -116,6 +100,7 @@ export const TradingProvider: React.FC<{ children: ReactNode }> = ({ children })
         }
       }
     } finally {
+      isLoadingRef.current = false;
       setIsLoading(false);
     }
   };
@@ -143,6 +128,36 @@ export const TradingProvider: React.FC<{ children: ReactNode }> = ({ children })
       return kucoinService.cancelOrder(orderId);
     }
   };
+
+  // Auto-refresh effect: reacts to settings changes
+  useEffect(() => {
+    if (!autoRefreshEnabled) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    const intervalMs = intervalSeconds * 1000;
+    logger.info('🔄 Trading auto-refresh enabled', { intervalSeconds });
+
+    const runRefresh = () => {
+      if (mountedRef.current && !isLoadingRef.current) {
+        logger.info('🔄 Trading auto-refresh triggered');
+        refreshData();
+      }
+    };
+
+    intervalRef.current = setInterval(runRefresh, intervalMs);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [autoRefreshEnabled, intervalSeconds]);
 
   return (
     <TradingContext.Provider
