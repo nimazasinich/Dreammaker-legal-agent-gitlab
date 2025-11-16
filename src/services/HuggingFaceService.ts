@@ -97,8 +97,15 @@ export class HuggingFaceService {
         return response.data;
       } catch (error: any) {
         const isLastAttempt = attempt === retries - 1;
+        const statusCode = error.response?.status;
         
-        if (error.response?.status === 503) {
+        // HTTP 410 (Gone) means model has been permanently removed - don't retry
+        if (statusCode === 410) {
+          this.logger.warn('Hugging Face model permanently unavailable (HTTP 410 Gone)', { url, method });
+          throw error;
+        }
+        
+        if (statusCode === 503) {
           const errorData = error.response.data;
           if (errorData?.error?.includes('loading')) {
             const estimatedTime = errorData.estimated_time || 10;
@@ -113,7 +120,7 @@ export class HuggingFaceService {
           throw error;
         }
 
-        // Exponential backoff
+        // Exponential backoff for retriable errors
         const delay = Math.pow(2, attempt) * 1000;
         await new Promise(resolve => setTimeout(resolve, delay));
       }
