@@ -6,15 +6,26 @@ import { useConfirmModal } from '../ui/ConfirmModal';
 
 const logger = Logger.getInstance();
 
+/**
+ * Exchange capability flags - reflects actual implementation status
+ * Currently only KuCoin Futures supports real trading operations
+ */
+const EXCHANGE_CAPABILITIES = {
+  kucoin: { name: 'KuCoin Futures', tradingEnabled: true, label: 'Trading Enabled (Testnet)' },
+  binance: { name: 'Binance', tradingEnabled: false, label: 'Data Only (No Trading)' },
+  bybit: { name: 'Bybit', tradingEnabled: false, label: 'Data Only (No Trading)' },
+  okx: { name: 'OKX', tradingEnabled: false, label: 'Data Only (No Trading)' }
+} as const;
+
 export const ExchangeSettings: React.FC = () => {
   const { confirm, ModalComponent } = useConfirmModal();
   const futuresService = KuCoinFuturesService.getInstance();
   
   const [exchanges, setExchanges] = useState<any[]>([
-    { id: 'kucoin', name: 'KuCoin', active: true },
-    { id: 'binance', name: 'Binance', active: false },
-    { id: 'bybit', name: 'Bybit', active: false },
-    { id: 'okx', name: 'OKX', active: false }
+    { id: 'kucoin', name: EXCHANGE_CAPABILITIES.kucoin.name, active: true, tradingEnabled: true },
+    { id: 'binance', name: EXCHANGE_CAPABILITIES.binance.name, active: false, tradingEnabled: false },
+    { id: 'bybit', name: EXCHANGE_CAPABILITIES.bybit.name, active: false, tradingEnabled: false },
+    { id: 'okx', name: EXCHANGE_CAPABILITIES.okx.name, active: false, tradingEnabled: false }
   ]);
 
   const [selectedExchange, setSelectedExchange] = useState('kucoin');
@@ -109,7 +120,12 @@ export const ExchangeSettings: React.FC = () => {
     <>
       <ModalComponent />
       <div className="bg-gray-800 rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-6 text-white">Exchange API Settings</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">Exchange API Settings</h2>
+          <div className="px-3 py-1 bg-green-600/20 border border-green-500/50 rounded-lg text-xs text-green-400 font-semibold">
+            Trading Provider: KuCoin Futures (Testnet)
+          </div>
+        </div>
 
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-gray-300">Select Exchange</label>
@@ -118,15 +134,25 @@ export const ExchangeSettings: React.FC = () => {
             <button
               key={ex.id}
               onClick={() => setSelectedExchange(ex.id)}
-              className={`p-3 rounded-lg border-2 transition ${
+              disabled={!ex.tradingEnabled}
+              className={`p-3 rounded-lg border-2 transition relative ${
                 selectedExchange === ex.id
                   ? 'border-blue-500 bg-blue-900/30'
-                  : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                  : ex.tradingEnabled
+                  ? 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                  : 'border-gray-700 bg-gray-800/50 opacity-60 cursor-not-allowed'
               }`}
+              title={!ex.tradingEnabled ? 'This exchange is available for data only' : ''}
             >
               <div className="font-bold text-white">{ex.name}</div>
               {ex.active && (
                 <div className="text-xs text-green-400 mt-1">● Active</div>
+              )}
+              {!ex.tradingEnabled && (
+                <div className="text-xs text-yellow-400 mt-1">📊 Data Only</div>
+              )}
+              {ex.tradingEnabled && (
+                <div className="text-xs text-green-400 mt-1">⚡ Trading</div>
               )}
             </button>
           ))}
@@ -210,6 +236,18 @@ export const ExchangeSettings: React.FC = () => {
             ✓ Credentials saved for {selectedExchange.toUpperCase()}
           </div>
         )}
+      </div>
+
+      <div className="mt-6 bg-blue-900/30 border border-blue-500 rounded p-4">
+        <h3 className="font-bold text-blue-400 mb-2">ℹ️ Trading Capability Notice</h3>
+        <div className="text-sm text-gray-300 mb-3">
+          <span className="font-semibold text-white">Current Build:</span> Only <span className="text-green-400 font-semibold">KuCoin Futures</span> supports real trading operations.
+        </div>
+        <ul className="text-sm text-gray-300 space-y-1 mb-4">
+          <li>• <span className="text-green-400">✅ KuCoin Futures</span> - Full trading capability (Testnet)</li>
+          <li>• <span className="text-yellow-400">📊 Other Exchanges</span> - Data only (no trading)</li>
+          <li>• <span className="text-yellow-400">⚠️ Spot Trading</span> - Not implemented in this build</li>
+        </ul>
       </div>
 
       <div className="mt-6 bg-yellow-900/30 border border-yellow-500 rounded p-4">
