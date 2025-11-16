@@ -74,15 +74,21 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
         .then(() => {
           if (isMounted) {
             setIsConnected(true);
+            console.log('✅ WebSocket connected successfully');
           }
         })
-        .catch(() => {
+        .catch((err) => {
           // Connection failed - app can continue without WebSocket
-          // Silently handle - browser will log its own error messages
+          // Log error for debugging but don't crash the app
           if (isMounted) {
             setIsConnected(false);
+            console.warn('⚠️ WebSocket connection failed. Real-time updates disabled.', err);
+            // Note: This is expected behavior when backend is not running
+            // The app will continue to function with polling-based updates
           }
         });
+    } else {
+      console.log('ℹ️ WebSocket auto-connect disabled (VITE_WS_CONNECT_ON_START=false)');
     }
 
     // Monitor connection status periodically

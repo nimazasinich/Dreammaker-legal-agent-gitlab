@@ -85,23 +85,40 @@ export class WebSocketManager {
       };
 
       this.ws.onerror = (error) => {
-        logger.error('WebSocket error', {}, new Error('WebSocket connection error'));
+        // Log error but don't crash - this is expected when backend is down
+        logger.warn('WebSocket connection error (backend may not be running)', {
+          url: wsUrl,
+          readyState: this.ws?.readyState
+        });
         this.isConnected = false;
         this.notifyConnectionState(false);
+        // Note: The app continues to function without WebSocket
+        // Real-time features will be unavailable but the app won't crash
       };
 
       this.ws.onclose = (event) => {
-        logger.info('WebSocket closed', {
-          code: event.code,
-          reason: event.reason,
-          wasClean: event.wasClean
-        });
+        const wasClean = event.wasClean;
+        const code = event.code;
+        const reason = event.reason || 'No reason provided';
+        
+        // Log with appropriate level based on close type
+        if (wasClean && this.isIntentionalClose) {
+          logger.info('WebSocket closed cleanly (intentional)', { code, reason });
+        } else if (code === 1006) {
+          // 1006 = Abnormal closure (connection lost, server down, etc.)
+          logger.warn('WebSocket connection lost (server may be down)', { code, reason });
+        } else {
+          logger.info('WebSocket closed', { code, reason, wasClean });
+        }
+        
         this.isConnected = false;
         this.notifyConnectionState(false);
 
         // Auto-reconnect unless it was an intentional close
         if (!this.isIntentionalClose && this.reconnectAttempts < this.maxReconnectAttempts) {
           this.scheduleReconnect();
+        } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+          logger.warn(`WebSocket reconnection failed after ${this.maxReconnectAttempts} attempts. Real-time updates disabled.`);
         }
       };
     } catch (error) {

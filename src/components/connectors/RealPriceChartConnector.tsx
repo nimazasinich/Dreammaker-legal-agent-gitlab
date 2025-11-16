@@ -82,8 +82,18 @@ export const RealPriceChartConnector: React.FC<RealPriceChartConnectorProps> = (
 
   if (error) {
     return (
-      <div className="flex items-center justify-center" style={{ height }}>
-        <div className="text-red-500">Error: {error}</div>
+      <div className="flex items-center justify-center p-4" style={{ height }}>
+        <div className="max-w-md">
+          <div className="text-red-400 text-sm font-medium mb-2">
+            Unable to load price data
+          </div>
+          <div className="text-gray-400 text-xs">
+            {error}
+          </div>
+          <div className="mt-3 text-xs text-gray-500">
+            Check your data source configuration or network connection.
+          </div>
+        </div>
       </div>
     );
   }
@@ -91,7 +101,9 @@ export const RealPriceChartConnector: React.FC<RealPriceChartConnectorProps> = (
   if (latestPrices.size === 0) {
     return (
       <div className="flex items-center justify-center" style={{ height }}>
-        <div className="text-gray-500">No price data available</div>
+        <div className="text-gray-500 text-sm">
+          No price data available for {symbols.join(', ')}
+        </div>
       </div>
     );
   }
