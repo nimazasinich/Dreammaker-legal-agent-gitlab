@@ -1,15 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import { Logger } from '../core/Logger.js';
 import { API_BASE } from '../config/env.js';
 
 const logger = Logger.getInstance();
 
+/**
+ * Exchange capabilities configuration
+ * This reflects the actual implementation status of each exchange.
+ */
+const EXCHANGE_CAPABILITIES = {
+  binance: {
+    name: 'Binance',
+    trading: false,
+    data: true,
+    label: 'Data only (no trading)',
+  },
+  kucoin: {
+    name: 'KuCoin Futures',
+    trading: true,
+    data: true,
+    label: 'Trading + Data',
+  },
+} as const;
+
 export const ExchangeSelector: React.FC = () => {
-    const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentExchange, setCurrentExchange] = useState<'binance' | 'kucoin'>('binance');
+  const [currentExchange, setCurrentExchange] = useState<'binance' | 'kucoin'>('kucoin'); // Default to KuCoin since it's trading-capable
   const [loading, setLoading] = useState(false);
   const [healthStatus, setHealthStatus] = useState<any>(null);
 
@@ -61,16 +80,19 @@ export const ExchangeSelector: React.FC = () => {
         <button
           onClick={() => switchExchange('binance')}
           disabled={loading}
-          className={`px-4 py-3 rounded-lg font-semibold transition-all ${
+          className={`px-4 py-3 rounded-lg font-semibold transition-all relative ${
             currentExchange === 'binance'
               ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg shadow-yellow-500/50'
               : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
           } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <div className="flex flex-col items-center gap-1">
-            <span>Binance</span>
+            <span>{EXCHANGE_CAPABILITIES.binance.name}</span>
             <span className="text-xs opacity-75">
               {getExchangeStatus('binance') === 'connected' ? '🟢 Connected' : '🔴 Offline'}
+            </span>
+            <span className="text-[10px] mt-1 px-2 py-0.5 bg-slate-600/50 rounded">
+              {EXCHANGE_CAPABILITIES.binance.label}
             </span>
           </div>
         </button>
@@ -78,19 +100,33 @@ export const ExchangeSelector: React.FC = () => {
         <button
           onClick={() => switchExchange('kucoin')}
           disabled={loading}
-          className={`px-4 py-3 rounded-lg font-semibold transition-all ${
+          className={`px-4 py-3 rounded-lg font-semibold transition-all relative ${
             currentExchange === 'kucoin'
               ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/50'
               : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
           } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <div className="flex-col items-center gap-1">
-            <span>KuCoin</span>
+          <div className="flex flex-col items-center gap-1">
+            <span>{EXCHANGE_CAPABILITIES.kucoin.name}</span>
             <span className="text-xs opacity-75">
               {getExchangeStatus('kucoin') === 'connected' ? '🟢 Connected' : '🔴 Offline'}
             </span>
+            <span className="text-[10px] mt-1 px-2 py-0.5 bg-green-600/30 rounded border border-green-500/50">
+              {EXCHANGE_CAPABILITIES.kucoin.label}
+            </span>
           </div>
         </button>
+      </div>
+
+      {/* Capabilities notice */}
+      <div className="mt-4 p-2 bg-slate-900/50 rounded-lg border border-slate-700/30">
+        <div className="flex items-start gap-2 text-xs text-slate-400">
+          <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+          <div>
+            <span className="font-semibold text-slate-300">Note:</span> Only KuCoin Futures supports trading operations. 
+            Binance is available for market data only.
+          </div>
+        </div>
       </div>
 
       {healthStatus && (

@@ -1,7 +1,21 @@
 /**
  * HuggingFace Health Adapter
  *
- * Handles health check and status routes
+ * HFHealthAdapter provides read-only health and provider metadata from the HF Data Engine.
+ * This adapter is used for observability and diagnostics only; it does not perform
+ * any automatic provider switching or mutating side effects.
+ *
+ * Responsibilities:
+ * - Check HF Engine health status.
+ * - Surface provider information in a read-only manner.
+ * - Provide system-wide health aggregation.
+ *
+ * Explicitly NOT responsible for:
+ * - Automatic provider switching based on health.
+ * - Mutating system configuration.
+ * - Trading decisions or signal generation.
+ *
+ * Details: see docs/hf-engine-scope.md
  */
 
 import { Logger } from '../../core/Logger.js';

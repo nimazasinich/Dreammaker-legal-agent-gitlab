@@ -293,6 +293,20 @@ To prevent future "fixes," the following comments should be added to HF adapter 
 
 ---
 
+## 📝 Inline Code References
+
+The following adapters include inline comments that reflect this scope:
+
+- `src/services/hf/HFMarketAdapter.ts` - Primary bridge for market data (prices, OHLCV, tickers, market overview)
+- `src/services/hf/HFSignalsAdapter.ts` - Placeholder adapter; all signal operations return NOT_IMPLEMENTED
+- `src/services/hf/HFAnalysisAdapter.ts` - Sentiment analysis only; SMC/Elliott Wave return NOT_IMPLEMENTED
+- `src/services/hf/HFProxyAdapter.ts` - Placeholder adapter; proxy methods return NOT_IMPLEMENTED
+- `src/services/hf/HFHealthAdapter.ts` - Read-only health and provider metadata
+
+When modifying these files, keep the comments and this document in sync.
+
+---
+
 ## 🔍 Verifying HF Engine Scope in Code
 
 ### Check if HF Engine is being misused:

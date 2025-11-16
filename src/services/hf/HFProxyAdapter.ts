@@ -76,12 +76,12 @@ export class HFProxyAdapter {
 
   /**
    * Get cryptocurrency news
-   * This proxy method is intentionally not implemented; direct provider clients are used instead.
    */
   async getNews(symbol?: string, limit: number = 10): Promise<AdapterResponse<any[]>> {
     const endpoint = '/proxy/news';
 
-    // This proxy method is intentionally not implemented; direct provider clients are used instead.
+    // Intentionally NOT implemented: news aggregation is handled by direct provider clients, not via HF proxy.
+    // See docs/hf-engine-scope.md for the current integration model.
     return this.createError(
       endpoint,
       'News aggregation via HuggingFace is not yet implemented. Use alternative news services.',
@@ -92,12 +92,12 @@ export class HFProxyAdapter {
 
   /**
    * Get Fear & Greed Index
-   * This proxy method is intentionally not implemented; direct provider clients are used instead.
    */
   async getFearGreedIndex(): Promise<AdapterResponse<any>> {
     const endpoint = '/proxy/fear-greed';
 
-    // This proxy method is intentionally not implemented; direct provider clients are used instead.
+    // Intentionally NOT implemented: Fear & Greed Index is handled by direct provider clients, not via HF proxy.
+    // See docs/hf-engine-scope.md for the current integration model.
     return this.createError(
       endpoint,
       'Fear & Greed Index via HuggingFace is not yet implemented. Use Alternative.me API.',
@@ -108,12 +108,12 @@ export class HFProxyAdapter {
 
   /**
    * Get social sentiment data
-   * This proxy method is intentionally not implemented; direct provider clients are used instead.
    */
   async getSocialSentiment(symbol: string): Promise<AdapterResponse<any>> {
     const endpoint = '/proxy/social-sentiment';
 
-    // This proxy method is intentionally not implemented; direct provider clients are used instead.
+    // Intentionally NOT implemented: social sentiment aggregation is handled by direct provider clients, not via HF proxy.
+    // See docs/hf-engine-scope.md for the current integration model.
     return this.createError(
       endpoint,
       'Social sentiment aggregation via HuggingFace is not yet implemented.',
