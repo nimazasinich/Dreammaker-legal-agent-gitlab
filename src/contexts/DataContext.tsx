@@ -6,6 +6,7 @@ import type { DataSource } from '../components/ui/DataSourceBadge';
 import { APP_MODE, shouldUseMockFixtures, requiresRealData } from '../config/dataPolicy';
 import { API_BASE } from '../config/env.js';
 import { toBinanceSymbol } from '../lib/symbolMapper';
+import { getAutoRefreshSettings } from '../hooks/useAutoRefreshSettings';
 
 interface DataContextType {
   portfolio: any;
@@ -274,8 +275,20 @@ export function DataProvider({
       }
     }, 100); // 100ms delay for provider stabilization
 
-    // Auto-refresh disabled to reduce unnecessary queries
-    // Users can manually refresh when needed
+    // Auto-refresh: Enabled if user has turned it on in settings
+    // Respects user preference from localStorage
+    const autoRefreshSettings = getAutoRefreshSettings();
+    if (autoRefreshSettings.enabled) {
+      const intervalMs = autoRefreshSettings.intervalSeconds * 1000;
+      logger.info('🔄 Auto-refresh enabled', { intervalSeconds: autoRefreshSettings.intervalSeconds });
+      
+      intervalRef.current = setInterval(() => {
+        if (mountedRef.current && !ignoreRef.current && !loadingRef.current) {
+          logger.info('🔄 Auto-refresh triggered');
+          loadAllData();
+        }
+      }, intervalMs);
+    }
 
     return () => {
       mountedRef.current = false;

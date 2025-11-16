@@ -114,6 +114,7 @@ export class HFAnalysisAdapter {
   async analyzeSMC(symbol: string, timeframe: string): Promise<AdapterResponse<any>> {
     const endpoint = '/analysis/smc';
 
+    // Intentional: see docs/hf-engine-scope.md – SMC/Elliott analysis runs via local analyzers, not HF Engine.
     return this.createError(
       endpoint,
       'SMC analysis via HuggingFace is not implemented. Use local technical analysis services.',
@@ -130,6 +131,7 @@ export class HFAnalysisAdapter {
   async analyzeElliott(symbol: string, timeframe: string): Promise<AdapterResponse<any>> {
     const endpoint = '/analysis/elliott';
 
+    // Intentional: see docs/hf-engine-scope.md – SMC/Elliott analysis runs via local analyzers, not HF Engine.
     return this.createError(
       endpoint,
       'Elliott Wave analysis via HuggingFace is not implemented. Use local technical analysis services.',
