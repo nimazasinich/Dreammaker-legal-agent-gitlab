@@ -6,7 +6,7 @@ import type { DataSource } from '../components/ui/DataSourceBadge';
 import { APP_MODE, shouldUseMockFixtures, requiresRealData } from '../config/dataPolicy';
 import { API_BASE } from '../config/env.js';
 import { toBinanceSymbol } from '../lib/symbolMapper';
-import { getAutoRefreshSettings } from '../hooks/useAutoRefreshSettings';
+import { useRefreshSettings } from './RefreshSettingsContext';
 
 interface DataContextType {
   portfolio: any;
@@ -47,6 +47,7 @@ export function DataProvider({
   defaultTimeframe?: string;
 }) {
   const { state: { dataMode } } = useMode();
+  const { autoRefreshEnabled, intervalSeconds } = useRefreshSettings();
     const [isLoading, setIsLoading] = useState(false);
   const [symbol, setSymbol] = useState(defaultSymbol);
   const [timeframe, setTimeframe] = useState(defaultTimeframe);
@@ -275,21 +276,6 @@ export function DataProvider({
       }
     }, 100); // 100ms delay for provider stabilization
 
-    // Auto-refresh: Enabled if user has turned it on in settings
-    // Respects user preference from localStorage
-    const autoRefreshSettings = getAutoRefreshSettings();
-    if (autoRefreshSettings.enabled) {
-      const intervalMs = autoRefreshSettings.intervalSeconds * 1000;
-      logger.info('🔄 Auto-refresh enabled', { intervalSeconds: autoRefreshSettings.intervalSeconds });
-      
-      intervalRef.current = setInterval(() => {
-        if (mountedRef.current && !ignoreRef.current && !loadingRef.current) {
-          logger.info('🔄 Auto-refresh triggered');
-          loadAllData();
-        }
-      }, intervalMs);
-    }
-
     return () => {
       mountedRef.current = false;
       ignoreRef.current = true;
@@ -305,6 +291,36 @@ export function DataProvider({
       }
     };
   }, []);
+
+  // Auto-refresh effect: reacts to settings changes
+  useEffect(() => {
+    if (!autoRefreshEnabled) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    const intervalMs = intervalSeconds * 1000;
+    logger.info('🔄 Auto-refresh enabled', { intervalSeconds });
+
+    const runRefresh = () => {
+      if (mountedRef.current && !ignoreRef.current && !loadingRef.current) {
+        logger.info('🔄 Auto-refresh triggered');
+        loadAllData();
+      }
+    };
+
+    intervalRef.current = setInterval(runRefresh, intervalMs);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [autoRefreshEnabled, intervalSeconds]);
 
   const refresh = (next?: { symbol?: string; timeframe?: string }) => {
     // Prevent refresh if already loading

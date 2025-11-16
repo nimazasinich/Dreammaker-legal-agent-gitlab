@@ -9,7 +9,7 @@ import { ExchangeSettings } from '../components/settings/ExchangeSettings';
 import TelegramSettingsCard from '../components/settings/TelegramSettingsCard';
 import { ExchangeSelector } from '../components/ExchangeSelector';
 import { DataSourceSelector } from '../components/settings/DataSourceSelector';
-import { useAutoRefreshSettings } from '../hooks/useAutoRefreshSettings';
+import { useRefreshSettings } from '../contexts/RefreshSettingsContext';
 
 const logger = Logger.getInstance();
 
@@ -49,7 +49,12 @@ interface StrategyConfig {
 }
 
 const SettingsView: React.FC = () => {
-  const { settings: autoRefreshSettings, updateSettings: updateAutoRefresh } = useAutoRefreshSettings();
+  const {
+    autoRefreshEnabled,
+    intervalSeconds,
+    setAutoRefreshEnabled,
+    setIntervalSeconds,
+  } = useRefreshSettings();
   const [config, setConfig] = useState<StrategyConfig>({
     detectors: [
         {
@@ -257,42 +262,30 @@ const SettingsView: React.FC = () => {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={autoRefreshSettings.enabled}
-                  onChange={(e) => updateAutoRefresh({ enabled: e.target.checked })}
+                  checked={autoRefreshEnabled}
+                  onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
                   className="w-5 h-5 rounded"
                 />
                 <span className="text-sm font-semibold">
-                  {autoRefreshSettings.enabled ? 'Enabled' : 'Disabled'}
+                  {autoRefreshEnabled ? 'Enabled' : 'Disabled'}
                 </span>
               </label>
             </div>
 
-            {autoRefreshSettings.enabled && (
+            {autoRefreshEnabled && (
               <div className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
                 <label className="text-sm text-slate-400 block mb-2">
-                  Refresh Interval (seconds)
+                  Refresh Interval
                 </label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="range"
-                    min="10"
-                    max="120"
-                    step="5"
-                    value={autoRefreshSettings.intervalSeconds}
-                    onChange={(e) => updateAutoRefresh({ intervalSeconds: parseInt(e.target.value) })}
-                    className="flex-1"
-                    style={{ accentColor: '#06b6d4' }}
-                  />
-                  <input
-                    type="number"
-                    min="10"
-                    max="120"
-                    value={autoRefreshSettings.intervalSeconds}
-                    onChange={(e) => updateAutoRefresh({ intervalSeconds: parseInt(e.target.value) })}
-                    className="w-20 px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 text-center font-bold"
-                  />
-                  <span className="text-slate-400">seconds</span>
-                </div>
+                <select
+                  value={intervalSeconds}
+                  onChange={(e) => setIntervalSeconds(parseInt(e.target.value) as 30 | 60 | 120)}
+                  className="w-full px-4 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 font-bold"
+                >
+                  <option value={30}>30 seconds</option>
+                  <option value={60}>60 seconds</option>
+                  <option value={120}>120 seconds</option>
+                </select>
                 <div className="mt-2 text-xs text-slate-500">
                   Recommended: 30-60 seconds to balance real-time data with API usage
                 </div>
