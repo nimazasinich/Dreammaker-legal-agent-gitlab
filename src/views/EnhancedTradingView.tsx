@@ -424,3 +424,5 @@ export const EnhancedTradingView: React.FC = () => {
     </>
   );
 };
+
+export default EnhancedTradingView;

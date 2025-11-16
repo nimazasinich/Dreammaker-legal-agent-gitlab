@@ -836,3 +836,5 @@ export const FuturesTradingView: React.FC = () => {
     </>
   );
 };
+
+export default FuturesTradingView;
