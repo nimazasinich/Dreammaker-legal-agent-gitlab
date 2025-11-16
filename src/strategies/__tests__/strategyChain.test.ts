@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { runStrategy3 } from '../strategy3';
 import { saveStrategyOutput, loadStrategyOutput } from '../../storage/mlOutputs';
 
@@ -100,7 +100,7 @@ describe('Strategy Chain Tests', () => {
 
       const result = await runStrategy3({ topFromS2: mockS2Results });
 
-      expect(result[0].summary).toContain('finalScore=0.85');
+      expect(result[0].summary).toContain('finalStrategyScore=0.85');
       expect(result[0].summary).toContain('ICT');
       expect(result[0].summary).toContain('Fib');
       expect(result[0].summary).toContain('Elliott');

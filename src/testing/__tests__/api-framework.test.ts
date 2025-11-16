@@ -7,12 +7,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   ResponseValidator,
-  RequestValidator,
   ErrorHandler,
   RetryHandler,
   APITestError,
 } from '../api-test-framework';
-import { CommonSchemas } from '../request-validator';
+import { RequestValidator, CommonSchemas } from '../request-validator';
 
 describe('ResponseValidator', () => {
   describe('validateSchema', () => {
