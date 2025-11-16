@@ -4,7 +4,6 @@ import { NavigationProvider, useNavigation } from './components/Navigation/Navig
 import { ThemeProvider } from './components/Theme/ThemeProvider';
 import { AccessibilityProvider } from './components/Accessibility/AccessibilityProvider';
 import { LiveDataProvider } from './components/LiveDataContext';
-import { RealDataProvider } from './components/connectors/RealDataConnector';
 import { DataProvider } from './contexts/DataContext';
 import { TradingProvider } from './contexts/TradingContext';
 import { ModeProvider } from './contexts/ModeContext';
