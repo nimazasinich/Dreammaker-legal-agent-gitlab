@@ -129,10 +129,11 @@ export const DashboardView: React.FC = () => {
     const initialLoadRef = useRef(false);
     useEffect(() => {
         // Only trigger initial load once if we don't have data and we're not already loading
-        if (!initialLoadRef.current && !dataLoading && !portfolioData && !marketPricesData && !aiSignalsData) {
+        // FIXED: Removed automatic refresh - data loads via DataContext
+        if (!initialLoadRef.current) {
             initialLoadRef.current = true;
-            logger.info('🔄 Dashboard: Triggering initial data load');
-            refreshAllData();
+            logger.info('🔄 Dashboard: Mounted (data loads via context)');
+            // Data will be loaded by DataContext, no need to trigger refresh here
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Only run once on mount
@@ -239,20 +240,20 @@ export const DashboardView: React.FC = () => {
         setTimeout(() => setIsRefreshing(false), 1000);
     }, [refreshAllData, isRefreshing, dataLoading]);
 
-    // Helper functions
-    const formatVolume = (volume: number): string => {
+    // Helper functions (OPTIMIZED: Memoized with useCallback)
+    const formatVolume = useCallback((volume: number): string => {
         if (!volume) return '0';
-        if (volume >= 1000000000) return `${(volume / 1000000000).toFixed(1)}B`;
+        if (volume >= 1000000000) return `${(volume / 1000000).toFixed(1)}B`;
         if (volume >= 1000000) return `${(volume / 1000000).toFixed(1)}M`;
         if (volume >= 1000) return `${(volume / 1000).toFixed(1)}K`;
         return volume.toFixed(0);
-    };
+    }, []);
 
-    const getStrength = (confidence: number): string => {
+    const getStrength = useCallback((confidence: number): string => {
         if (confidence >= 0.85) return 'STRONG';
         if (confidence >= 0.70) return 'MODERATE';
         return 'WEAK';
-    };
+    }, []);
 
     // Calculate derived values
     const portfolioValue = portfolioData ? (portfolio?.totalValue ?? 0) : undefined;
