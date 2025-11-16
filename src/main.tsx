@@ -39,20 +39,42 @@ try {
   throw error;
 }
 
-// Guard for real backend only (no mocks) - ensure HTTPS/WSS URLs are configured
+// Guard for real backend only (no mocks) - ensure proper URLs are configured
 const apiBase = import.meta.env.VITE_API_BASE as string | undefined;
 const wsBase = import.meta.env.VITE_WS_BASE as string | undefined;
 const isDevelopment = import.meta.env.DEV;
+const isHuggingFace = typeof location !== 'undefined' && location.hostname.includes('.hf.space');
 
-if (!apiBase || !/^https:\/\//.test(apiBase)) {
-  if (isDevelopment) {
-    console.warn('⚠️ Development mode: Using HTTP/WS (localhost). Production requires HTTPS/WSS.');
-    console.log(`Current VITE_API_BASE: ${apiBase || 'undefined'}`);
-    console.log(`Current VITE_WS_BASE: ${wsBase || 'undefined'}`);
-  } else {
-    console.error('❌ Backend not configured. Set VITE_API_BASE (HTTPS) and VITE_WS_BASE (WSS) via repo variables.');
-    console.error(`Current VITE_API_BASE: ${apiBase || 'undefined'}`);
-    console.error(`Current VITE_WS_BASE: ${wsBase || 'undefined'}`);
+if (isDevelopment) {
+  console.log('🔧 Development Mode');
+  console.log(`   API Base: ${apiBase || 'undefined'}`);
+  console.log(`   WS Base: ${wsBase || 'undefined'}`);
+  console.log(`   Expected Backend: http://localhost:8001`);
+} else {
+  // Production mode checks
+  if (isHuggingFace) {
+    console.log('🚀 HuggingFace Deployment Detected');
+    if ((apiBase && apiBase.includes('localhost')) || (wsBase && wsBase.includes('localhost'))) {
+      console.warn('⚠️ Environment variables contain localhost in production');
+      console.warn('   Using relative paths instead for HuggingFace compatibility');
+    }
+    // Test backend connection
+    fetch('/api/health', { timeout: 5000 } as any)
+      .then(res => {
+        if (res.ok) {
+          console.log('✅ Backend connection successful');
+        } else {
+          console.error(`❌ Backend health check failed: ${res.status}`);
+        }
+      })
+      .catch(error => {
+        console.error('❌ Cannot reach backend API:', error.message);
+      });
+  } else if (!apiBase || !/^https:\/\//.test(apiBase)) {
+    console.warn('⚠️ Production build without HTTPS configuration');
+    console.warn(`   API Base: ${apiBase || 'undefined'}`);
+    console.warn(`   WS Base: ${wsBase || 'undefined'}`);
+    console.warn('   Tip: Set VITE_API_BASE to HTTPS URL or empty string for relative paths');
   }
 }
 
