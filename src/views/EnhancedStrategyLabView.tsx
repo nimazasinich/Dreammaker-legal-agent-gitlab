@@ -1023,3 +1023,5 @@ export const EnhancedStrategyLabView: React.FC = () => {
     </>
   );
 };
+
+export default EnhancedStrategyLabView;

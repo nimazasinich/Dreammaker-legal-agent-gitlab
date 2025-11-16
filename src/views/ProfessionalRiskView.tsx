@@ -413,3 +413,5 @@ export const ProfessionalRiskView: React.FC = () => {
     </div>
   );
 };
+
+export default ProfessionalRiskView;
