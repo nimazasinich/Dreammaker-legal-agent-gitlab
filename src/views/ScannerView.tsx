@@ -230,19 +230,21 @@ const ScannerView: React.FC = () => {
   useEffect(() => {
     if (wsUpdate || wsSignalUpdate) {
       const data = wsUpdate || wsSignalUpdate;
-      setRows(prevRows => (prevRows || []).map(row => {
-        if (row.symbol === data.symbol) {
-          return {
-            ...row,
-            price: data.price ?? row.price,
-            change24h: data.change24h ?? row.change24h,
-            volume24h: data.volume24h ?? row.volume24h,
-            score: data.score ?? row.score,
-            signal: data.signal ?? row.signal
-          };
-        }
-        return row;
-      }));
+      if (data && data.symbol) {
+        setRows(prevRows => (prevRows || []).map(row => {
+          if (row.symbol === data.symbol) {
+            return {
+              ...row,
+              price: data.price ?? row.price,
+              change24h: data.change24h ?? row.change24h,
+              volume24h: data.volume24h ?? row.volume24h,
+              score: data.score ?? row.score,
+              signal: data.signal ?? row.signal
+            };
+          }
+          return row;
+        }));
+      }
     }
   }, [wsUpdate, wsSignalUpdate]);
 
