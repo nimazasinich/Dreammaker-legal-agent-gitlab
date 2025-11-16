@@ -6,6 +6,19 @@ import { Logger } from '../core/Logger';
 
 const logger = Logger.getInstance();
 
+/**
+ * Exchange capability flags - reflects actual implementation status
+ * Currently only KuCoin Futures supports real trading operations
+ */
+const EXCHANGE_CAPABILITIES = {
+  kucoin: { name: 'KuCoin Futures', tradingEnabled: true, description: 'Trading Enabled (Testnet)' },
+  binance: { name: 'Binance', tradingEnabled: false, description: 'Data Only' },
+  okx: { name: 'OKX', tradingEnabled: false, description: 'Data Only' },
+  bybit: { name: 'Bybit', tradingEnabled: false, description: 'Data Only' }
+} as const;
+
+type SupportedExchange = keyof typeof EXCHANGE_CAPABILITIES;
+
 export const ExchangeSettingsView: React.FC = () => {
   const { confirm, ModalComponent } = useConfirmModal();
   const [isLoading, setIsLoading] = useState(false);
@@ -117,11 +130,26 @@ export const ExchangeSettingsView: React.FC = () => {
           </button>
         </div>
 
+        {/* Trading Capability Notice */}
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <div className="text-2xl">⚡</div>
+            <div>
+              <p className="text-sm font-semibold text-green-900 mb-1">
+                Trading Provider: KuCoin Futures (Testnet)
+              </p>
+              <p className="text-xs text-green-700">
+                Only <strong>KuCoin Futures</strong> supports real trading in this build. Other exchanges are available for data only.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Info Card */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
           <p className="text-sm text-blue-800">
-            <strong>Note:</strong> API keys are stored locally. Default exchange is <strong>KuCoin</strong>.
-            You can add multiple exchanges and set one as default.
+            <strong>Note:</strong> API keys are stored locally. You can add multiple exchanges for data, 
+            but only KuCoin Futures can execute trades.
           </p>
         </div>
 
@@ -177,11 +205,16 @@ export const ExchangeSettingsView: React.FC = () => {
                       onChange={(e) => handleUpdateExchange(index, 'exchange', e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                     >
-                      <option value="kucoin">KuCoin</option>
-                      <option value="binance">Binance</option>
-                      <option value="okx">OKX</option>
-                      <option value="bybit">Bybit</option>
+                      <option value="kucoin">KuCoin Futures (⚡ Trading Enabled)</option>
+                      <option value="binance">Binance (📊 Data Only)</option>
+                      <option value="okx">OKX (📊 Data Only)</option>
+                      <option value="bybit">Bybit (📊 Data Only)</option>
                     </select>
+                    {exchange.exchange !== 'kucoin' && (
+                      <p className="mt-2 text-xs text-yellow-600">
+                        ⚠️ This exchange is configured for data only. Only KuCoin Futures can execute trades.
+                      </p>
+                    )}
                   </div>
 
                   {/* API Key */}
