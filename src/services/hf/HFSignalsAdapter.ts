@@ -79,7 +79,6 @@ export class HFSignalsAdapter {
 
   /**
    * Get signal history
-   * This operation is intentionally not implemented for HF; signals are managed locally.
    */
   async getSignalHistory(
     symbol?: string,
@@ -87,7 +86,8 @@ export class HFSignalsAdapter {
   ): Promise<AdapterResponse<any[]>> {
     const endpoint = '/signals/history';
 
-    // This operation is intentionally not implemented for HF; signals are managed locally.
+    // Intentionally NOT implemented: signal history is stored and served locally, not via HF.
+    // See docs/hf-engine-scope.md and the local SignalEngine for the authoritative implementation.
     return this.createError(
       endpoint,
       'Signal history via HuggingFace is not implemented. Signals are stored locally.',
