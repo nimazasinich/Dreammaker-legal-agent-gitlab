@@ -1,0 +1,50 @@
+
+========================================
+   DreammakerCrypto Runtime Config
+========================================
+
+[0;34m=== Application Mode ===[0m
+App Mode                           : online
+Trading Mode                       : DRY_RUN
+Node Environment                   : development
+
+[0;34m=== Data Policy ===[0m
+Strict Real Data                   : true
+Use Mock Data                      : false
+Allow Fake Data                    : false
+
+[0;34m=== Data Sources ===[0m
+HF Engine URL                      : <not set>
+HF Engine API Key                  : <not set>
+Binance API Key                    : <not set>
+CoinMarketCap API Key              : <not set>
+CryptoCompare API Key              : <not set>
+
+[0;34m=== Exchange Configuration ===[0m
+KuCoin API Key                     : <not set>
+KuCoin API Secret                  : <not set>
+KuCoin Passphrase                  : <not set>
+KuCoin Testnet                     : true
+
+[0;34m=== Feature Flags ===[0m
+Enable Futures                     : true
+Enable Spot                        : false
+Enable AI Training                 : true
+Enable Analytics                   : false
+
+[0;34m=== System Configuration ===[0m
+API Base URL                       : http://localhost:8001
+WebSocket URL                      : <derived from API_BASE>
+Log Level                          : info
+Auto Refresh Interval              : 0 (disabled)
+Port                               : 3001
+
+[0;34m=== Network Configuration ===[0m
+HTTP Proxy                         : <not set>
+HTTPS Proxy                        : <not set>
+No Proxy                           : <not set>
+Use Global Proxy (Binance)         : false
+
+[0;34m=== Configuration Validation ===[0m
+
+[0;31m✗[0m App Mode is 'online' (unexpected value)
