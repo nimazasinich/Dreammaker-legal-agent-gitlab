@@ -199,11 +199,13 @@ export const Sidebar: React.FC = () => {
                       border: '1px solid rgba(139, 92, 246, 0.2)',
                     }}
                   >
-                    <Icon className={`h-4 w-4 transition-all duration-300 ${
-                      isActive ? 'text-white' : 'text-slate-400 group-hover:text-purple-400'
-                    }`} aria-hidden="true" style={isActive ? {
+                    <span style={isActive ? {
                       filter: 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.5))'
-                    } : {}} />
+                    } : {}}>
+                      <Icon className={`h-4 w-4 transition-all duration-300 ${
+                        isActive ? 'text-white' : 'text-slate-400 group-hover:text-purple-400'
+                      }`} aria-hidden="true" />
+                    </span>
                   </span>
                   
                   {/* Label */}
