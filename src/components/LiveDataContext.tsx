@@ -91,7 +91,8 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
       console.log('ℹ️ WebSocket auto-connect disabled (VITE_WS_CONNECT_ON_START=false)');
     }
 
-    // Monitor connection status periodically
+    // Monitor connection status periodically (reduced frequency to avoid overhead)
+    // Only check every 30 seconds since WebSocket state changes are infrequent
     checkInterval = setInterval(() => {
       if (!isMounted) {
         if (checkInterval) clearInterval(checkInterval);
@@ -100,7 +101,7 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
       const ws = (dataManager as any).ws;
       const connected = ws && ws.readyState === WebSocket.OPEN;
       setIsConnected(connected);
-    }, 5000); // Check every 5 seconds
+    }, 30000); // Reduced from 5 seconds to 30 seconds to prevent unnecessary overhead
 
     return () => {
       isMounted = false;
