@@ -1,0 +1,124 @@
+name: CI - Lint, Test, Build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - 'cursor/**'
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+        continue-on-error: false
+
+      - name: Run type check
+        run: npm run typecheck
+        continue-on-error: true
+
+      - name: Run tests
+        run: npm test
+        env:
+          CI: true
+
+      - name: Build client
+        run: npm run build:client
+        env:
+          # Use minimal config for build to avoid requiring real API keys
+          VITE_APP_MODE: demo
+          VITE_STRICT_REAL_DATA: false
+          VITE_USE_MOCK_DATA: true
+          VITE_API_BASE: http://localhost:8001
+          VITE_WS_BASE: ws://localhost:8001
+
+      - name: Build server
+        run: npm run build:server
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: build-artifacts-${{ matrix.node-version }}
+          path: |
+            dist/
+          retention-days: 7
+
+      - name: Report status
+        if: always()
+        run: |
+          echo "::group::Build Summary"
+          echo "Node version: ${{ matrix.node-version }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Status: ${{ job.status }}"
+          echo "::endgroup::"
+
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.backend
+          push: false
+          tags: dreammaker-backend:ci-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.frontend
+          push: false
+          tags: dreammaker-frontend:ci-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Report Docker build status
+        if: always()
+        run: |
+          echo "::group::Docker Build Summary"
+          echo "Backend image: dreammaker-backend:ci-test"
+          echo "Frontend image: dreammaker-frontend:ci-test"
+          echo "Status: ${{ job.status }}"
+          echo "::endgroup::"
