@@ -40,49 +40,37 @@ export const PositionsView: React.FC = () => {
   const [history, setHistory] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'positions' | 'orders' | 'history'>('positions');
   const [loading, setLoading] = useState(false);
-  const [ws, setWs] = useState<WebSocket | null>(null);
+
+  // Use unified WebSocket manager instead of creating new connection
+  const { data: wsData, isConnected } = useWebSocket({
+    topic: 'positions_update',
+    enabled: true,
+    transform: (message) => message.data
+  });
+
+  // Update positions from WebSocket
+  useEffect(() => {
+    if (wsData) {
+      setPositions(wsData);
+    }
+  }, [wsData]);
 
   useEffect(() => {
     loadData();
 
-    // Connect to WebSocket for real-time updates
-    // Use unified buildWebSocketUrl function to prevent /ws/ws duplication
-    const wsUrl = buildWebSocketUrl('/ws');
-    const websocket = new WebSocket(wsUrl);
-
-    websocket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data.toString());
-        if (data.type === 'positions_update') {
-          setPositions(data.data || []);
-        }
-      } catch (error) {
-        logger.error('WebSocket message error', {}, error as Error);
-      }
-    };
-
-    websocket.onerror = (event) => {
-      logger.error('WebSocket error', {}, new Error('WebSocket connection error'));
-    };
-
-    setWs(websocket);
-
-    // Refresh data every 5 seconds
+    // Refresh data every 5 seconds as fallback
     const interval = setInterval(loadData, 5000);
 
     return () => {
       clearInterval(interval);
-      if (websocket) {
-        websocket.close();
-      }
     };
   }, []);
 
   const loadData = async () => {
     try {
       const [posRes, ordRes] = await Promise.all([
-        fetch(`${API_BASE}/api/positions`, { credentials: 'include' }),
-        fetch(`${API_BASE}/api/orders?status=PENDING`, { credentials: 'include' })
+        fetch('/api/positions', { credentials: 'include' }),
+        fetch('/api/orders?status=PENDING', { credentials: 'include' })
       ]);
 
       if (posRes.ok) {

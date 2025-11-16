@@ -917,6 +917,9 @@ const SystemStatusPanel: React.FC = () => {
     setError(null);
     try {
       const response = await fetch('/api/system/status');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
       setStatus(data);
     } catch (err) {
@@ -947,9 +950,18 @@ const SystemStatusPanel: React.FC = () => {
   if (error) {
     return (
       <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-        <div className="flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-red-500" />
-          <span className="text-sm text-red-500">Failed to load system status: {error}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-500" />
+            <span className="text-sm text-red-500">Failed to load system status: {error}</span>
+          </div>
+          <button
+            onClick={loadSystemStatus}
+            className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+            title="Retry"
+          >
+            <RefreshCw className="w-4 h-4 text-red-500 hover:text-red-400" />
+          </button>
         </div>
       </div>
     );
@@ -988,7 +1000,7 @@ const SystemStatusPanel: React.FC = () => {
             <Settings className="w-4 h-4 text-muted" />
           </div>
           <div className="text-2xl font-bold text-foreground">
-            {status.environment}
+            {status?.environment || 'Unknown'}
           </div>
           <div className="text-xs text-muted mt-1">
             Current mode
@@ -1002,10 +1014,10 @@ const SystemStatusPanel: React.FC = () => {
             <Power className="w-4 h-4 text-muted" />
           </div>
           <div className="text-lg font-bold text-foreground">
-            {status.trading.mode}
+            {status?.trading?.mode || 'OFF'}
           </div>
-          <div className={`text-xs mt-1 font-medium ${tradingHealthColor[status.trading.health as keyof typeof tradingHealthColor]}`}>
-            {status.trading.health.toUpperCase()}
+          <div className={`text-xs mt-1 font-medium ${tradingHealthColor[(status?.trading?.health || 'unknown') as keyof typeof tradingHealthColor]}`}>
+            {(status?.trading?.health || 'unknown').toUpperCase()}
           </div>
         </div>
 

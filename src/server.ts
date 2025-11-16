@@ -301,10 +301,27 @@ app.use(helmet({
   contentSecurityPolicy: false, // Disable CSP to allow WebSocket connections
   crossOriginEmbedderPolicy: false, // Allow WebSocket upgrade
 }));
+
+// Smart CORS configuration - works in dev and production (including HuggingFace)
+const isProduction = process.env.NODE_ENV === 'production';
+const isHuggingFace = process.env.SPACE_ID || process.env.SPACE_AUTHOR_NAME; // HuggingFace Space detection
+
+let corsOrigins: string[] | boolean;
+if (process.env.FRONTEND_ORIGIN) {
+  // Use explicit env var if provided
+  corsOrigins = process.env.FRONTEND_ORIGIN.split(',').map(o => o.trim());
+} else if (isHuggingFace || isProduction) {
+  // In production/HuggingFace: Accept all origins (frontend served from same domain)
+  corsOrigins = true; // Allow all origins
+  logger.info('CORS configured for production/HuggingFace: allowing all origins');
+} else {
+  // Development: Allow common local dev servers
+  corsOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000', 'http://localhost:8001'];
+  logger.info('CORS configured for development:', corsOrigins);
+}
+
 app.use(cors({
-  origin: process.env.FRONTEND_ORIGIN 
-    ? process.env.FRONTEND_ORIGIN.split(',').map(o => o.trim())
-    : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'],
+  origin: corsOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

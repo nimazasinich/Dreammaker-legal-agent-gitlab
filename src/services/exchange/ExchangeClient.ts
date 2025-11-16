@@ -227,13 +227,22 @@ export class ExchangeClient {
   /**
    * Get SPOT balances from testnet
    *
-   * NOTE: Not fully implemented - returns error
+   * NOTE: Not fully implemented - returns honest "not available" response
    *
-   * @returns AccountInfo or throws error
+   * @returns AccountInfo with zero balances and not-implemented flag
    */
-  async getSpotBalances(): Promise<AccountInfo> {
+  async getSpotBalances(): Promise<AccountInfo & { notImplemented?: boolean }> {
     this.logger.warn('SPOT balances not fully implemented');
-    throw new Error('SPOT balances not implemented: KuCoin SPOT testnet API integration is not complete');
+    
+    // Return honest response instead of throwing error
+    // This allows UI to handle gracefully
+    return {
+      availableBalance: 0,
+      accountEquity: 0,
+      unrealisedPNL: 0,
+      marginBalance: 0,
+      notImplemented: true // Flag for UI to detect and show appropriate message
+    };
   }
 
   /**

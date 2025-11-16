@@ -14,6 +14,7 @@ import { SmartMoneyScanner } from '../components/scanner/SmartMoneyScanner';
 import { NewsSentimentScanner } from '../components/scanner/NewsSentimentScanner';
 import { WhaleActivityScanner } from '../components/scanner/WhaleActivityScanner';
 import ScannerFeedPanel from '../components/scanner/ScannerFeedPanel';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 type ScannerStatus = 'idle' | 'loading' | 'ready' | 'error';
 type SortField = 'symbol' | 'price' | 'change24h' | 'volume24h' | 'score';
@@ -214,48 +215,36 @@ const ScannerView: React.FC = () => {
     };
   }, [autoRefresh, watchedSymbols, filters.timeframe, page, pageSize, sort]);
 
-  // WebSocket connection for live updates
+  // Use unified WebSocket manager for live updates
+  const { data: wsUpdate } = useWebSocket({
+    topic: 'price_update',
+    enabled: true
+  });
+
+  const { data: wsSignalUpdate } = useWebSocket({
+    topic: 'signal_update',
+    enabled: true
+  });
+
+  // Update rows when WebSocket data arrives
   useEffect(() => {
-    // Use unified buildWebSocketUrl function to prevent /ws/ws duplication
-    const wsUrl = buildWebSocketUrl('/ws/market');
-
-    try {
-      const ws = new WebSocket(wsUrl);
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-
-          // Update existing rows only (don't add/remove)
-          if (data.type === 'price_update' || data.type === 'signal_update') {
-            setRows(prevRows => (prevRows || []).map(row => {
-              if (row.symbol === data.symbol) {
-                return {
-                  ...row,
-                  price: data.price ?? row.price,
-                  change24h: data.change24h ?? row.change24h,
-                  volume24h: data.volume24h ?? row.volume24h,
-                  score: data.score ?? row.score,
-                  signal: data.signal ?? row.signal
-                };
-              }
-              return row;
-            }));
-          }
-        } catch (e) {
-          // Ignore parse errors
+    if (wsUpdate || wsSignalUpdate) {
+      const data = wsUpdate || wsSignalUpdate;
+      setRows(prevRows => (prevRows || []).map(row => {
+        if (row.symbol === data.symbol) {
+          return {
+            ...row,
+            price: data.price ?? row.price,
+            change24h: data.change24h ?? row.change24h,
+            volume24h: data.volume24h ?? row.volume24h,
+            score: data.score ?? row.score,
+            signal: data.signal ?? row.signal
+          };
         }
-      };
-
-      wsRef.current = ws;
-
-      return () => {
-        ws.close();
-      };
-    } catch (e) {
-      // WebSocket not available, silently fail
+        return row;
+      }));
     }
-  }, []);
+  }, [wsUpdate, wsSignalUpdate]);
 
   // Available symbols to add (not already in watchlist)
   const availableSymbols = useMemo(() => {
