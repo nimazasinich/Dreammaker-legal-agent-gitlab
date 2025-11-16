@@ -1,8 +1,12 @@
 /**
  * HuggingFace Analysis Adapter
  *
- * Handles analysis-related routes (SMC, Elliott Wave, sentiment, etc.)
- * Note: Most technical analysis is done locally, but HF provides sentiment analysis
+ * HFAnalysisAdapter integrates HF-only analysis features.
+ * Core SMC and Elliott Wave analysis are performed by local analyzers, not HF.
+ * See docs/hf-engine-scope.md for the full responsibilities matrix.
+ *
+ * This adapter provides sentiment analysis via HF models, but advanced technical
+ * analysis (SMC, Elliott Wave) returns NOT_IMPLEMENTED as these are handled locally.
  */
 
 import { Logger } from '../../core/Logger.js';
@@ -108,13 +112,12 @@ export class HFAnalysisAdapter {
 
   /**
    * SMC (Smart Money Concepts) Analysis
-   * Note: This is typically done locally with technical indicators,
-   * but we provide a placeholder that returns NOT_IMPLEMENTED
+   * SMC analysis is intentionally handled by local analyzers, not the HF Data Engine.
    */
   async analyzeSMC(symbol: string, timeframe: string): Promise<AdapterResponse<any>> {
     const endpoint = '/analysis/smc';
 
-    // Intentional: see docs/hf-engine-scope.md – SMC/Elliott analysis runs via local analyzers, not HF Engine.
+    // SMC analysis is intentionally handled by local analyzers, not the HF Data Engine.
     return this.createError(
       endpoint,
       'SMC analysis via HuggingFace is not implemented. Use local technical analysis services.',
@@ -125,13 +128,12 @@ export class HFAnalysisAdapter {
 
   /**
    * Elliott Wave Analysis
-   * Note: This is typically done locally with pattern recognition,
-   * but we provide a placeholder that returns NOT_IMPLEMENTED
+   * Elliott Wave analysis is intentionally handled by local analyzers, not the HF Data Engine.
    */
   async analyzeElliott(symbol: string, timeframe: string): Promise<AdapterResponse<any>> {
     const endpoint = '/analysis/elliott';
 
-    // Intentional: see docs/hf-engine-scope.md – SMC/Elliott analysis runs via local analyzers, not HF Engine.
+    // Elliott Wave analysis is intentionally handled by local analyzers, not the HF Data Engine.
     return this.createError(
       endpoint,
       'Elliott Wave analysis via HuggingFace is not implemented. Use local technical analysis services.',

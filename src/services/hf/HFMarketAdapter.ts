@@ -1,8 +1,11 @@
 /**
  * HuggingFace Market Data Adapter
  *
- * Handles market-related routes and provides fallback to Binance/KuCoin
- * when PRIMARY_DATA_SOURCE = mixed
+ * HFMarketAdapter maps the HF Data Engine market endpoints into the internal market data model.
+ * It does not handle strategy logic, signals, or advanced analysis.
+ * See docs/hf-engine-scope.md and docs/data-flow.md for details.
+ *
+ * This is the primary adapter for market data: prices, OHLCV, tickers, and market overview.
  */
 
 import { Logger } from '../../core/Logger.js';
