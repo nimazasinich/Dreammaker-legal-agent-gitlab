@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { KuCoinFuturesService } from '../services/KuCoinFuturesService';
 import { VirtualTradingService } from '../services/VirtualTradingService';
 import { Logger } from '../core/Logger';
 import { useMode } from './ModeContext';
 import { TradingMode } from '../types/modes';
+import { getAutoRefreshSettings } from '../hooks/useAutoRefreshSettings';
 
 const logger = Logger.getInstance();
 
@@ -35,11 +36,37 @@ export const TradingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const mountedRef = useRef(true);
+
   const kucoinService = KuCoinFuturesService.getInstance();
   const virtualService = VirtualTradingService.getInstance();
 
-  // Removed auto-refresh on mount to reduce initial queries
-  // Data will be loaded on-demand when user navigates to trading views
+  // Auto-refresh: Enabled if user has turned it on in settings
+  // Respects user preference from localStorage
+  useEffect(() => {
+    mountedRef.current = true;
+
+    const autoRefreshSettings = getAutoRefreshSettings();
+    if (autoRefreshSettings.enabled) {
+      const intervalMs = autoRefreshSettings.intervalSeconds * 1000;
+      logger.info('🔄 Trading auto-refresh enabled', { intervalSeconds: autoRefreshSettings.intervalSeconds });
+      
+      intervalRef.current = setInterval(() => {
+        if (mountedRef.current && !isLoading) {
+          logger.info('🔄 Trading auto-refresh triggered');
+          refreshData();
+        }
+      }, intervalMs);
+    }
+
+    return () => {
+      mountedRef.current = false;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
   const setMode = (m: TradingMode) => {
     setTradingMode(m);
