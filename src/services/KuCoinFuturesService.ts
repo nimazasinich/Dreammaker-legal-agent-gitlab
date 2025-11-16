@@ -127,17 +127,37 @@ export class KuCoinFuturesService {
   async getPositions(): Promise<FuturesPosition[]> {
     // Check credentials before attempting API call
     if (!this.hasCredentials()) {
-      throw new Error('KuCoin credentials not configured. Please configure API credentials in settings.');
+      throw new Error(
+        'KuCoin Futures credentials not configured. ' +
+        'Please add your API key, secret, and passphrase in Exchange Settings.'
+      );
     }
 
     try {
       const endpoint = '/api/v1/positions';
       const headers = this.generateHeaders('GET', endpoint);
 
-      const response = await axios.get(this.baseUrl + endpoint, { headers });
+      const response = await axios.get(this.baseUrl + endpoint, { 
+        headers,
+        timeout: 15000 // 15 second timeout
+      });
       
       if (response.data.code !== '200000') {
-        this.logger.warn('KuCoin API error', { code: response.data.code, msg: response.data.msg });
+        const errorMsg = response.data.msg || 'Unknown error';
+        this.logger.warn('KuCoin API error', { code: response.data.code, msg: errorMsg });
+        
+        // Provide user-friendly error messages
+        if (response.data.code === '400003') {
+          throw new Error('Invalid KuCoin API credentials. Please check your API key and secret in Exchange Settings.');
+        }
+        if (response.data.code === '400004') {
+          throw new Error('KuCoin API key has insufficient permissions. Ensure "Futures Trading" is enabled.');
+        }
+        if (response.data.code === '429000') {
+          throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+        }
+        
+        throw new Error(`KuCoin Futures API error: ${errorMsg}`);
       }
 
       return (response.data.data || []).map((pos: any) => ({
@@ -152,12 +172,45 @@ export class KuCoinFuturesService {
         marginMode: pos.crossMode ? 'cross' : 'isolated'
       }));
     } catch (error: any) {
-      this.logger.error('Failed to get positions', {}, error);
-      throw error;
+      // Improve error messages for common network issues
+      if (error.code === 'ECONNREFUSED') {
+        const friendlyError = new Error(
+          'Cannot connect to KuCoin Futures API. Check your network connection.'
+        );
+        this.logger.error('Connection refused to KuCoin', {}, friendlyError);
+        throw friendlyError;
+      }
+      if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+        const friendlyError = new Error(
+          'KuCoin Futures API request timed out. Please try again.'
+        );
+        this.logger.error('KuCoin request timeout', {}, friendlyError);
+        throw friendlyError;
+      }
+      
+      this.logger.error('Failed to get positions from KuCoin', {}, error);
+      
+      // Re-throw with existing message if already friendly
+      if (error.message && error.message.includes('KuCoin')) {
+        throw error;
+      }
+      
+      // Otherwise provide a generic friendly message
+      throw new Error(
+        'Futures service temporarily unavailable. Please try again later or check your Exchange Settings.'
+      );
     }
   }
 
   async placeOrder(order: FuturesOrder): Promise<any> {
+    // Check credentials first
+    if (!this.hasCredentials()) {
+      throw new Error(
+        'KuCoin Futures credentials not configured. ' +
+        'Please add your API key, secret, and passphrase in Exchange Settings.'
+      );
+    }
+
     try {
       const endpoint = '/api/v1/orders';
       const body = JSON.stringify({
@@ -175,16 +228,53 @@ export class KuCoinFuturesService {
 
       const headers = this.generateHeaders('POST', endpoint, body);
 
-      const response = await axios.post(this.baseUrl + endpoint, body, { headers });
+      const response = await axios.post(this.baseUrl + endpoint, body, { 
+        headers,
+        timeout: 15000
+      });
 
       if (response.data.code !== '200000') {
-        this.logger.warn('KuCoin API error', { code: response.data.code, msg: response.data.msg });
+        const errorMsg = response.data.msg || 'Unknown error';
+        this.logger.warn('KuCoin order placement error', { code: response.data.code, msg: errorMsg });
+        
+        // Provide user-friendly error messages for common order errors
+        if (response.data.code === '400003') {
+          throw new Error('Invalid API credentials. Check your Exchange Settings.');
+        }
+        if (response.data.code === '400100') {
+          throw new Error('Invalid order parameters. Check symbol, size, and price.');
+        }
+        if (response.data.code === '300003') {
+          throw new Error('Insufficient balance to place order.');
+        }
+        if (response.data.code === '200004') {
+          throw new Error('Order size too small. Increase the order quantity.');
+        }
+        
+        throw new Error(`Order failed: ${errorMsg}`);
       }
 
       return response.data.data;
     } catch (error: any) {
-      this.logger.error('Failed to place order', {}, error);
-      throw error;
+      // Network error handling
+      if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+        const friendlyError = new Error(
+          'Cannot connect to KuCoin Futures. Check your network connection.'
+        );
+        this.logger.error('Network error placing order', {}, friendlyError);
+        throw friendlyError;
+      }
+      
+      this.logger.error('Failed to place order on KuCoin', {}, error);
+      
+      // Re-throw if already friendly
+      if (error.message && (error.message.includes('KuCoin') || error.message.includes('Order failed'))) {
+        throw error;
+      }
+      
+      throw new Error(
+        'Failed to place order. Please check your order parameters and try again.'
+      );
     }
   }
 
@@ -237,17 +327,33 @@ export class KuCoinFuturesService {
   async getAccountBalance(): Promise<any> {
     // Check credentials before attempting API call
     if (!this.hasCredentials()) {
-      throw new Error('KuCoin credentials not configured. Please configure API credentials in settings.');
+      throw new Error(
+        'KuCoin Futures credentials not configured. ' +
+        'Please add your API key, secret, and passphrase in Exchange Settings.'
+      );
     }
 
     try {
       const endpoint = '/api/v1/account-overview';
       const headers = this.generateHeaders('GET', endpoint);
 
-      const response = await axios.get(this.baseUrl + endpoint, { headers });
+      const response = await axios.get(this.baseUrl + endpoint, { 
+        headers,
+        timeout: 15000
+      });
 
       if (response.data.code !== '200000') {
-        this.logger.warn('KuCoin API error', { code: response.data.code, msg: response.data.msg });
+        const errorMsg = response.data.msg || 'Unknown error';
+        this.logger.warn('KuCoin balance fetch error', { code: response.data.code, msg: errorMsg });
+        
+        if (response.data.code === '400003') {
+          throw new Error('Invalid API credentials. Check your Exchange Settings.');
+        }
+        if (response.data.code === '400004') {
+          throw new Error('API key lacks permission to view account balance.');
+        }
+        
+        throw new Error(`Failed to fetch balance: ${errorMsg}`);
       }
 
       return {
@@ -257,8 +363,24 @@ export class KuCoinFuturesService {
         marginBalance: parseFloat(response.data.data.marginBalance)
       };
     } catch (error: any) {
-      this.logger.error('Failed to get account balance', {}, error);
-      throw error;
+      if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+        const friendlyError = new Error(
+          'Cannot connect to KuCoin Futures. Check your network connection.'
+        );
+        this.logger.error('Network error fetching balance', {}, friendlyError);
+        throw friendlyError;
+      }
+      
+      this.logger.error('Failed to get account balance from KuCoin', {}, error);
+      
+      // Re-throw if already friendly
+      if (error.message && error.message.includes('KuCoin')) {
+        throw error;
+      }
+      
+      throw new Error(
+        'Failed to fetch account balance. Please check your Exchange Settings.'
+      );
     }
   }
 

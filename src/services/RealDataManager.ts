@@ -177,18 +177,21 @@ export class RealDataManager {
             } catch (fallbackError) {
                 this.logger.error('All price sources failed', { symbol }, fallbackError as Error);
                 
-                // If strict real data mode is enabled, fail fast
+                // If strict real data mode is enabled, fail fast with clear error
                 if (isStrictRealData()) {
                     throw new Error(
-                        `Unable to obtain real price data for ${symbol}. ` +
-                        `All real data sources failed. Strict real data mode requires real data only.`
+                        `Primary data source unavailable: Unable to fetch price data for ${symbol}. ` +
+                        `All data providers failed. Check your HF Engine configuration or network connectivity.`
                     );
                 }
             }
             
             // Return null only if not in strict real data mode (allows graceful degradation in demo/test)
             if (isStrictRealData()) {
-                throw new Error(`Unable to obtain real price data for ${symbol} in strict real data mode.`);
+                throw new Error(
+                    `Primary data source unavailable: Cannot fetch ${symbol} price in strict real data mode. ` +
+                    `Ensure HF Data Engine is running and accessible.`
+                );
             }
             return null as any;
         }
@@ -249,11 +252,11 @@ export class RealDataManager {
             } catch (fallbackError) {
                 this.logger.error('All OHLCV sources failed', { symbol, timeframe }, fallbackError as Error);
                 
-                // If strict real data mode is enabled, fail fast
+                // If strict real data mode is enabled, fail fast with clear error
                 if (isStrictRealData()) {
                     throw new Error(
-                        `Unable to obtain real OHLCV data for ${symbol} ${timeframe}. ` +
-                        `All real data sources failed. Strict real data mode requires real data only.`
+                        `Primary data source unavailable: Cannot fetch OHLCV data for ${symbol} (${timeframe}). ` +
+                        `All data providers failed. Check your HF Engine configuration or network connectivity.`
                     );
                 }
                 
