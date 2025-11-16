@@ -5,6 +5,10 @@
  * HuggingFace Data Engine, Binance, KuCoin, etc.
  */
 
+// Ensure environment variables are loaded before any configuration
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { Logger } from '../core/Logger.js';
 
 export type DataSourceType = 'huggingface' | 'binance' | 'kucoin' | 'mixed';
@@ -135,32 +139,30 @@ class DataSourceConfigManager {
   }
 }
 
-// Export singleton instance and convenience functions
-const dataSourceConfigManager = DataSourceConfigManager.getInstance();
-
+// Export convenience functions (lazy initialization to allow dotenv.config() to run first)
 export const getDataSourceConfig = (): DataSourceConfig =>
-  dataSourceConfigManager.getConfig();
+  DataSourceConfigManager.getInstance().getConfig();
 
 export const getPrimarySource = (): DataSourceType =>
-  dataSourceConfigManager.getPrimarySource();
+  DataSourceConfigManager.getInstance().getPrimarySource();
 
 export const isHuggingFaceEnabled = (): boolean =>
-  dataSourceConfigManager.isHuggingFaceEnabled();
+  DataSourceConfigManager.getInstance().isHuggingFaceEnabled();
 
 export const getHuggingFaceBaseUrl = (): string =>
-  dataSourceConfigManager.getHuggingFaceBaseUrl();
+  DataSourceConfigManager.getInstance().getHuggingFaceBaseUrl();
 
 export const getHuggingFaceTimeout = (): number =>
-  dataSourceConfigManager.getHuggingFaceTimeout();
+  DataSourceConfigManager.getInstance().getHuggingFaceTimeout();
 
 export const isExchangeEnabled = (exchange: 'binance' | 'kucoin'): boolean =>
-  dataSourceConfigManager.isExchangeEnabled(exchange);
+  DataSourceConfigManager.getInstance().isExchangeEnabled(exchange);
 
 export const setPrimarySource = (source: DataSourceType): void =>
-  dataSourceConfigManager.setPrimarySource(source);
+  DataSourceConfigManager.getInstance().setPrimarySource(source);
 
 export const setHuggingFaceEnabled = (enabled: boolean): void =>
-  dataSourceConfigManager.setHuggingFaceEnabled(enabled);
+  DataSourceConfigManager.getInstance().setHuggingFaceEnabled(enabled);
 
 // Export the manager for advanced use cases
 export { DataSourceConfigManager };
