@@ -1,0 +1,204 @@
+{
+  "meta": {
+    "project": "DreammakerCryptoSignalAndTrader",
+    "version": "1.0",
+    "generated": "2025-11-16",
+    "philosophy": [
+      "Futures-only for production in this phase",
+      "Honest NOT_IMPLEMENTED instead of fake data",
+      "No synthetic/mocked data in production"
+    ]
+  },
+  "summary": {
+    "critical": { "total": 3, "completed": 3, "inProgress": 0, "notStarted": 0 },
+    "high":     { "total": 3, "completed": 1, "inProgress": 2, "notStarted": 0 },
+    "medium":   { "total": 3, "completed": 0, "inProgress": 0, "notStarted": 3 }
+  },
+  "sections": [
+    {
+      "priority": "critical",
+      "id": "spot-trading-decision",
+      "title": "SPOT Trading Decision",
+      "status": "completed",
+      "decision": "futures-only",
+      "items": [
+        { "id": "spot-config-futures-only", "status": "done", "text": "Config set to \"market\": \"FUTURES\" in config/system.config.json" },
+        { "id": "spot-ui-cleanup",         "status": "done", "text": "UI cleaned up to remove SPOT tab ambiguity (Futures-only interface)" },
+        { "id": "spot-docs-updated",       "status": "done", "text": "Docs clearly state \"Futures-only; SPOT is planned\"" },
+        { "id": "spot-coming-soon",        "status": "done", "text": "SpotNotAvailable.tsx kept as future \"Coming Soon\" messaging" }
+      ]
+    },
+    {
+      "priority": "critical",
+      "id": "route-surface-stabilization",
+      "title": "Route Surface Stabilization",
+      "status": "completed",
+      "items": [
+        { "id": "routes-commented-inventory", "status": "done", "text": "19 commented route imports in server.ts documented" },
+        { "id": "routes-docs-routes-md",      "status": "done", "text": "docs/routes.md created with active vs planned routes" },
+        { "id": "routes-separation",          "status": "done", "text": "Clear separation of active vs planned routes established" }
+      ]
+    },
+    {
+      "priority": "critical",
+      "id": "data-policy-lock",
+      "title": "Data Policy Lock for Real Trading",
+      "status": "completed",
+      "items": [
+        {
+          "id": "data-policy-env",
+          "status": "done",
+          "text": "Production env vars documented: VITE_APP_MODE=online, VITE_STRICT_REAL_DATA=true, VITE_USE_MOCK_DATA=false, VITE_ALLOW_FAKE_DATA=false"
+        },
+        {
+          "id": "data-policy-doc",
+          "status": "done",
+          "text": "docs/production-env-config.md created with complete reference"
+        }
+      ]
+    },
+    {
+      "priority": "high",
+      "id": "data-flow-docs",
+      "title": "Data Flow Documentation",
+      "status": "completed",
+      "items": [
+        {
+          "id": "data-flow-doc",
+          "status": "done",
+          "text": "docs/data-flow.md created with actual runtime path: HF Engine → HFMarketAdapter → MultiProviderMarketDataService → RealDataManager → DataContext"
+        },
+        {
+          "id": "data-flow-optional-providers",
+          "status": "done",
+          "text": "Binance/KuCoin/CMC/CryptoCompare documented as optional fallbacks, not core"
+        }
+      ]
+    },
+    {
+      "priority": "high",
+      "id": "hf-adapter-scope",
+      "title": "HF Adapter Scope Clarification",
+      "status": "in_progress",
+      "items": [
+        {
+          "id": "hf-scope-doc",
+          "status": "done",
+          "text": "docs/hf-engine-scope.md created; HF used for prices/OHLCV/overview/health/providers, not SMC/Elliott/signal storage"
+        },
+        {
+          "id": "hf-inline-doc-links",
+          "status": "todo",
+          "text": "Add brief inline references in src/services/hf/*Adapter.ts to hf-engine-scope.md"
+        },
+        {
+          "id": "hf-authoritative-impl-check",
+          "status": "todo",
+          "text": "Verify local authoritative implementations: SMCAnalyzer, ElliottWaveAnalyzer, SignalEngine are referenced from docs"
+        }
+      ]
+    },
+    {
+      "priority": "high",
+      "id": "auto-refresh-with-user-control",
+      "title": "Auto-Refresh with User Control",
+      "status": "todo",
+      "items": [
+        {
+          "id": "auto-refresh-contexts",
+          "status": "todo",
+          "text": "Re-enable refresh in DataContext and TradingContext with long intervals (30–60s)"
+        },
+        {
+          "id": "auto-refresh-settings-ui",
+          "status": "todo",
+          "text": "Add settings in SettingsView: toggle (on/off) and interval options [30s, 60s, 120s]"
+        },
+        {
+          "id": "auto-refresh-ws-primary",
+          "status": "todo",
+          "text": "Keep Futures WebSocket as primary real-time source; use polling as safety net"
+        }
+      ]
+    },
+    {
+      "priority": "medium",
+      "id": "url-hash-navigation",
+      "title": "URL-Based Navigation (Hash Routing)",
+      "status": "todo",
+      "items": [
+        {
+          "id": "nav-keep-provider",
+          "status": "todo",
+          "text": "Keep current NavigationProvider as source of truth"
+        },
+        {
+          "id": "nav-hash-sync",
+          "status": "todo",
+          "text": "Sync NavigationProvider currentView with window.location.hash (e.g. #/dashboard, #/scanner)"
+        },
+        {
+          "id": "nav-bidirectional",
+          "status": "todo",
+          "text": "On hash change, update NavigationProvider; on view change, update hash"
+        }
+      ]
+    },
+    {
+      "priority": "medium",
+      "id": "minimal-tests",
+      "title": "Minimum Test Skeleton",
+      "status": "todo",
+      "items": [
+        {
+          "id": "riskguard-test-file",
+          "status": "todo",
+          "text": "Create src/services/__tests__/RiskGuard.test.ts"
+        },
+        {
+          "id": "riskguard-pass-case",
+          "status": "todo",
+          "text": "Test RiskGuard.checkTradeRisk() with a passing case (within limits)"
+        },
+        {
+          "id": "riskguard-fail-case",
+          "status": "todo",
+          "text": "Test RiskGuard.checkTradeRisk() with a failing case (exceeds position size limit)"
+        },
+        {
+          "id": "tradeengine-test-file",
+          "status": "todo",
+          "text": "Create src/services/__tests__/TradeEngine.test.ts"
+        },
+        {
+          "id": "tradeengine-off-mode",
+          "status": "todo",
+          "text": "Test TradeEngine.executeSignal() blocks when trading mode is OFF"
+        },
+        {
+          "id": "tradeengine-testnet-mode",
+          "status": "todo",
+          "text": "Test TradeEngine.executeSignal() calls ExchangeClient only in TESTNET mode"
+        }
+      ]
+    },
+    {
+      "priority": "medium",
+      "id": "exchange-selector-cleanup",
+      "title": "Exchange Selector Cleanup (Optional)",
+      "status": "todo",
+      "items": [
+        {
+          "id": "exchange-audit",
+          "status": "todo",
+          "text": "Audit which exchanges are functional: KuCoin Futures (trading), Binance (data-only?), others"
+        },
+        {
+          "id": "exchange-ui-adjust",
+          "status": "todo",
+          "text": "If only KuCoin Futures is fully supported for trading, update UI: disable non-functional exchanges or label clearly as 'Data only'"
+        }
+      ]
+    }
+  ]
+}
