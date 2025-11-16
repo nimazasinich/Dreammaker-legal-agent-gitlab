@@ -38,7 +38,11 @@ class DataSourceConfigManager {
 
   private constructor() {
     // Load configuration from environment variables
-    const hfBaseUrl = process.env.HF_ENGINE_BASE_URL || 'http://localhost:8000';
+    // Smart default: Use relative path for production/HuggingFace, localhost for dev
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHuggingFace = process.env.SPACE_ID || process.env.SPACE_AUTHOR_NAME;
+    const defaultHfUrl = (isProduction || isHuggingFace) ? '/api/hf-engine' : 'http://localhost:8000';
+    const hfBaseUrl = process.env.HF_ENGINE_BASE_URL || defaultHfUrl;
     const primarySource = (process.env.PRIMARY_DATA_SOURCE as DataSourceType) || 'huggingface';
 
     this.config = {

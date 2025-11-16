@@ -41,6 +41,10 @@ export function StatusRibbon() {
     const fetchSystemStatus = async () => {
       try {
         const response = await fetch('/api/system/health');
+        if (!response.ok) {
+          console.warn(`System health check returned ${response.status}`);
+          return;
+        }
         const data = await response.json();
 
         if (data.trading) {
