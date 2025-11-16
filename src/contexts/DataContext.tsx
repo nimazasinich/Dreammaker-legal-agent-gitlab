@@ -260,14 +260,19 @@ export function DataProvider({
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [symbol, timeframe]);
 
-  // Initial load - DISABLED to reduce queries on startup
+  // Initial load - Enabled with debounce to prevent race conditions
   useEffect(() => {
     mountedRef.current = true;
     ignoreRef.current = false;
 
-    // Initial load is now disabled by default - data loads on demand
-    logger.info('⏸️ Initial load disabled. Data will load on demand.');
-    setLoading(false);
+    // Load data on mount with slight delay to avoid race conditions
+    // This ensures providers are fully initialized before data fetching
+    const initTimer = setTimeout(() => {
+      if (mountedRef.current && !ignoreRef.current) {
+        logger.info('🔄 DataContext: Initial load starting');
+        loadAllData();
+      }
+    }, 100); // 100ms delay for provider stabilization
 
     // Auto-refresh disabled to reduce unnecessary queries
     // Users can manually refresh when needed
@@ -275,6 +280,7 @@ export function DataProvider({
     return () => {
       mountedRef.current = false;
       ignoreRef.current = true;
+      clearTimeout(initTimer);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
