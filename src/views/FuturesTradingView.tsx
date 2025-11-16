@@ -371,14 +371,14 @@ export const FuturesTradingView: React.FC = () => {
                     <div className="text-center">
                       <div className="text-sm text-[color:var(--text-secondary)] mb-1">Final Score</div>
                       <div className="text-2xl font-bold text-purple-600">
-                        {(snapshot.final_score * 100).toFixed(1)}%
+                        {((snapshot.final_score || 0) * 100).toFixed(1)}%
                       </div>
                     </div>
                     {snapshot.confluence && (
                       <div className="text-center">
                         <div className="text-sm text-[color:var(--text-secondary)] mb-1">Confluence</div>
                         <div className="text-2xl font-bold text-blue-600">
-                          {(snapshot.confluence.score * 100).toFixed(1)}%
+                          {((snapshot.confluence?.score || 0) * 100).toFixed(1)}%
                         </div>
                       </div>
                     )}
@@ -405,7 +405,7 @@ export const FuturesTradingView: React.FC = () => {
                         </div>
                         <div>
                           <span className="text-[color:var(--text-secondary)]">Stop Loss:</span>
-                          <span className="font-semibold text-red-600 ml-2">${snapshot.entryPlan.sl.toFixed(2)}</span>
+                          <span className="font-semibold text-red-600 ml-2">${snapshot.entryPlan.sl?.toFixed(2) || 'N/A'}</span>
                         </div>
                         <div>
                           <span className="text-[color:var(--text-secondary)]">Take Profit:</span>
@@ -464,7 +464,7 @@ export const FuturesTradingView: React.FC = () => {
                   {(snapshot.results || []).map((result: any, idx: number) => (
                     <div key={idx} className="p-3 bg-[color:var(--surface-muted)] rounded-xl flex items-center justify-between" style={{ borderRadius: '10px' }}>
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold text-[color:var(--text-secondary)]">{result.tf}</span>
+                        <span className="text-sm font-bold text-[color:var(--text-secondary)]">{result.tf || 'N/A'}</span>
                         <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${
                           result.direction === 'BULLISH' ? 'bg-green-100 text-green-700' :
                           result.direction === 'BEARISH' ? 'bg-red-100 text-red-700' :
@@ -475,7 +475,7 @@ export const FuturesTradingView: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <span className="text-sm font-semibold text-purple-600">
-                          {(result.final_score * 100).toFixed(1)}%
+                          {((result.final_score || 0) * 100).toFixed(1)}%
                         </span>
                       </div>
                     </div>

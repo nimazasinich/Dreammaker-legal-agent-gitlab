@@ -310,10 +310,10 @@ export const PositionsView: React.FC = () => {
                             {pos.side}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-gray-700">{pos.size.toFixed(4)}</td>
-                        <td className="py-3 px-4 text-gray-700">${pos.entryPrice.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-gray-700 font-semibold">${pos.markPrice.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-red-600">${pos.sl.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-gray-700">{pos.size?.toFixed(4) || '0'}</td>
+                        <td className="py-3 px-4 text-gray-700">${pos.entryPrice?.toFixed(2) || '0.00'}</td>
+                        <td className="py-3 px-4 text-gray-700 font-semibold">${pos.markPrice?.toFixed(2) || '0.00'}</td>
+                        <td className="py-3 px-4 text-red-600">${pos.sl?.toFixed(2) || 'N/A'}</td>
                         <td className="py-3 px-4">
                           <div className="flex flex-wrap gap-1">
                             {(pos.tp || []).map((tp, i) => (
@@ -323,11 +323,11 @@ export const PositionsView: React.FC = () => {
                             ))}
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-purple-600 font-semibold">{pos.leverage}x</td>
+                        <td className="py-3 px-4 text-purple-600 font-semibold">{pos.leverage || 1}x</td>
                         <td className="py-3 px-4">
-                          <div className={`font-semibold ${getPnlColor(pos.pnl)}`}>
-                            ${pos.pnl.toFixed(2)}
-                            <div className="text-xs">({pos.pnlPercent.toFixed(2)}%)</div>
+                          <div className={`font-semibold ${getPnlColor(pos.pnl || 0)}`}>
+                            ${pos.pnl?.toFixed(2) || '0.00'}
+                            <div className="text-xs">({pos.pnlPercent?.toFixed(2) || '0.00'}%)</div>
                           </div>
                         </td>
                         <td className="py-3 px-4">
