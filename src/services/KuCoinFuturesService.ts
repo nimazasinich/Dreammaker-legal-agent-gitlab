@@ -52,12 +52,27 @@ export class KuCoinFuturesService {
 
   private loadCredentials() {
     try {
-      const stored = localStorage.getItem('exchange_credentials');
-      if (stored) {
-        const creds = JSON.parse(stored);
-        Object.entries(creds).forEach(([key, value]) => {
-          this.credentials.set(key, value as KuCoinCredentials);
-        });
+      // Only use localStorage in browser environment
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem('exchange_credentials');
+        if (stored) {
+          const creds = JSON.parse(stored);
+          Object.entries(creds).forEach(([key, value]) => {
+            this.credentials.set(key, value as KuCoinCredentials);
+          });
+        }
+      } else {
+        // Server-side: load from environment variables if available
+        const envKey = process.env.KUCOIN_FUTURES_KEY;
+        const envSecret = process.env.KUCOIN_FUTURES_SECRET;
+        const envPassphrase = process.env.KUCOIN_FUTURES_PASSPHRASE;
+        if (envKey && envSecret && envPassphrase) {
+          this.credentials.set('kucoin', {
+            apiKey: envKey,
+            apiSecret: envSecret,
+            passphrase: envPassphrase
+          });
+        }
       }
     } catch (error) {
       this.logger.error('Failed to load credentials', {}, error);
@@ -66,11 +81,14 @@ export class KuCoinFuturesService {
 
   saveCredentials(exchange: string, credentials: KuCoinCredentials) {
     this.credentials.set(exchange, credentials);
-    const creds: any = {};
-    this.credentials.forEach((value, key) => {
-      creds[key] = value;
-    });
-    localStorage.setItem('exchange_credentials', JSON.stringify(creds));
+    // Only persist to localStorage in browser environment
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const creds: any = {};
+      this.credentials.forEach((value, key) => {
+        creds[key] = value;
+      });
+      localStorage.setItem('exchange_credentials', JSON.stringify(creds));
+    }
   }
 
   setActiveExchange(exchange: string) {
