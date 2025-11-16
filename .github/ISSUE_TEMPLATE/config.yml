@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/yourusername/yourrepo/tree/main/docs
+    about: Check the docs folder for technical documentation
+  - name: Production Checklist
+    url: https://github.com/yourusername/yourrepo/blob/main/docs/production_checklist.v1.json
+    about: Machine-readable checklist for automation and tracking
