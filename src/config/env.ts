@@ -32,15 +32,24 @@ export const API_BASE = rawApiBase.replace(/\/api\/?$/i, ''); // strip trailing 
  * In production/HuggingFace: derive from location.origin
  * In development: use ws://localhost:8001
  * Priority: VITE_WS_BASE > VITE_WS_URL > auto-detect
+ * 
+ * IMPORTANT: HuggingFace Spaces require WSS (secure WebSocket)
  */
-const derivedWsBase =
-  typeof location !== 'undefined' ? location.origin.replace(/^http/, 'ws') : 'ws://localhost:8001';
+const derivedWsBase = typeof location !== 'undefined' 
+  ? location.origin.replace(/^http/, 'ws') // http -> ws, https -> wss
+  : 'ws://localhost:8001';
 
 const rawWsBase = (isProduction || isHuggingFace)
   ? (getEnv('VITE_WS_BASE') || derivedWsBase) // Prefer env var, fallback to auto-detect
   : (getEnv('VITE_WS_BASE') || getEnv('VITE_WS_URL') || 'ws://localhost:8001');
 
-export const WS_BASE = rawWsBase.replace(/\/(ws|api)\/?$/i, ''); // strip trailing /ws or /api
+// Ensure WSS protocol for HuggingFace and HTTPS sites
+let wsBase = rawWsBase.replace(/\/(ws|api)\/?$/i, ''); // strip trailing /ws or /api
+if (isHuggingFace || (typeof location !== 'undefined' && location.protocol === 'https:')) {
+  wsBase = wsBase.replace(/^ws:/, 'wss:'); // Force secure WebSocket
+}
+
+export const WS_BASE = wsBase;
 
 /**
  * Disable polling when WebSocket is connected (WS-first approach)
