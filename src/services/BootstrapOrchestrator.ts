@@ -120,7 +120,8 @@ class BootstrapOrchestratorClass {
    */
   isInitialLoadDisabled(): boolean {
     const disableFlag = import.meta.env.VITE_DISABLE_INITIAL_LOAD;
-    return disableFlag === 'true' || disableFlag === true;
+    // Handle both string and boolean forms from environment
+    return disableFlag === 'true' || disableFlag === 'TRUE' || String(disableFlag) === 'true';
   }
 
   /**
