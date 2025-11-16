@@ -10,23 +10,35 @@ const getEnv = (k: string) =>
     : (typeof process !== 'undefined' ? process.env[k] : '') || '';
 
 /**
- * API Base URL (must NOT end with /api)
- * Priority: VITE_API_BASE > VITE_API_URL > http://localhost:8001
+ * Detect if running in production or HuggingFace environment
  */
-const rawApiBase =
-  getEnv('VITE_API_BASE') ||
-  (getEnv('VITE_API_URL') ? getEnv('VITE_API_URL').replace(/\/$/, '') : 'http://localhost:8001');
+const isProduction = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PROD;
+const isHuggingFace = typeof location !== 'undefined' && location.hostname.includes('.hf.space');
+
+/**
+ * API Base URL (must NOT end with /api)
+ * In production/HuggingFace: use empty string for relative paths
+ * In development: use localhost:8001
+ * Priority: VITE_API_BASE > VITE_API_URL > auto-detect
+ */
+const rawApiBase = (isProduction || isHuggingFace)
+  ? (getEnv('VITE_API_BASE') || '') // Prefer env var, fallback to empty for relative paths
+  : (getEnv('VITE_API_BASE') || getEnv('VITE_API_URL')?.replace(/\/$/, '') || 'http://localhost:8001');
 
 export const API_BASE = rawApiBase.replace(/\/api\/?$/i, ''); // strip trailing /api
 
 /**
  * WebSocket Base URL (must be ws:// or wss:// and must NOT end with /ws or /api)
- * Priority: VITE_WS_BASE > VITE_WS_URL > derived from location > ws://localhost:8001
+ * In production/HuggingFace: derive from location.origin
+ * In development: use ws://localhost:8001
+ * Priority: VITE_WS_BASE > VITE_WS_URL > auto-detect
  */
 const derivedWsBase =
   typeof location !== 'undefined' ? location.origin.replace(/^http/, 'ws') : 'ws://localhost:8001';
 
-const rawWsBase = getEnv('VITE_WS_BASE') || getEnv('VITE_WS_URL') || derivedWsBase;
+const rawWsBase = (isProduction || isHuggingFace)
+  ? (getEnv('VITE_WS_BASE') || derivedWsBase) // Prefer env var, fallback to auto-detect
+  : (getEnv('VITE_WS_BASE') || getEnv('VITE_WS_URL') || 'ws://localhost:8001');
 
 export const WS_BASE = rawWsBase.replace(/\/(ws|api)\/?$/i, ''); // strip trailing /ws or /api
 

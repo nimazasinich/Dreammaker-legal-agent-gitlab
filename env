@@ -1,5 +1,5 @@
-VITE_API_BASE=http://localhost:3001/api
-VITE_WS_BASE=http://localhost:3001
+VITE_API_BASE=http://localhost:8001
+VITE_WS_BASE=ws://localhost:8001
 
 # Data Policy - Real Data Only (داده‌های واقعی فقط)
 VITE_APP_MODE=online
