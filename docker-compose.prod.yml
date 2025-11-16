@@ -1,0 +1,142 @@
+# docker-compose.prod.yml
+# Production-ready Docker Compose configuration for DreammakerCryptoSignalAndTrader
+# 
+# Usage:
+#   docker compose -f docker-compose.prod.yml up --build
+#
+# Note: For production deployment, inject all secrets via environment variables
+# or use Docker secrets/external secrets management.
+
+version: '3.8'
+
+services:
+  # Backend API and WebSocket server
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: dreammaker-backend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8001}:8001"
+    environment:
+      # Node environment
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=8001
+
+      # Data policy - strict real data only
+      - VITE_APP_MODE=online
+      - VITE_STRICT_REAL_DATA=true
+      - VITE_USE_MOCK_DATA=false
+      - VITE_ALLOW_FAKE_DATA=false
+
+      # API Keys (inject via environment or secrets)
+      - HF_TOKEN=${HF_TOKEN}
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY}
+
+      # Primary data source
+      - PRIMARY_DATA_SOURCE=huggingface
+      - HF_ENGINE_BASE_URL=${HF_ENGINE_BASE_URL:-https://really-amin-datasourceforcryptocurrency.hf.space}
+      - HF_ENGINE_ENABLED=true
+
+      # Backend configuration
+      - START_INGEST_ON_BOOT=false
+      - ENABLE_INGEST_CRON=false
+      - WATCHED_SYMBOLS=${WATCHED_SYMBOLS:-BTC,ETH,XRP,SOL,ADA}
+      - STARTUP_INTERVALS=${STARTUP_INTERVALS:-15m,1h}
+      - STARTUP_HIST_LIMIT=${STARTUP_HIST_LIMIT:-500}
+      - DISABLE_NEWS=false
+      - DISABLE_SENTIMENT=false
+
+      # Resilience settings
+      - AXIOS_MAX_RETRIES=5
+      - BOOT_NO_RETRY=false
+      - BOOT_PRIMARY_ONLY=true
+      - BOOT_WINDOW_MS=180000
+
+      # Exchange configuration (inject secrets securely)
+      - KUCOIN_FUTURES_KEY=${KUCOIN_FUTURES_KEY}
+      - KUCOIN_FUTURES_SECRET=${KUCOIN_FUTURES_SECRET}
+      - KUCOIN_FUTURES_PASSPHRASE=${KUCOIN_FUTURES_PASSPHRASE}
+      - FUTURES_BASE_URL=${FUTURES_BASE_URL:-https://api-futures.kucoin.com}
+
+      # Redis configuration (optional)
+      - DISABLE_REDIS=${DISABLE_REDIS:-false}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
+      # Security and rate limiting
+      - HELMET_ENABLED=true
+      - RATE_LIMIT_WINDOW_MS=60000
+      - RATE_LIMIT_MAX_REQUESTS=100
+
+      # Observability
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - ENABLE_METRICS=true
+
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    networks:
+      - dreammaker-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8001/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+
+  # Frontend static files served by NGINX
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: dreammaker-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - dreammaker-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Redis for caching (recommended for production)
+  redis:
+    image: redis:7-alpine
+    container_name: dreammaker-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    networks:
+      - dreammaker-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    profiles:
+      - with-redis
+
+networks:
+  dreammaker-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
