@@ -3,201 +3,174 @@
  *
  * Tests the core trading execution engine with mocked ExchangeClient and RiskGuard.
  * Verifies:
- * - HOLD signals don't trigger trades
- * - Risk guard blocks are respected
- * - Successful trades are executed and saved
- * - Rejected orders are handled properly
+ * - Mode-aware execution (OFF, DRY_RUN, TESTNET)
+ * - Risk guard integration
+ * - ExchangeClient interaction
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { TradeEngine } from '../TradeEngine.js';
+import { RiskGuard } from '../RiskGuard.js';
+import { ExchangeClient, PlaceOrderResult } from '../../../services/exchange/ExchangeClient.js';
+import { Database } from '../../../data/Database.js';
+import * as systemConfig from '../../../config/systemConfig.js';
+import { TradeSignal } from '../../../types/index.js';
 
 describe('TradeEngine', () => {
+  let tradeEngine: TradeEngine;
+  let mockRiskGuard: {
+    checkTradeRisk: ReturnType<typeof vi.fn>;
+    getConfig: ReturnType<typeof vi.fn>;
+  };
+  let mockExchangeClient: {
+    placeOrder: ReturnType<typeof vi.fn>;
+  };
+  let mockDatabase: {
+    getMarketData: ReturnType<typeof vi.fn>;
+    insert: ReturnType<typeof vi.fn>;
+  };
+
   beforeEach(() => {
-    // Clear all mocks before each test
     vi.clearAllMocks();
-  });
 
-  it('should skip execution for HOLD signals', async () => {
-    // Mock implementation would go here
-    // For now, we'll create a placeholder test
-
-    const signal = {
-      source: 'manual' as const,
-      symbol: 'BTCUSDT',
-      action: 'HOLD' as const,
-      confidence: null,
-      score: null,
-      timestamp: Date.now()
+    // Mock RiskGuard BEFORE getting TradeEngine instance
+    mockRiskGuard = {
+      checkTradeRisk: vi.fn(),
+      getConfig: vi.fn().mockReturnValue({
+        futures: { leverage: 3 },
+        spot: {}
+      })
     };
+    vi.spyOn(RiskGuard, 'getInstance').mockReturnValue(mockRiskGuard as any);
 
-    // In a real test, we'd import TradeEngine and execute the signal
-    // const result = await tradeEngine.executeSignal(signal);
-    // expect(result.executed).toBe(false);
-    // expect(result.reason).toContain('HOLD');
-
-    expect(signal.action).toBe('HOLD');
-  });
-
-  it('should block trades when risk guard denies', async () => {
-    // Mock RiskGuard to return allowed: false
-    // Mock ExchangeClient (should not be called)
-
-    const signal = {
-      source: 'manual' as const,
-      symbol: 'BTCUSDT',
-      action: 'BUY' as const,
-      confidence: 0.8,
-      score: 0.85,
-      timestamp: Date.now()
+    // Mock ExchangeClient BEFORE getting TradeEngine instance
+    mockExchangeClient = {
+      placeOrder: vi.fn()
     };
+    vi.spyOn(ExchangeClient, 'getInstance').mockReturnValue(mockExchangeClient as any);
 
-    // In a real test:
-    // const result = await tradeEngine.executeSignal(signal);
-    // expect(result.executed).toBe(false);
-    // expect(result.reason).toContain('blocked-by-risk-guard');
-
-    expect(signal.action).toBe('BUY');
-  });
-
-  it('should execute successful trades and save to database', async () => {
-    // Mock RiskGuard to return allowed: true
-    // Mock ExchangeClient to return success
-    // Mock Database.insert
-
-    const signal = {
-      source: 'strategy-pipeline' as const,
-      symbol: 'ETHUSDT',
-      action: 'SELL' as const,
-      confidence: 0.9,
-      score: 0.95,
-      timestamp: Date.now()
+    // Mock Database BEFORE getting TradeEngine instance
+    mockDatabase = {
+      getMarketData: vi.fn(),
+      insert: vi.fn().mockResolvedValue(undefined)
     };
+    vi.spyOn(Database, 'getInstance').mockReturnValue(mockDatabase as any);
 
-    // In a real test:
-    // const result = await tradeEngine.executeSignal(signal, 100);
-    // expect(result.executed).toBe(true);
-    // expect(result.order).toBeDefined();
-    // expect(result.order.status).toBe('FILLED');
-    // expect(mockDatabase.insert).toHaveBeenCalled();
+    // Mock system config functions
+    vi.spyOn(systemConfig, 'getTradingMode');
+    vi.spyOn(systemConfig, 'getTradingMarket');
 
-    expect(signal.action).toBe('SELL');
-  });
-
-  it('should handle rejected orders from exchange', async () => {
-    // Mock RiskGuard to return allowed: true
-    // Mock ExchangeClient to return REJECTED status
-
-    const signal = {
-      source: 'manual' as const,
-      symbol: 'BNBUSDT',
-      action: 'BUY' as const,
-      confidence: null,
-      score: null,
-      timestamp: Date.now()
-    };
-
-    // In a real test:
-    // const result = await tradeEngine.executeSignal(signal);
-    // expect(result.executed).toBe(false);
-    // expect(result.reason).toContain('Order rejected');
-    // expect(result.order?.status).toBe('REJECTED');
-
-    expect(signal.action).toBe('BUY');
-  });
-
-  it('should handle market data unavailability', async () => {
-    // Mock RiskGuard to return allowed: true
-    // Mock Database.getMarketData to return empty array
-
-    const signal = {
-      source: 'live-scoring' as const,
-      symbol: 'UNKNOWN',
-      action: 'BUY' as const,
-      confidence: 0.7,
-      score: 0.75,
-      timestamp: Date.now()
-    };
-
-    // In a real test:
-    // const result = await tradeEngine.executeSignal(signal);
-    // expect(result.executed).toBe(false);
-    // expect(result.reason).toContain('Market data unavailable');
-
-    expect(signal.symbol).toBe('UNKNOWN');
+    // Reset singleton instances to ensure fresh instances use our mocks
+    (TradeEngine as any).instance = undefined;
+    (RiskGuard as any).instance = undefined;
   });
 
   describe('Trading Mode Enforcement', () => {
     it('should block trades when trading mode is OFF', async () => {
-      // Mock getTradingMode to return 'OFF'
-      // Mock systemConfig to have modes.trading = 'OFF'
+      // Arrange: Mode is OFF
+      vi.mocked(systemConfig.getTradingMode).mockReturnValue('OFF');
+      vi.mocked(systemConfig.getTradingMarket).mockReturnValue('FUTURES');
 
-      const signal = {
-        source: 'manual' as const,
+      const signal: TradeSignal = {
+        source: 'manual',
         symbol: 'BTCUSDT',
-        action: 'BUY' as const,
+        action: 'BUY',
         confidence: 0.8,
         score: 0.85,
         timestamp: Date.now()
       };
 
-      // In a real test:
-      // const result = await tradeEngine.executeSignal(signal);
-      // expect(result.executed).toBe(false);
-      // expect(result.reason).toBe('trading-disabled');
-      // expect(result.market).toBe('FUTURES'); // or whatever market is configured
+      tradeEngine = TradeEngine.getInstance();
 
-      expect(signal.action).toBe('BUY');
+      // Act
+      const result = await tradeEngine.executeSignal(signal);
+
+      // Assert
+      expect(result.executed).toBe(false);
+      expect(result.reason).toBe('trading-disabled');
+      expect(mockExchangeClient.placeOrder).not.toHaveBeenCalled();
+      expect(mockRiskGuard.checkTradeRisk).not.toHaveBeenCalled();
     });
 
     it('should simulate trades in DRY_RUN mode without calling exchange', async () => {
-      // Mock getTradingMode to return 'DRY_RUN'
-      // Mock RiskGuard to return allowed: true
-      // Mock Database.getMarketData to return valid data
-      // Verify ExchangeClient.placeOrder is NOT called
-      // Verify order has 'DRY_' prefix in orderId
+      // Arrange: Mode is DRY_RUN, risk guard allows, market data available
+      vi.mocked(systemConfig.getTradingMode).mockReturnValue('DRY_RUN');
+      vi.mocked(systemConfig.getTradingMarket).mockReturnValue('FUTURES');
 
-      const signal = {
-        source: 'strategy-pipeline' as const,
+      mockRiskGuard.checkTradeRisk.mockResolvedValue({ allowed: true });
+      mockDatabase.getMarketData.mockResolvedValue([
+        { symbol: 'ETHUSDT', close: 3000, timestamp: Date.now() }
+      ]);
+
+      const signal: TradeSignal = {
+        source: 'strategy-pipeline',
         symbol: 'ETHUSDT',
-        action: 'SELL' as const,
+        action: 'SELL',
         confidence: 0.9,
         score: 0.95,
         timestamp: Date.now()
       };
 
-      // In a real test:
-      // const result = await tradeEngine.executeSignal(signal, 100);
-      // expect(result.executed).toBe(true);
-      // expect(result.order).toBeDefined();
-      // expect(result.order.orderId).toMatch(/^DRY_/);
-      // expect(result.order.status).toBe('FILLED');
-      // expect(mockExchangeClient.placeOrder).not.toHaveBeenCalled();
+      tradeEngine = TradeEngine.getInstance();
 
-      expect(signal.action).toBe('SELL');
+      // Act
+      const result = await tradeEngine.executeSignal(signal, 100);
+
+      // Assert
+      expect(result.executed).toBe(true);
+      expect(result.order).toBeDefined();
+      expect(result.order?.orderId).toMatch(/^DRY_FUTURES_/);
+      expect(result.order?.status).toBe('FILLED');
+      expect(mockExchangeClient.placeOrder).not.toHaveBeenCalled();
     });
 
-    it('should call exchange in TESTNET mode', async () => {
-      // Mock getTradingMode to return 'TESTNET'
-      // Mock RiskGuard to return allowed: true
-      // Mock ExchangeClient.placeOrder to return success
-      // Verify ExchangeClient.placeOrder IS called
+    it('should call exchange in TESTNET mode when risk passes', async () => {
+      // Arrange: Mode is TESTNET, risk guard allows, market data available
+      vi.mocked(systemConfig.getTradingMode).mockReturnValue('TESTNET');
+      vi.mocked(systemConfig.getTradingMarket).mockReturnValue('FUTURES');
 
-      const signal = {
-        source: 'live-scoring' as const,
+      mockRiskGuard.checkTradeRisk.mockResolvedValue({ allowed: true });
+      mockDatabase.getMarketData.mockResolvedValue([
+        { symbol: 'BTCUSDT', close: 50000, timestamp: Date.now() }
+      ]);
+
+      const mockOrderResult: PlaceOrderResult = {
+        orderId: 'test_order_123',
         symbol: 'BTCUSDT',
-        action: 'BUY' as const,
+        side: 'BUY',
+        quantity: 0.002,
+        status: 'FILLED',
+        price: 50000,
+        timestamp: Date.now()
+      };
+      mockExchangeClient.placeOrder.mockResolvedValue(mockOrderResult);
+
+      const signal: TradeSignal = {
+        source: 'live-scoring',
+        symbol: 'BTCUSDT',
+        action: 'BUY',
         confidence: 0.85,
         score: 0.9,
         timestamp: Date.now()
       };
 
-      // In a real test:
-      // const result = await tradeEngine.executeSignal(signal, 200);
-      // expect(result.executed).toBe(true);
-      // expect(mockExchangeClient.placeOrder).toHaveBeenCalled();
-      // expect(result.order?.orderId).not.toMatch(/^DRY_/);
+      tradeEngine = TradeEngine.getInstance();
 
-      expect(signal.action).toBe('BUY');
+      // Act
+      const result = await tradeEngine.executeSignal(signal, 100);
+
+      // Assert
+      expect(result.executed).toBe(true);
+      expect(mockExchangeClient.placeOrder).toHaveBeenCalledTimes(1);
+      expect(mockExchangeClient.placeOrder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          symbol: 'BTCUSDT',
+          side: 'BUY',
+          market: 'FUTURES'
+        })
+      );
+      expect(result.order?.orderId).toBe('test_order_123');
+      expect(result.order?.orderId).not.toMatch(/^DRY_/);
     });
   });
 
