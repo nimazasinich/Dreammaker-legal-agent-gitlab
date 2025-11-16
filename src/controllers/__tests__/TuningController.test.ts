@@ -8,6 +8,19 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Request, Response } from 'express';
 import { TuningController } from '../TuningController';
 import { TuningRunResult } from '../../types/index';
+import { TuningStorage } from '../../engine/tuning/TuningStorage.js';
+
+// Mock the Logger first
+vi.mock('../../core/Logger.js', () => ({
+  Logger: {
+    getInstance: vi.fn().mockReturnValue({
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn()
+    })
+  }
+}));
 
 // Mock the systemConfig - path from test file to src/config/
 vi.mock('../../config/systemConfig.js', () => ({
@@ -233,7 +246,7 @@ describe('TuningController', () => {
     });
 
     it('should return 404 for non-existent ID', async () => {
-      const tuningStorage = require('../../engine/tuning/TuningStorage.js').TuningStorage.getInstance();
+      const tuningStorage = vi.mocked(TuningStorage.getInstance());
       tuningStorage.getResult.mockResolvedValueOnce(null);
 
       mockRequest.params = { id: 'non-existent' };
@@ -281,7 +294,7 @@ describe('TuningController', () => {
     });
 
     it('should handle no results gracefully', async () => {
-      const tuningStorage = require('../../engine/tuning/TuningStorage.js').TuningStorage.getInstance();
+      const tuningStorage = vi.mocked(TuningStorage.getInstance());
       tuningStorage.getLatest.mockResolvedValueOnce(null);
 
       await controller.getLatest(mockRequest as Request, mockResponse as Response);
@@ -334,7 +347,7 @@ describe('TuningController', () => {
     });
 
     it('should return 404 if result does not exist', async () => {
-      const tuningStorage = require('../../engine/tuning/TuningStorage.js').TuningStorage.getInstance();
+      const tuningStorage = vi.mocked(TuningStorage.getInstance());
       tuningStorage.deleteResult.mockResolvedValueOnce(false);
 
       mockRequest.params = { id: 'non-existent' };

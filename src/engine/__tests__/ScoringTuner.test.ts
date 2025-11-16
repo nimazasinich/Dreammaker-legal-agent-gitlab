@@ -8,6 +8,18 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ScoringTuner } from '../tuning/ScoringTuner';
 import { TuningConfig, ScoringConfig, BacktestResult, MarketData } from '../../types/index';
 
+// Mock the Logger first
+vi.mock('../../core/Logger.js', () => ({
+  Logger: {
+    getInstance: vi.fn().mockReturnValue({
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn()
+    })
+  }
+}));
+
 // Mock the BacktestService - must use .js extension to match actual import
 vi.mock('../../services/backtestService.js', () => ({
   BacktestService: vi.fn().mockImplementation(() => ({
