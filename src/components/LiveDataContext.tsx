@@ -96,8 +96,9 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
     // Wait 30 seconds before starting periodic checks (avoids startup noise)
     startupDelay = setTimeout(() => {
       if (!isMounted) return;
-      
-      // Monitor connection status periodically (less frequent)
+
+      // Monitor connection status periodically (reduced frequency)
+      // Only check every 30 seconds since WebSocket state changes are infrequent
       checkInterval = setInterval(() => {
         if (!isMounted) {
           if (checkInterval) clearInterval(checkInterval);
@@ -106,7 +107,7 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
         const ws = (dataManager as any).ws;
         const connected = ws && ws.readyState === WebSocket.OPEN;
         setIsConnected(connected);
-      }, 15000); // Reduced frequency: Check every 15 seconds (was 5)
+      }, 30000); // Reduced from 5 seconds to 30 seconds to prevent unnecessary overhead
     }, 30000); // Wait 30 seconds before starting checks
 
     return () => {

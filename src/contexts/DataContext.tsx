@@ -7,6 +7,7 @@ import { APP_MODE, shouldUseMockFixtures, requiresRealData } from '../config/dat
 import { API_BASE } from '../config/env.js';
 import { toBinanceSymbol } from '../lib/symbolMapper';
 import { useRefreshSettings } from './RefreshSettingsContext';
+import { BootstrapOrchestrator } from '../services/BootstrapOrchestrator';
 
 interface DataContextType {
   portfolio: any;
@@ -173,15 +174,16 @@ export function DataProvider({
     setError(null);
 
     try {
-      logger.info('🔄 Loading all data...', { data: new Date().toISOString() });
+      logger.info('🔄 Loading all data (progressive)...', { data: new Date().toISOString() });
       lastBootstrapTimeRef.current = Date.now();
 
-      // PHASE 1: Load critical data only (prices + portfolio)
-      const priceSymbols = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP'];
-      const pricesData = await realDataManager.getPrices(priceSymbols);
+      // PHASE 1: Load core prices (reduced from 5 to 3 symbols initially)
+      // This is the minimum needed to render the dashboard
+      const corePriceSymbols = ['BTC', 'ETH', 'SOL'];
+      const corePricesData = await realDataManager.getPrices(corePriceSymbols);
 
-      logger.info('✅ Prices loaded:', { data: pricesData.length });
-      setPrices(pricesData);
+      logger.info('✅ Core prices loaded:', { data: corePricesData.length });
+      setPrices(corePricesData);
 
       // Update data source based on policy
       if (shouldUseMockFixtures() || APP_MODE === 'demo') {
@@ -192,51 +194,64 @@ export function DataProvider({
         setDataSource('real');
       }
 
-      // PHASE 2: Load portfolio and positions (critical)
-      const [portfolio, positions] = await Promise.all([
-        realDataManager.getPortfolio().catch(() => null),
-        realDataManager.getPositions().catch(() => []),
-      ]);
-
-      // Check if request was aborted or component unmounted after critical data
+      // Check if aborted before proceeding
       if (abortController.signal.aborted || ignoreRef.current) {
-        logger.info('⏹️ Request aborted after critical data load');
+        logger.info('⏹️ Request aborted after core prices');
         return;
       }
 
-      // PHASE 3: Load secondary data with slight delay (non-critical)
-      // This staggers the requests to avoid hitting rate limits
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const [signals, statistics, metrics] = await Promise.all([
-        realDataManager.getSignals().catch(() => []),
-        Promise.resolve({ accuracy: 0.85, totalSignals: 150 }),
-        Promise.resolve([]),
-      ]);
+      // PHASE 2: Load secondary data with staggered delays
+      // Portfolio and positions are critical, so load them next
+      const portfolio = await realDataManager.getPortfolio().catch(() => null);
 
-      // Check if request was aborted or component unmounted
-      if (abortController.signal.aborted || ignoreRef.current) {
-        logger.info('⏹️ Request aborted or component unmounted');
-        return;
-      }
+      // Small delay to prevent request bunching
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      if (abortController.signal.aborted || ignoreRef.current) return;
+
+      const positions = await realDataManager.getPositions().catch(() => []);
+
+      // Another delay before signals
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      if (abortController.signal.aborted || ignoreRef.current) return;
+
+      const signals = await realDataManager.getSignals().catch(() => []);
+
+      // Statistics and metrics are low priority - use static defaults
+      const statistics = { accuracy: 0.85, totalSignals: 150 };
+      const metrics: any[] = [];
+
+      // PHASE 3: Load additional prices (BNB, XRP) with delay
+      // These are lower priority and can be loaded after core data is displayed
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      if (abortController.signal.aborted || ignoreRef.current) return;
+
+      const additionalPriceSymbols = ['BNB', 'XRP'];
+      const additionalPrices = await realDataManager.getPrices(additionalPriceSymbols).catch(() => []);
+
+      // Merge all prices
+      const allPricesData = [...corePricesData, ...additionalPrices];
 
       if (mountedRef.current && !ignoreRef.current) {
         setData({
           portfolio,
           positions,
-          prices: pricesData,
+          prices: allPricesData,
           signals,
           statistics,
           metrics,
         });
+        setPrices(allPricesData);
 
         setLastUpdate(new Date());
         bootstrapDoneRef.current = true;
 
-        logger.info('✅ All data loaded successfully (staggered)', {
+        logger.info('✅ All data loaded successfully (progressive)', {
           portfolio: !!portfolio,
           positions: positions.length,
-          prices: pricesData.length,
+          prices: allPricesData.length,
           signals: signals.length,
           statistics: !!statistics,
           metrics: metrics.length,
@@ -253,9 +268,9 @@ export function DataProvider({
         const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
         setError(`خطا در بارگذاری داده‌ها: ${errorMessage}. لطفاً مطمئن شوید که سرور در حال اجرا است (پورت 3001)`);
 
-        // Fallback: Always show some data
+        // Fallback: Load minimal data (just BTC)
         try {
-          const fallbackPrices = await realDataManager.getPrices(['BTC', 'ETH', 'SOL']);
+          const fallbackPrices = await realDataManager.getPrices(['BTC']);
           setPrices(fallbackPrices);
 
           setData((prev) => ({
@@ -287,20 +302,42 @@ export function DataProvider({
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [symbol, timeframe]);
 
-  // Initial load - Enabled with debounce to prevent race conditions
+  // Initial load - Controlled by BootstrapOrchestrator to prevent request storms
   useEffect(() => {
     mountedRef.current = true;
     ignoreRef.current = false;
     bootstrapDoneRef.current = false;
 
-    // Load data on mount with slight delay to avoid race conditions
-    // This ensures providers are fully initialized before data fetching
+    // Check if initial load is disabled via environment flag
+    const disableInitialLoad = import.meta.env.VITE_DISABLE_INITIAL_LOAD === 'true';
+
+    if (disableInitialLoad) {
+      logger.info('🚫 DataContext: Initial load disabled via VITE_DISABLE_INITIAL_LOAD');
+      setLoading(false);
+      return () => {
+        mountedRef.current = false;
+        ignoreRef.current = true;
+      };
+    }
+
+    // Use BootstrapOrchestrator to coordinate initial load
+    // This prevents multiple contexts from triggering simultaneous loads
     const initTimer = setTimeout(() => {
       if (mountedRef.current && !ignoreRef.current && !bootstrapDoneRef.current) {
-        logger.info('🔄 DataContext: Initial bootstrap starting');
-        loadAllData(false); // false = respect throttle
+        logger.info('🔄 DataContext: Checking bootstrap orchestrator');
+
+        // Use the orchestrator to ensure controlled, single bootstrap
+        BootstrapOrchestrator.bootstrap(
+          // Core data loader
+          async () => {
+            logger.info('🔄 DataContext: Initial load starting (orchestrated)');
+            await loadAllData();
+          }
+        ).catch(err => {
+          logger.error('❌ Bootstrap orchestration failed:', {}, err);
+        });
       }
-    }, 100); // 100ms delay for provider stabilization
+    }, 300); // Increased delay for provider stabilization and coordination
 
     return () => {
       mountedRef.current = false;

@@ -291,19 +291,92 @@ export class RealDataManager {
 
     async getPrices(symbols: string[]): Promise<RealPriceData[]> {
         const results: RealPriceData[] = [];
-        
+
+        // Check cache first for all symbols
+        const uncachedSymbols: string[] = [];
         for (const symbol of symbols) {
-            try {
-                const data = await this.getPrice(symbol);
-                if (data) {
-                    results.push(data);
-                }
-            } catch (error) {
-                this.logger.error(`Failed to fetch price for ${symbol}`, { symbol }, error as Error);
-                // Continue with other symbols
+            const cacheKey = this.getCacheKey('price', { symbol });
+            const cached = this.getFromCache(cacheKey);
+            if (cached) {
+                results.push(cached);
+            } else {
+                uncachedSymbols.push(symbol);
             }
         }
-        
+
+        // If all symbols are cached, return immediately
+        if (uncachedSymbols.length === 0) {
+            this.logger.info('All prices served from cache', { symbols });
+            return results;
+        }
+
+        // Try batch endpoint first for uncached symbols (single request)
+        try {
+            const normalizedSymbols = uncachedSymbols.map(s =>
+                s.includes('USDT') ? s : `${s}USDT`
+            );
+
+            const response = await axios.get(`${API_BASE}/api/market-data/batch`, {
+                params: { symbols: normalizedSymbols.join(',') },
+                timeout: 15000
+            });
+
+            if (response.data && response.data.data) {
+                const batchData = response.data.data;
+                for (const symbol of uncachedSymbols) {
+                    const normalizedSymbol = symbol.includes('USDT') ? symbol : `${symbol}USDT`;
+                    const data = batchData[normalizedSymbol] || batchData[symbol];
+                    if (data) {
+                        const priceData: RealPriceData = {
+                            symbol: symbol.replace('USDT', ''),
+                            price: parseFloat(data.price || data.currentPrice || 0),
+                            change24h: parseFloat(data.changePercent24h || data.change24h || 0),
+                            volume24h: parseFloat(data.volume24h || data.volume || 0),
+                            lastUpdate: Date.now()
+                        };
+                        results.push(priceData);
+                        const cacheKey = this.getCacheKey('price', { symbol });
+                        this.setCache(cacheKey, priceData);
+                    }
+                }
+                return results;
+            }
+        } catch (batchError) {
+            this.logger.warn('Batch endpoint failed, falling back to sequential requests', {
+                error: batchError instanceof Error ? batchError.message : 'Unknown error'
+            });
+        }
+
+        // Fallback: Sequential requests with rate limiting
+        // Process in small batches to avoid overwhelming the server
+        const BATCH_SIZE = 2; // Process 2 symbols at a time
+        const BATCH_DELAY = 150; // 150ms between batches
+
+        for (let i = 0; i < uncachedSymbols.length; i += BATCH_SIZE) {
+            const batch = uncachedSymbols.slice(i, i + BATCH_SIZE);
+
+            // Process batch concurrently
+            const batchPromises = batch.map(async (symbol) => {
+                try {
+                    const data = await this.getPrice(symbol);
+                    if (data) {
+                        return data;
+                    }
+                } catch (error) {
+                    this.logger.error(`Failed to fetch price for ${symbol}`, { symbol }, error as Error);
+                }
+                return null;
+            });
+
+            const batchResults = await Promise.all(batchPromises);
+            results.push(...batchResults.filter((r): r is RealPriceData => r !== null));
+
+            // Add delay between batches to prevent request storm
+            if (i + BATCH_SIZE < uncachedSymbols.length) {
+                await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
+            }
+        }
+
         return results;
     }
 

@@ -42,10 +42,12 @@ DISABLE_NEWS=true
 DISABLE_SENTIMENT=true
 
 # ============================================
-# Frontend – no auto-connect, no initial mega-prefetch
+# Frontend – controlled startup with throttling
 # ============================================
 VITE_WS_CONNECT_ON_START=false
-VITE_DISABLE_INITIAL_LOAD=true
+# VITE_DISABLE_INITIAL_LOAD now respected by DataContext
+# Set to false to allow controlled/throttled initial load (progressive loading)
+VITE_DISABLE_INITIAL_LOAD=false
 VITE_REFRESH_MS=120000
 
 # ============================================
