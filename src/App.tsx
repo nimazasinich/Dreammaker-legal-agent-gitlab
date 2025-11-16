@@ -178,18 +178,17 @@ function App() {
       <ThemeProvider>
         <AccessibilityProvider>
           <DataProvider>
-            <RealDataProvider>
-              <LiveDataProvider>
-                <TradingProvider>
-                  <BacktestProvider>
-                    <NavigationProvider>
-                      <AppContent />
-                      <ToastContainer />
-                    </NavigationProvider>
-                  </BacktestProvider>
-                </TradingProvider>
-              </LiveDataProvider>
-            </RealDataProvider>
+            {/* FIXED: Removed RealDataProvider to prevent duplicate data fetching */}
+            <LiveDataProvider>
+              <TradingProvider>
+                <BacktestProvider>
+                  <NavigationProvider>
+                    <AppContent />
+                    <ToastContainer />
+                  </NavigationProvider>
+                </BacktestProvider>
+              </TradingProvider>
+            </LiveDataProvider>
           </DataProvider>
         </AccessibilityProvider>
       </ThemeProvider>
