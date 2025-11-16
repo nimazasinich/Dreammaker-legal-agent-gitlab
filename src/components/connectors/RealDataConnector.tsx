@@ -118,15 +118,27 @@ export const RealDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const priceArray = Array.from(priceMap.values());
           
           if (isMounted) {
-            setPrices(priceArray);
-            setIsConnected(true);
-            setLastUpdate(Date.now());
-            logger.info('✅ Real data initialized - 100% real APIs active');
+            if (priceArray.length > 0) {
+              setPrices(priceArray);
+              setIsConnected(true);
+              setLastUpdate(Date.now());
+              logger.info('✅ Real data initialized - 100% real APIs active');
+            } else {
+              logger.warn('⚠️ No data returned from market data sources');
+              setIsConnected(false);
+            }
           }
         } catch (err) {
           if (isMounted) {
             logger.error('❌ Failed to initialize real data:', {}, err);
             setIsConnected(false);
+            // Log user-friendly error
+            const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+            if (errorMsg.includes('Primary data source unavailable') || 
+                errorMsg.includes('HF Engine') ||
+                errorMsg.includes('HuggingFace')) {
+              logger.error('Primary data source (HF Engine) is unavailable. Please check configuration.', {}, err);
+            }
           }
         }
       };
