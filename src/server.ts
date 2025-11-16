@@ -136,9 +136,19 @@ import { assertEnv } from './server/envGuard.js';
 import { getAvailablePort } from './utils/port.js';
 import { initBroadcast } from './server/wsBroadcast.js';
 import { metricsMiddleware, metricsRoute, wsConnections } from './observability/metrics.js';
+import { assertPolicy } from './config/dataPolicy.js';
 
 // Validate environment variables before proceeding
 assertEnv();
+
+// Enforce data policy before starting server
+try {
+  assertPolicy();
+  console.log('✅ Data policy validated successfully');
+} catch (error) {
+  console.error('❌ DATA POLICY VIOLATION:', error);
+  process.exit(1);
+}
 
 const app = express();
 app.set('trust proxy', 1);
