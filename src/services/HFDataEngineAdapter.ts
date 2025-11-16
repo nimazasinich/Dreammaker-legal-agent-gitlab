@@ -1,9 +1,12 @@
 /**
  * HuggingFace Data Engine Adapter
  *
- * Adapts HuggingFace Data Engine responses to match the backend's expected format.
- * This service sits between the backend routes and the HF Data Engine Client,
- * ensuring compatibility with existing frontend expectations.
+ * HFDataEngineAdapter mediates between the HF Data Engine and internal services for supported endpoints.
+ * Unsupported operations return explicit NOT_IMPLEMENTED errors instead of falling back to fake data.
+ * See docs/hf-engine-scope.md and docs/data-flow.md for details.
+ *
+ * This adapter transforms HF Engine responses into the backend's expected format and provides
+ * a unified interface for controllers regardless of the underlying data source.
  */
 
 import { Logger } from '../core/Logger.js';
@@ -523,7 +526,7 @@ export class HFDataEngineAdapter {
       return this.getTopPrices(limit);
     }
 
-    // Intentional: see docs/hf-engine-scope.md – direct provider integrations are used; HF proxy endpoints are not part of this build.
+    // HF-based proxying for this provider is not implemented in this build; use direct provider clients instead.
     return {
       success: false,
       error: {
@@ -551,7 +554,7 @@ export class HFDataEngineAdapter {
       return this.getSystemHealth();
     }
 
-    // For Binance/KuCoin sources, return basic health with NOT_IMPLEMENTED note
+    // HF-based health checks for non-HF providers are not implemented in this build.
     return {
       success: true,
       data: {
@@ -575,7 +578,7 @@ export class HFDataEngineAdapter {
       return this.runSentimentAnalysis(text);
     }
 
-    // Intentional: see docs/hf-engine-scope.md – sentiment analysis is an HF-specific feature, not available via other providers.
+    // Sentiment analysis is an HF-specific feature; not available via other providers in this build.
     return {
       success: false,
       error: {

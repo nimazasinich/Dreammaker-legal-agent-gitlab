@@ -1,8 +1,9 @@
 /**
  * HuggingFace Proxy Adapter
  *
- * Handles proxy routes for external data (news, fear & greed index, etc.)
- * HF Data Engine may aggregate news/sentiment from multiple sources
+ * HFProxyAdapter is a placeholder for potential proxy-style integrations via the HF Data Engine.
+ * In this build, direct provider clients are used instead; proxy methods are intentionally not implemented.
+ * See docs/hf-engine-scope.md for the current integration model.
  */
 
 import { Logger } from '../../core/Logger.js';
@@ -75,12 +76,12 @@ export class HFProxyAdapter {
 
   /**
    * Get cryptocurrency news
-   * Note: News aggregation via HF is not yet implemented
+   * This proxy method is intentionally not implemented; direct provider clients are used instead.
    */
   async getNews(symbol?: string, limit: number = 10): Promise<AdapterResponse<any[]>> {
     const endpoint = '/proxy/news';
 
-    // Intentional: see docs/hf-engine-scope.md – direct provider integrations are used; HF proxy endpoints are not part of this build.
+    // This proxy method is intentionally not implemented; direct provider clients are used instead.
     return this.createError(
       endpoint,
       'News aggregation via HuggingFace is not yet implemented. Use alternative news services.',
@@ -91,12 +92,12 @@ export class HFProxyAdapter {
 
   /**
    * Get Fear & Greed Index
-   * Note: Fear & Greed data via HF is not yet implemented
+   * This proxy method is intentionally not implemented; direct provider clients are used instead.
    */
   async getFearGreedIndex(): Promise<AdapterResponse<any>> {
     const endpoint = '/proxy/fear-greed';
 
-    // Intentional: see docs/hf-engine-scope.md – direct provider integrations are used; HF proxy endpoints are not part of this build.
+    // This proxy method is intentionally not implemented; direct provider clients are used instead.
     return this.createError(
       endpoint,
       'Fear & Greed Index via HuggingFace is not yet implemented. Use Alternative.me API.',
@@ -107,12 +108,12 @@ export class HFProxyAdapter {
 
   /**
    * Get social sentiment data
-   * Note: Could be implemented using HF sentiment models
+   * This proxy method is intentionally not implemented; direct provider clients are used instead.
    */
   async getSocialSentiment(symbol: string): Promise<AdapterResponse<any>> {
     const endpoint = '/proxy/social-sentiment';
 
-    // Intentional: see docs/hf-engine-scope.md – direct provider integrations are used; HF proxy endpoints are not part of this build.
+    // This proxy method is intentionally not implemented; direct provider clients are used instead.
     return this.createError(
       endpoint,
       'Social sentiment aggregation via HuggingFace is not yet implemented.',
