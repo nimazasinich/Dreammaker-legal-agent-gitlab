@@ -9,6 +9,7 @@ import { ExchangeSettings } from '../components/settings/ExchangeSettings';
 import TelegramSettingsCard from '../components/settings/TelegramSettingsCard';
 import { ExchangeSelector } from '../components/ExchangeSelector';
 import { DataSourceSelector } from '../components/settings/DataSourceSelector';
+import { useAutoRefreshSettings } from '../hooks/useAutoRefreshSettings';
 
 const logger = Logger.getInstance();
 
@@ -48,6 +49,7 @@ interface StrategyConfig {
 }
 
 const SettingsView: React.FC = () => {
+  const { settings: autoRefreshSettings, updateSettings: updateAutoRefresh } = useAutoRefreshSettings();
   const [config, setConfig] = useState<StrategyConfig>({
     detectors: [
         {
@@ -225,6 +227,78 @@ const SettingsView: React.FC = () => {
         {/* Data Source Selector */}
         <div className="mb-6">
           <DataSourceSelector />
+        </div>
+
+        {/* Auto-Refresh Settings */}
+        <div 
+          className="mb-6 p-6 rounded-xl"
+          style={{
+            background: 'rgba(15, 15, 24, 0.6)',
+            border: '1px solid rgba(99, 102, 241, 0.2)'
+          }}
+        >
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <RefreshCw className="w-6 h-6 text-cyan-400" />
+            Auto-Refresh Settings
+          </h3>
+          <p className="text-slate-400 text-sm mb-4">
+            Enable automatic data refresh to keep prices and positions up-to-date.
+            WebSocket connections remain primary; polling is used as fallback.
+          </p>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
+              <div>
+                <div className="font-bold mb-1">Enable Auto-Refresh</div>
+                <div className="text-sm text-slate-400">
+                  Automatically refresh data in the background
+                </div>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={autoRefreshSettings.enabled}
+                  onChange={(e) => updateAutoRefresh({ enabled: e.target.checked })}
+                  className="w-5 h-5 rounded"
+                />
+                <span className="text-sm font-semibold">
+                  {autoRefreshSettings.enabled ? 'Enabled' : 'Disabled'}
+                </span>
+              </label>
+            </div>
+
+            {autoRefreshSettings.enabled && (
+              <div className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
+                <label className="text-sm text-slate-400 block mb-2">
+                  Refresh Interval (seconds)
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min="10"
+                    max="120"
+                    step="5"
+                    value={autoRefreshSettings.intervalSeconds}
+                    onChange={(e) => updateAutoRefresh({ intervalSeconds: parseInt(e.target.value) })}
+                    className="flex-1"
+                    style={{ accentColor: '#06b6d4' }}
+                  />
+                  <input
+                    type="number"
+                    min="10"
+                    max="120"
+                    value={autoRefreshSettings.intervalSeconds}
+                    onChange={(e) => updateAutoRefresh({ intervalSeconds: parseInt(e.target.value) })}
+                    className="w-20 px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 text-center font-bold"
+                  />
+                  <span className="text-slate-400">seconds</span>
+                </div>
+                <div className="mt-2 text-xs text-slate-500">
+                  Recommended: 30-60 seconds to balance real-time data with API usage
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Exchange Selector */}
