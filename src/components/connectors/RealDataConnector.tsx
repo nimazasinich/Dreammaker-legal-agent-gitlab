@@ -57,79 +57,80 @@ export const RealDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (connectOnStart) {
       // Subscribe to market data updates
       const priceUnsub = dataManager.subscribe('market_data', [], (data) => {
-        if (isMounted && data) {
-          // Convert market data to price format
-          if (data.symbol && data.price !== undefined) {
-            setPrices(prev => {
-              const updated = [...prev];
-              const index = updated.findIndex(p => p.symbol === data.symbol);
-              const priceData = {
-                symbol: data.symbol,
-                price: data.price,
-                change24h: data.change24h || 0,
-                volume24h: data.volume || 0,
-                lastUpdate: Date.now()
-              };
-              if (index >= 0) {
-                updated[index] = priceData;
-              } else {
-                updated.push(priceData);
-              }
-              // Limit array size
-              return updated.slice(0, 100);
-            });
-            setLastUpdate(Date.now());
-          }
+        if (!isMounted || !data) return;
+        
+        // Convert market data to price format
+        if (data.symbol && data.price !== undefined) {
+          setPrices(prev => {
+            const updated = [...prev];
+            const index = updated.findIndex(p => p.symbol === data.symbol);
+            const priceData = {
+              symbol: data.symbol,
+              price: data.price,
+              change24h: data.change24h || 0,
+              volume24h: data.volume || 0,
+              lastUpdate: Date.now()
+            };
+            if (index >= 0) {
+              updated[index] = priceData;
+            } else {
+              updated.push(priceData);
+            }
+            // Limit array size to prevent memory growth
+            return updated.slice(0, 100);
+          });
+          setLastUpdate(Date.now());
         }
       });
       unsubscribers.push(priceUnsub);
 
       // Subscribe to signal updates
       const signalUnsub = dataManager.subscribe('signal_update', [], (data) => {
-        if (isMounted && data) {
-          setSignals(prev => {
-            const updated = [...prev];
-            if (data.symbol && data.prediction) {
-              const index = updated.findIndex(s => s.id === data.symbol);
-              if (index >= 0) {
-                updated[index] = data.prediction;
-              } else {
-                updated.push(data.prediction);
-              }
+        if (!isMounted || !data) return;
+        
+        setSignals(prev => {
+          const updated = [...prev];
+          if (data.symbol && data.prediction) {
+            const index = updated.findIndex(s => s.id === data.symbol);
+            if (index >= 0) {
+              updated[index] = data.prediction;
+            } else {
+              updated.push(data.prediction);
             }
-            return updated.slice(0, 100);
-          });
-          setLastUpdate(Date.now());
-        }
+          }
+          // Limit array size to prevent memory growth
+          return updated.slice(0, 100);
+        });
+        setLastUpdate(Date.now());
       });
       unsubscribers.push(signalUnsub);
     }
 
     // Initialize data fetching (polling-based, not WebSocket)
-    const initializeData = async () => {
-      try {
-        // Fetch initial data
-        const symbols = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP'];
-        const priceMap = await realDataManager.getMarketData(symbols);
-        const priceArray = Array.from(priceMap.values());
-        
-        if (isMounted) {
-          setPrices(priceArray);
-          setIsConnected(true);
-          setLastUpdate(Date.now());
-          logger.info('✅ Real data initialized - 100% real APIs active');
-        }
-      } catch (err) {
-        if (isMounted) {
-          logger.error('❌ Failed to initialize real data:', {}, err);
-          setIsConnected(false);
-        }
-      }
-    };
-
-    // Only initialize if auto-load is enabled
+    // Only runs if auto-load is NOT disabled
     const disableInitial = import.meta.env.VITE_DISABLE_INITIAL_LOAD === 'true';
     if (!disableInitial) {
+      const initializeData = async () => {
+        try {
+          // Fetch initial data
+          const symbols = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP'];
+          const priceMap = await realDataManager.getMarketData(symbols);
+          const priceArray = Array.from(priceMap.values());
+          
+          if (isMounted) {
+            setPrices(priceArray);
+            setIsConnected(true);
+            setLastUpdate(Date.now());
+            logger.info('✅ Real data initialized - 100% real APIs active');
+          }
+        } catch (err) {
+          if (isMounted) {
+            logger.error('❌ Failed to initialize real data:', {}, err);
+            setIsConnected(false);
+          }
+        }
+      };
+      
       initializeData();
     } else {
       setIsConnected(false);
@@ -140,7 +141,7 @@ export const RealDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       isMounted = false;
       logger.info('🛑 RealDataProvider cleanup - unsubscribing all');
       
-      // Unsubscribe all subscribers
+      // Unsubscribe all subscribers to prevent memory leaks
       unsubscribers.forEach(unsub => {
         try {
           unsub();
@@ -149,9 +150,12 @@ export const RealDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       });
       
+      // Clear the unsubscribers array
+      unsubscribers.length = 0;
+      
       setIsConnected(false);
     };
-  }, []);
+  }, []); // Run only once on mount
 
   const contextValue: RealDataContextType = {
     prices,

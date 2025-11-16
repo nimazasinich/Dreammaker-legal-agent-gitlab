@@ -125,10 +125,12 @@ export const DashboardView: React.FC = () => {
     const [currentSymbol, setCurrentSymbol] = useState<string>('BTCUSDT');
     const [currentTimeframe, setCurrentTimeframe] = useState<string>('1h');
 
-    // Initial data load on mount - only if data is not already loaded
+    // Initial data load on mount - consolidated to prevent duplicate requests
+    const initialLoadRef = useRef(false);
     useEffect(() => {
-        // Only trigger initial load if we don't have data and we're not already loading
-        if (!dataLoading && !portfolioData && !marketPricesData && !aiSignalsData) {
+        // Only trigger initial load once if we don't have data and we're not already loading
+        if (!initialLoadRef.current && !dataLoading && !portfolioData && !marketPricesData && !aiSignalsData) {
+            initialLoadRef.current = true;
             logger.info('🔄 Dashboard: Triggering initial data load');
             refreshAllData();
         }
@@ -218,43 +220,14 @@ export const DashboardView: React.FC = () => {
         }
     }, [marketPrices]);
 
-    // Fetch AI Signals for TopSignalsPanel
+    // Use signals from DataContext instead of separate polling
+    // This prevents duplicate HTTP requests
     useEffect(() => {
-        let isMounted = true;
-        let interval: NodeJS.Timeout | null = null;
-        
-        const fetchPanelSignals = async () => {
-            try {
-                const signals = await realDataManager.getAISignals(10);
-                if (isMounted) {
-                    setAiSignalsForPanel(signals);
-                }
-            } catch (error) {
-                if (isMounted) {
-                    logger.warn('Failed to fetch signals for panel:', error);
-                }
-            }
-        };
-
-        // Initial fetch
-        fetchPanelSignals();
-
-        // Refresh every 30 seconds if auto-refresh is enabled
-        if (autoRefresh) {
-            interval = setInterval(() => {
-                if (isMounted && autoRefresh) {
-                    fetchPanelSignals();
-                }
-            }, 30000);
+        if (aiSignalsData && Array.isArray(aiSignalsData)) {
+            // Use signals from context
+            setAiSignalsForPanel(aiSignalsData.slice(0, 10));
         }
-
-        return () => {
-            isMounted = false;
-            if (interval) {
-                clearInterval(interval);
-            }
-        };
-    }, [autoRefresh]);
+    }, [aiSignalsData]);
 
     // Handle manual refresh - prevent duplicate calls
     const handleRefresh = useCallback(() => {
@@ -416,9 +389,20 @@ export const DashboardView: React.FC = () => {
 
     return (
         <div className="w-full min-h-full animate-fade-in">
-            {/* Market Ticker */}
+            {/* Market Ticker - Uses data from context, no separate fetching */}
             <div className="mb-6">
-                <MarketTicker autoFetch={autoRefresh} refreshInterval={30000} />
+                <MarketTicker marketData={marketPrices.map(mp => ({
+                    symbol: mp.symbol.replace('/', ''),
+                    price: mp.price,
+                    open: mp.price,
+                    high: mp.price,
+                    low: mp.price,
+                    close: mp.price,
+                    change24h: mp.changePercent,
+                    changePercent24h: mp.changePercent,
+                    volume: mp.volume24h || 0,
+                    timestamp: Date.now()
+                }))} autoFetch={false} />
             </div>
 
             <style>{`
@@ -439,58 +423,58 @@ export const DashboardView: React.FC = () => {
                 }
             `}</style>
 
-            {/* Header */}
-            <div className="mb-8">
-                <div className="flex items-center justify-between mb-2">
+            {/* Header - Compact and Clean */}
+            <div className="mb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2 drop-shadow-[0_0_30px_rgba(139,92,246,0.4)]">
+                        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                             Dashboard Overview
                         </h1>
-                        <p className="text-slate-400 text-xs">Real-time market intelligence and portfolio analytics</p>
+                        <p className="text-slate-400 text-xs mt-1">Real-time market intelligence and portfolio analytics</p>
                         {error && (
-                            <div className="mt-2 flex items-center gap-2 text-orange-400 text-xs">
-                                <AlertCircle className="w-3 h-3" />
-                                <span>{error}</span>
+                            <div className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                                <AlertCircle className="w-3 h-3 text-orange-400" />
+                                <span className="text-orange-400 text-xs">{error}</span>
                             </div>
                         )}
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <button
                             onClick={() => setAutoRefresh(!autoRefresh)}
-                            className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                                 autoRefresh 
-                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                                    : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
+                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30' 
+                                    : 'bg-slate-700/40 text-slate-400 border border-slate-600/30 hover:bg-slate-700/60'
                             }`}
                             title={autoRefresh ? 'Auto-refresh enabled' : 'Auto-refresh disabled'}
                         >
-                            {autoRefresh ? 'Auto' : 'Manual'}
+                            {autoRefresh ? '● Auto' : '○ Manual'}
                         </button>
                         <button
                             onClick={handleRefresh}
                             disabled={isRefreshing || dataLoading}
-                            className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-all disabled:opacity-50"
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
                             title="Refresh data"
                         >
-                            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                            Refresh
                         </button>
                         <div 
-                            className="px-4 py-2 rounded-xl backdrop-blur-sm"
+                            className="px-3 py-1.5 rounded-lg backdrop-blur-sm"
                             style={{
                                 background: 'rgba(15, 15, 24, 0.6)',
-                                border: '1px solid rgba(139, 92, 246, 0.2)',
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(139, 92, 246, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.08)'
+                                border: '1px solid rgba(100, 100, 120, 0.2)',
                             }}
                         >
-                            <span className="text-[10px] text-slate-400 mr-2">Last Update:</span>
-                            <span className="text-xs font-semibold text-white">{lastUpdate.toLocaleTimeString()}</span>
+                            <span className="text-[10px] text-slate-500 mr-1.5">Updated:</span>
+                            <span className="text-xs font-medium text-slate-300">{lastUpdate.toLocaleTimeString()}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* Stats Grid - Improved spacing and responsiveness */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {(statCards || []).map((stat, index) => {
                     const Icon = stat.icon;
                     return (
@@ -555,8 +539,8 @@ export const DashboardView: React.FC = () => {
                 })}
             </div>
 
-            {/* Main Content Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Main Content Area - Better responsive layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                 {/* Top AI Signals Panel */}
                 <div
                     className="lg:col-span-2 rounded-2xl p-6 backdrop-blur-sm"
@@ -605,7 +589,19 @@ export const DashboardView: React.FC = () => {
                         </div>
                     </div>
 
-                    {(topSignals?.length || 0) > 0 ? (
+                    {loading && !topSignals.length ? (
+                        <div className="space-y-3">
+                            {[1, 2, 3].map((idx) => (
+                                <div key={idx} className="p-4 rounded-xl animate-pulse" style={{
+                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                                }}>
+                                    <div className="h-4 bg-slate-700 rounded w-1/3 mb-2"></div>
+                                    <div className="h-3 bg-slate-700 rounded w-1/2"></div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (topSignals?.length || 0) > 0 ? (
                         <div className="space-y-3">
                             {(topSignals || []).map((item, idx) => (
                                 <div 
@@ -724,9 +720,21 @@ export const DashboardView: React.FC = () => {
                         </div>
                     ) : (
                         <div className="text-center py-12">
-                            <Brain className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-                            <p className="text-slate-400">No signals available</p>
-                            <p className="text-slate-500 text-xs mt-2">Signals will appear here when generated</p>
+                            <div className="inline-flex p-4 rounded-2xl mb-4" style={{
+                                background: 'rgba(139, 92, 246, 0.1)',
+                                border: '1px solid rgba(139, 92, 246, 0.2)'
+                            }}>
+                                <Brain className="w-12 h-12 text-purple-400/50" />
+                            </div>
+                            <p className="text-slate-400 font-medium mb-1">No signals available</p>
+                            <p className="text-slate-500 text-xs">Signals will appear here when generated by the AI engine</p>
+                            <button
+                                onClick={handleRefresh}
+                                disabled={isRefreshing}
+                                className="mt-4 px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30 transition-all text-xs font-medium"
+                            >
+                                Refresh Data
+                            </button>
                         </div>
                     )}
                 </div>
@@ -763,7 +771,20 @@ export const DashboardView: React.FC = () => {
                         </div>
                     </div>
 
-                    {(marketPrices?.length || 0) > 0 ? (
+                    {loading && !marketPrices.length ? (
+                        <div className="space-y-3">
+                            {[1, 2, 3].map((idx) => (
+                                <div key={idx} className="p-4 rounded-xl animate-pulse" style={{
+                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                                }}>
+                                    <div className="h-4 bg-slate-700 rounded w-2/3 mb-2"></div>
+                                    <div className="h-6 bg-slate-700 rounded w-1/2 mb-2"></div>
+                                    <div className="h-3 bg-slate-700 rounded w-1/3"></div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (marketPrices?.length || 0) > 0 ? (
                         <div className="space-y-3">
                             {(marketPrices || []).map((item, idx) => (
                                 <div 
@@ -825,40 +846,53 @@ export const DashboardView: React.FC = () => {
                         </div>
                     ) : (
                         <div className="text-center py-12">
-                            <Activity className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-                            <p className="text-slate-400">Loading market data...</p>
+                            <div className="inline-flex p-4 rounded-2xl mb-4" style={{
+                                background: 'rgba(6, 182, 212, 0.1)',
+                                border: '1px solid rgba(6, 182, 212, 0.2)'
+                            }}>
+                                <Activity className="w-12 h-12 text-cyan-400/50" />
+                            </div>
+                            <p className="text-slate-400 font-medium mb-1">No market data</p>
+                            <p className="text-slate-500 text-xs">Market prices will appear here when available</p>
+                            <button
+                                onClick={handleRefresh}
+                                disabled={isRefreshing}
+                                className="mt-4 px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 transition-all text-xs font-medium"
+                            >
+                                Load Data
+                            </button>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Status Banner */}
+            {/* Status Banner - Cleaner design */}
             <div
-                className="rounded-2xl p-4 backdrop-blur-sm"
+                className="rounded-xl p-3 backdrop-blur-sm mb-6"
                 style={{
-                    background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(236, 72, 153, 0.15) 100%)',
-                    border: '1px solid rgba(139, 92, 246, 0.3)',
-                    boxShadow: '0 12px 40px rgba(99, 102, 241, 0.25), 0 0 60px rgba(139, 92, 246, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1)'
+                    background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 50%, rgba(236, 72, 153, 0.08) 100%)',
+                    border: '1px solid rgba(139, 92, 246, 0.2)',
                 }}
             >
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <div
-                            className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"
-                            style={{ boxShadow: '0 0 20px rgba(52, 211, 153, 1), 0 0 40px rgba(16, 185, 129, 0.5)' }}
+                            className="w-2 h-2 rounded-full bg-emerald-400"
+                            style={{ 
+                                boxShadow: '0 0 10px rgba(52, 211, 153, 0.8)',
+                                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                            }}
                         />
-                        <span className="font-bold text-sm text-white" style={{
-                            textShadow: '0 0 15px rgba(255, 255, 255, 0.3)'
-                        }}>
+                        <span className="font-semibold text-sm text-white">
                             All Systems Operational
                         </span>
-                        <span className="text-xs text-slate-400">
-                            • Real-time Data • AI Model Active • Live Market Streaming
+                        <span className="text-xs text-slate-500">
+                            • Real-time Data • AI Active • Market Streaming
                         </span>
                     </div>
-                    <div className="text-xs text-slate-400 flex items-center gap-2">
+                    <div className="text-xs text-slate-400 flex items-center gap-1.5">
                         <Clock className="w-3 h-3" />
-                        Updated: {lastUpdate.toLocaleTimeString()}
+                        <span>{lastUpdate.toLocaleTimeString()}</span>
                     </div>
                 </div>
             </div>

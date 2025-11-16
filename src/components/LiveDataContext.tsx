@@ -52,10 +52,11 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
   useEffect(() => {
     let isMounted = true;
     let checkInterval: NodeJS.Timeout | null = null;
+    let unsubscribeLiquidation: (() => void) | null = null;
 
     // Subscribe to liquidation risk alerts
-    const unsubscribeLiquidation = dataManager.subscribe('liquidation_risk', [], (data: any) => {
-      if (data?.data) {
+    unsubscribeLiquidation = dataManager.subscribe('liquidation_risk', [], (data: any) => {
+      if (isMounted && data?.data) {
         const { symbol, riskLevel, marginRatio, currentPrice, liquidationPrice } = data.data;
         showToast(
           riskLevel === 'high' ? 'error' : 'warning',
@@ -66,6 +67,7 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
     });
 
     // Connect WebSocket on mount (gracefully handle failures)
+    // Only connect once per app lifecycle
     const connectOnStart = import.meta.env.VITE_WS_CONNECT_ON_START === 'true';
     if (connectOnStart) {
       dataManager.connectWebSocket()
@@ -83,7 +85,7 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
         });
     }
 
-    // Monitor connection status - reduced frequency to prevent leaks
+    // Monitor connection status periodically
     checkInterval = setInterval(() => {
       if (!isMounted) {
         if (checkInterval) clearInterval(checkInterval);
@@ -92,19 +94,28 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
       const ws = (dataManager as any).ws;
       const connected = ws && ws.readyState === WebSocket.OPEN;
       setIsConnected(connected);
-    }, 5000); // Changed from 1000ms to 5000ms to reduce overhead
+    }, 5000); // Check every 5 seconds
 
     return () => {
       isMounted = false;
+      
+      // Clear interval first
       if (checkInterval) {
         clearInterval(checkInterval);
+        checkInterval = null;
       }
+      
       // Unsubscribe from liquidation alerts
-      unsubscribeLiquidation();
+      if (unsubscribeLiquidation) {
+        unsubscribeLiquidation();
+        unsubscribeLiquidation = null;
+      }
+      
       // Disconnect WebSocket when provider unmounts
+      // This ensures clean disconnection on navigation
       dataManager.disconnectWebSocket();
     };
-  }, []);
+  }, []); // Run only once on mount
 
   const subscribeToMarketData = useCallback((symbols: string[], callback: (data: MarketData) => void) => {
     const MAX_MAP_SIZE = 100; // Limit map size to prevent memory leak
