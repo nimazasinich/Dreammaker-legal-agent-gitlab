@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Activity, Clock, Target } from 'lucide-react';
 import { Logger } from '../../core/Logger';
+import { buildWebSocketUrl } from '../../config/env';
 
 const logger = Logger.getInstance();
 
@@ -34,10 +35,8 @@ const ScannerFeedPanel: React.FC = () => {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    // Connect to WebSocket
-    const wsUrl = `ws://${window.location.hostname}:${
-      import.meta.env.VITE_WS_PORT || '3001'
-    }/ws`;
+    // Use unified buildWebSocketUrl() for consistent WS URL construction
+    const wsUrl = buildWebSocketUrl('/ws');
 
     let ws: WebSocket | null = null;
 

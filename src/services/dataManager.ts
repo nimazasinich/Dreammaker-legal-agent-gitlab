@@ -3,27 +3,10 @@ import { Logger } from '../core/Logger.js';
 import { ConnectionStatus } from '../types';
 import { retry } from '../utils/retry';
 
-import { API_BASE, WS_BASE } from '../config/env.js';
+import { API_BASE, buildWebSocketUrl } from '../config/env.js';
 
 // API Base URL configuration
 const API_BASE_URL = API_BASE;
-
-// WebSocket connection configuration - use only /ws path (server supports /ws only)
-const WS_PATH = '/ws';
-// Note: buildWebSocketUrl() handles normalization internally, so we don't need normalizeWsBase here
-// Keeping WS_BASE_NORMALIZED for backward compatibility but using buildWebSocketUrl() for new connections
-const normalizeWsBase = (base: string): string => {
-  // Remove ALL trailing /ws or /ws/ patterns (with optional trailing slash)
-  // Use a while loop to handle multiple /ws suffixes
-  let normalized = base;
-  while (normalized.endsWith('/ws') || normalized.endsWith('/ws/')) {
-    normalized = normalized.replace(/\/ws\/?$/, '');
-  }
-  // Remove any trailing slash
-  normalized = normalized.replace(/\/$/, '');
-  return normalized;
-};
-const WS_BASE_NORMALIZED = normalizeWsBase(WS_BASE);
 
 // Cache configuration
 const CACHE_CONFIG = {
@@ -101,14 +84,12 @@ class DataManager {
                 let connectionResolved = false;
 
                 try {
-                    // In dev mode, use relative path to leverage Vite proxy
-                    // In production, use absolute WS_BASE URL
-                    const wsUrl = import.meta.env.DEV
-                        ? `${location.origin.replace(/^http/, 'ws')}${WS_PATH}`
-                        : `${WS_BASE_NORMALIZED}${WS_PATH}`;
+                    // Use unified buildWebSocketUrl() for consistent WS URL construction
+                    // This handles dev vs prod, HuggingFace detection, and path normalization
+                    const wsUrl = buildWebSocketUrl('/ws');
 
                     if (import.meta.env.DEV) {
-                        logger.info(`Attempting WebSocket connection to: ${wsUrl} (via Vite proxy)`);
+                        logger.info(`Attempting WebSocket connection to: ${wsUrl}`);
                     }
 
                     // Suppress browser console error by wrapping in try-catch

@@ -24,14 +24,24 @@ RUN npx esbuild src/server.ts \
   --format=cjs \
   --outfile=dist/server.js
 
-# Setup nginx
+# Setup nginx with improved WebSocket configuration
 RUN mkdir -p /run/nginx /etc/nginx/http.d && \
     echo 'server {' > /etc/nginx/http.d/default.conf && \
     echo '  listen 7860;' >> /etc/nginx/http.d/default.conf && \
     echo '  root /app/dist;' >> /etc/nginx/http.d/default.conf && \
     echo '  location / { try_files $uri /index.html; }' >> /etc/nginx/http.d/default.conf && \
-    echo '  location /api/ { proxy_pass http://127.0.0.1:8000/; }' >> /etc/nginx/http.d/default.conf && \
-    echo '  location /ws { proxy_pass http://127.0.0.1:8000/ws; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }' >> /etc/nginx/http.d/default.conf && \
+    echo '  location /api/ { proxy_pass http://127.0.0.1:8000/; proxy_http_version 1.1; }' >> /etc/nginx/http.d/default.conf && \
+    echo '  location /ws { ' >> /etc/nginx/http.d/default.conf && \
+    echo '    proxy_pass http://127.0.0.1:8000/ws;' >> /etc/nginx/http.d/default.conf && \
+    echo '    proxy_http_version 1.1;' >> /etc/nginx/http.d/default.conf && \
+    echo '    proxy_set_header Upgrade $http_upgrade;' >> /etc/nginx/http.d/default.conf && \
+    echo '    proxy_set_header Connection "upgrade";' >> /etc/nginx/http.d/default.conf && \
+    echo '    proxy_set_header Host $host;' >> /etc/nginx/http.d/default.conf && \
+    echo '    proxy_set_header X-Real-IP $remote_addr;' >> /etc/nginx/http.d/default.conf && \
+    echo '    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> /etc/nginx/http.d/default.conf && \
+    echo '    proxy_read_timeout 86400s;' >> /etc/nginx/http.d/default.conf && \
+    echo '    proxy_send_timeout 86400s;' >> /etc/nginx/http.d/default.conf && \
+    echo '  }' >> /etc/nginx/http.d/default.conf && \
     echo '}' >> /etc/nginx/http.d/default.conf
 
 # Simple startup script
