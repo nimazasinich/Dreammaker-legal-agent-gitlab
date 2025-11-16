@@ -203,21 +203,21 @@ export const PortfolioPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right text-gray-700">
-                          {pos.size.toFixed(4)}
+                          {pos.size?.toFixed(4) || '0.0000'}
                         </td>
                         <td className="py-3 px-4 text-right text-gray-700">
-                          ${pos.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          ${pos.entryPrice?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
                         </td>
                         <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                          ${pos.markPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          ${pos.markPrice?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
                         </td>
                         <td className="py-3 px-4 text-right text-purple-600 font-semibold">
-                          {pos.leverage}x
+                          {pos.leverage || 1}x
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <div className={`font-semibold ${getPnlColor(pos.pnl)}`}>
-                            ${pos.pnl.toFixed(2)}
-                            <div className="text-xs">({pos.pnlPercent.toFixed(2)}%)</div>
+                          <div className={`font-semibold ${getPnlColor(pos.pnl || 0)}`}>
+                            ${pos.pnl?.toFixed(2) || '0.00'}
+                            <div className="text-xs">({pos.pnlPercent?.toFixed(2) || '0.00'}%)</div>
                           </div>
                         </td>
                         <td className="py-3 px-4 text-right">

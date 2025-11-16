@@ -170,8 +170,8 @@ const ScoringOverviewSection: React.FC<ScoringOverviewSectionProps> = ({
   scoring,
   isAdaptiveEnabled
 }) => {
-  const telemetry = scoring.telemetrySummary;
-  const effectiveWeights = scoring.effectiveWeights;
+  const telemetry = scoring?.telemetrySummary;
+  const effectiveWeights = scoring?.effectiveWeights;
 
   return (
     <div className="space-y-4">
@@ -195,7 +195,7 @@ const ScoringOverviewSection: React.FC<ScoringOverviewSectionProps> = ({
             {isAdaptiveEnabled ? 'ON' : 'OFF'}
           </div>
           <div className="text-xs text-muted mt-1">
-            {effectiveWeights.isAdaptive ? 'Using adaptive weights' : 'Using static weights'}
+            {effectiveWeights?.isAdaptive ? 'Using adaptive weights' : 'Using static weights'}
           </div>
         </div>
 
@@ -232,17 +232,17 @@ const ScoringOverviewSection: React.FC<ScoringOverviewSectionProps> = ({
         )}
 
         {/* Best Category Card */}
-        {scoring.bestCategory && (
+        {scoring?.bestCategory && (
           <div className="p-4 bg-surface border border-border rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted">Best Category</span>
               <Award className="w-4 h-4 text-yellow-500" />
             </div>
             <div className="text-2xl font-bold text-foreground uppercase">
-              {scoring.bestCategory.name}
+              {scoring.bestCategory?.name || 'N/A'}
             </div>
             <div className="text-xs text-muted mt-1">
-              {fmt(scoring.bestCategory.winRate * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% win rate
+              {fmt((scoring.bestCategory?.winRate || 0) * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% win rate
             </div>
           </div>
         )}
@@ -254,7 +254,7 @@ const ScoringOverviewSection: React.FC<ScoringOverviewSectionProps> = ({
           Category Weights
         </h3>
         <div className="grid grid-cols-5 gap-3">
-          {Object.entries(effectiveWeights.categories).map(([name, weight]) => (
+          {effectiveWeights?.categories && Object.entries(effectiveWeights.categories).map(([name, weight]) => (
             <div key={name}>
               <div className="text-xs text-muted uppercase mb-1">{name}</div>
               <div className="h-2 bg-border rounded-full overflow-hidden">
@@ -449,7 +449,7 @@ const Strategy3Table: React.FC<Strategy3TableProps> = ({ data, meta }) => {
               </div>
               <div className="text-right">
                 <div className="text-xs text-muted">Risk-Reward</div>
-                <div className="text-lg font-semibold text-accent">1:{row.risk.rr}</div>
+                <div className="text-lg font-semibold text-accent">1:{row.risk?.rr || 'N/A'}</div>
               </div>
             </div>
 
@@ -466,15 +466,15 @@ const Strategy3Table: React.FC<Strategy3TableProps> = ({ data, meta }) => {
             <div className="grid grid-cols-3 gap-3 mb-3 p-3 bg-muted/20 rounded-lg">
               <div>
                 <div className="text-xs text-muted">Conservative</div>
-                <div className="text-sm font-medium text-foreground">{row.entryLevels.conservative}</div>
+                <div className="text-sm font-medium text-foreground">{row.entryLevels?.conservative || 'N/A'}</div>
               </div>
               <div>
                 <div className="text-xs text-muted">Base</div>
-                <div className="text-sm font-medium text-accent">{row.entryLevels.base}</div>
+                <div className="text-sm font-medium text-accent">{row.entryLevels?.base || 'N/A'}</div>
               </div>
               <div>
                 <div className="text-xs text-muted">Aggressive</div>
-                <div className="text-sm font-medium text-foreground">{row.entryLevels.aggressive}</div>
+                <div className="text-sm font-medium text-foreground">{row.entryLevels?.aggressive || 'N/A'}</div>
               </div>
             </div>
 
