@@ -4,6 +4,7 @@ import { Logger } from '../core/Logger';
 import { API_BASE, buildWebSocketUrl } from '../config/env';
 import { showToast } from '../components/ui/Toast';
 import { useConfirmModal } from '../components/ui/ConfirmModal';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 interface Position {
   id: string;
@@ -429,3 +430,5 @@ export const PositionsView: React.FC = () => {
     </>
   );
 };
+
+export default PositionsView;

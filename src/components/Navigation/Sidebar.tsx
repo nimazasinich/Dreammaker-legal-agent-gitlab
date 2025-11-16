@@ -19,6 +19,8 @@ import {
   Zap,
   Rocket,
   ListOrdered,
+  Monitor,
+  Stethoscope,
 } from 'lucide-react';
 import { useNavigation, NavigationView } from './NavigationProvider';
 import { t } from '../../i18n';
@@ -47,6 +49,8 @@ const NAV_ITEMS: NavigationItem[] = [
   { id: 'strategylab', label: 'Strategy Lab', icon: Activity },
   { id: 'strategy-insights', label: 'Strategy Insights', icon: Layers },
   { id: 'health', label: t('navigation.health'), icon: Activity },
+  { id: 'monitoring', label: 'Monitoring', icon: Monitor },
+  { id: 'diagnostics', label: 'Diagnostics', icon: Stethoscope },
   { id: 'settings', label: t('navigation.settings'), icon: Settings },
   { id: 'exchange-settings', label: 'Exchange Settings', icon: Settings },
 ];

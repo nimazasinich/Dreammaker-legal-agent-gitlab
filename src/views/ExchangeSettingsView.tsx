@@ -274,3 +274,5 @@ export const ExchangeSettingsView: React.FC = () => {
     </>
   );
 };
+
+export default ExchangeSettingsView;
