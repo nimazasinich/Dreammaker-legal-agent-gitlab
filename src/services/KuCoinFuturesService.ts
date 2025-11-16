@@ -152,8 +152,20 @@ export class KuCoinFuturesService {
         marginMode: pos.crossMode ? 'cross' : 'isolated'
       }));
     } catch (error: any) {
-      this.logger.error('Failed to get positions', {}, error);
-      throw error;
+      this.logger.error('Failed to get positions', { symbol: 'all' }, error);
+      
+      // Provide user-friendly error messages
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        throw new Error('Exchange credentials invalid or missing. Please check your API credentials in Exchange Settings.');
+      } else if (error.response?.status === 429) {
+        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message?.includes('timeout')) {
+        throw new Error('Futures service temporarily unavailable. Please check your network connection and try again.');
+      } else if (error.response?.data?.msg) {
+        throw new Error(`Futures service error: ${error.response.data.msg}`);
+      } else {
+        throw new Error('Failed to fetch positions. Please try again later.');
+      }
     }
   }
 
@@ -183,8 +195,20 @@ export class KuCoinFuturesService {
 
       return response.data.data;
     } catch (error: any) {
-      this.logger.error('Failed to place order', {}, error);
-      throw error;
+      this.logger.error('Failed to place order', { symbol: order.symbol, side: order.side }, error);
+      
+      // Provide user-friendly error messages
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        throw new Error('Exchange credentials invalid or missing. Please check your API credentials in Exchange Settings.');
+      } else if (error.response?.status === 429) {
+        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message?.includes('timeout')) {
+        throw new Error('Futures service temporarily unavailable. Please check your network connection and try again.');
+      } else if (error.response?.data?.msg) {
+        throw new Error(`Order failed: ${error.response.data.msg}`);
+      } else {
+        throw new Error('Failed to place order. Please verify your order parameters and try again.');
+      }
     }
   }
 
@@ -258,7 +282,19 @@ export class KuCoinFuturesService {
       };
     } catch (error: any) {
       this.logger.error('Failed to get account balance', {}, error);
-      throw error;
+      
+      // Provide user-friendly error messages
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        throw new Error('Exchange credentials invalid or missing. Please check your API credentials in Exchange Settings.');
+      } else if (error.response?.status === 429) {
+        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message?.includes('timeout')) {
+        throw new Error('Futures service temporarily unavailable. Please check your network connection and try again.');
+      } else if (error.response?.data?.msg) {
+        throw new Error(`Account balance error: ${error.response.data.msg}`);
+      } else {
+        throw new Error('Failed to fetch account balance. Please try again later.');
+      }
     }
   }
 
@@ -304,8 +340,20 @@ export class KuCoinFuturesService {
 
       return response.data.data.items;
     } catch (error: any) {
-      this.logger.error('Failed to get open orders', {}, error);
-      throw error;
+      this.logger.error('Failed to get open orders', { symbol }, error);
+      
+      // Provide user-friendly error messages
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        throw new Error('Exchange credentials invalid or missing. Please check your API credentials in Exchange Settings.');
+      } else if (error.response?.status === 429) {
+        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message?.includes('timeout')) {
+        throw new Error('Futures service temporarily unavailable. Please check your network connection and try again.');
+      } else if (error.response?.data?.msg) {
+        throw new Error(`Failed to fetch orders: ${error.response.data.msg}`);
+      } else {
+        throw new Error('Failed to fetch open orders. Please try again later.');
+      }
     }
   }
 

@@ -48,14 +48,38 @@ export class Logger {
     this.correlationId = id;
   }
 
+  /**
+   * Sanitize context to remove sensitive data (API keys, secrets, passwords)
+   */
+  private sanitizeContext(context?: Record<string, any>): Record<string, any> | undefined {
+    if (!context) return undefined;
+    
+    const sanitized = { ...context };
+    const sensitiveKeys = ['apiKey', 'apiSecret', 'passphrase', 'password', 'secret', 'token', 'key', 'credential'];
+    
+    for (const key in sanitized) {
+      const lowerKey = key.toLowerCase();
+      if (sensitiveKeys.some(sk => lowerKey.includes(sk.toLowerCase()))) {
+        sanitized[key] = '***REDACTED***';
+      } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+        sanitized[key] = this.sanitizeContext(sanitized[key]);
+      }
+    }
+    
+    return sanitized;
+  }
+
   private log(level: LogLevel, message: string, context?: Record<string, any>, error?: Error): void {
     if (level < this.minLevel) return;
+
+    // Sanitize context to prevent logging secrets
+    const sanitizedContext = this.sanitizeContext(context);
 
     const entry: LogEntry = {
       timestamp: Date.now(),
       level,
       message,
-      context,
+      context: sanitizedContext,
       correlationId: this.correlationId || this.generateCorrelationId(),
       module: this.getCallerModule(),
       error
@@ -72,7 +96,7 @@ export class Logger {
     // Always log to console
     const levelName = LogLevel[level];
     const timestamp = new Date(entry.timestamp).toISOString();
-    const contextStr = context ? ` | Context: ${JSON.stringify(context)}` : '';
+    const contextStr = sanitizedContext ? ` | Context: ${JSON.stringify(sanitizedContext)}` : '';
     const errorStr = error ? ` | Error: ${error.message}\n${error.stack}` : '';
     
     console.log(`[${timestamp}] [${levelName}] [${entry.correlationId}] ${message}${contextStr}${errorStr}`);
