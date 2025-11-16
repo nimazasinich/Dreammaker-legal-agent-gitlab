@@ -1,11 +1,21 @@
 /**
  * HuggingFace Market Data Adapter
  *
- * HFMarketAdapter maps the HF Data Engine market endpoints into the internal market data model.
- * It does not handle strategy logic, signals, or advanced analysis.
- * See docs/hf-engine-scope.md and docs/data-flow.md for details.
+ * HFMarketAdapter is the PRIMARY bridge between HF Data Engine market endpoints and the internal market data layer.
+ *
+ * Responsibilities:
+ * - Wrap HF Engine HTTP responses and normalize them to internal types.
+ * - Provide prices, OHLCV, market overview, and ticker data where available.
+ * - Transform HF Engine responses into the internal MarketData format.
+ *
+ * Explicitly NOT responsible for:
+ * - Smart Money Concepts (SMC) analysis (handled by local SMCAnalyzer).
+ * - Elliott Wave detection (handled by local ElliottWaveAnalyzer).
+ * - Signal generation or storage (handled by local SignalEngine).
+ * - Trading decisions or strategy execution.
  *
  * This is the primary adapter for market data: prices, OHLCV, tickers, and market overview.
+ * See docs/hf-engine-scope.md and docs/data-flow.md for details.
  */
 
 import { Logger } from '../../core/Logger.js';
