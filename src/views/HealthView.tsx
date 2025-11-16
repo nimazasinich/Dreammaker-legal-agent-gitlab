@@ -116,14 +116,19 @@ export const HealthView: React.FC = () => {
         };
 
         // Subscribe to health updates
-        const unsubscribe = liveData.subscribeToHealth(handleRealTimeUpdate);
+        let unsubscribe: (() => void) | undefined;
+        if (liveData && typeof liveData.subscribeToHealth === 'function') {
+            unsubscribe = liveData.subscribeToHealth(handleRealTimeUpdate);
+        }
 
         fetchHealthMetrics();
         const interval = setInterval(fetchHealthMetrics, 30000); // Reduced polling frequency
 
         return () => {
             clearInterval(interval);
-            unsubscribe();
+            if (unsubscribe) {
+                unsubscribe();
+            }
         };
     }, [liveData]);
 
