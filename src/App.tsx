@@ -3,6 +3,7 @@ import { Logger } from './core/Logger.js';
 import { NavigationProvider, useNavigation } from './components/Navigation/NavigationProvider';
 import { ThemeProvider } from './components/Theme/ThemeProvider';
 import { AccessibilityProvider } from './components/Accessibility/AccessibilityProvider';
+import { RefreshSettingsProvider } from './contexts/RefreshSettingsContext';
 import { LiveDataProvider } from './components/LiveDataContext';
 import { DataProvider } from './contexts/DataContext';
 import { TradingProvider } from './contexts/TradingContext';
@@ -176,19 +177,21 @@ function App() {
     <ModeProvider>
       <ThemeProvider>
         <AccessibilityProvider>
-          <DataProvider>
-            {/* FIXED: Removed RealDataProvider to prevent duplicate data fetching */}
-            <LiveDataProvider>
-              <TradingProvider>
-                <BacktestProvider>
-                  <NavigationProvider>
-                    <AppContent />
-                    <ToastContainer />
-                  </NavigationProvider>
-                </BacktestProvider>
-              </TradingProvider>
-            </LiveDataProvider>
-          </DataProvider>
+          <RefreshSettingsProvider>
+            <DataProvider>
+              {/* FIXED: Removed RealDataProvider to prevent duplicate data fetching */}
+              <LiveDataProvider>
+                <TradingProvider>
+                  <BacktestProvider>
+                    <NavigationProvider>
+                      <AppContent />
+                      <ToastContainer />
+                    </NavigationProvider>
+                  </BacktestProvider>
+                </TradingProvider>
+              </LiveDataProvider>
+            </DataProvider>
+          </RefreshSettingsProvider>
         </AccessibilityProvider>
       </ThemeProvider>
     </ModeProvider>
