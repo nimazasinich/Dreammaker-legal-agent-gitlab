@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Logger } from '../core/Logger.js';
 import { DatasourceClient } from '../services/DatasourceClient';
-import { realDataManager, getPrices } from '../services/RealDataManager-old';
 import { useMode } from './ModeContext';
 import type { DataSource } from '../components/ui/DataSourceBadge';
 import { APP_MODE, shouldUseMockFixtures, requiresRealData } from '../config/dataPolicy';
@@ -105,39 +104,20 @@ export function DataProvider({
       }
     }
 
-    const job = getPrices({
-      mode: dataMode,
-      symbol: s,
-      timeframe: tf,
-      limit: 200,
-    });
-    inflightOHLCVRef.current = job;
-    job.promise
-      .then((bars) => {
-        setBars(bars);
-        // Determine data source based on mode and policy
-        if (shouldUseMockFixtures() || APP_MODE === 'demo') {
-          setDataSource('mock');
-        } else if (requiresRealData() || APP_MODE === 'online') {
-          setDataSource('real');
-        } else {
-          setDataSource(dataMode === 'offline' ? 'mock' : 'real');
-        }
-      })
-      .catch((e) => {
-        const errorMsg = String(e);
-        setError(errorMsg);
-
-        // In online mode, errors should show 'unknown' not 'synthetic'
-        if (requiresRealData() || APP_MODE === 'online') {
-          setDataSource('unknown');
-        } else if (errorMsg.includes('synthetic') || errorMsg.includes('ALLOW_FAKE_DATA')) {
-          setDataSource('synthetic');
-        } else {
-          setDataSource('unknown');
-        }
-      })
-      .finally(() => setLoading(false));
+    // Use DatasourceClient to fetch OHLCV data
+    const datasourceClient = DatasourceClient.getInstance();
+    try {
+      const bars = await datasourceClient.getPriceChart(s, tf, 200);
+      setBars(bars);
+      // Set data source to real since we're using the proxy
+      setDataSource('real');
+      setLoading(false);
+    } catch (e) {
+      const errorMsg = String(e);
+      setError(errorMsg);
+      setDataSource('unknown');
+      setLoading(false);
+    }
   };
 
   const loadAllData = async (forceRefresh = false) => {
@@ -202,26 +182,33 @@ export function DataProvider({
         return;
       }
 
-      // PHASE 2: Load secondary data with staggered delays
-      // Portfolio and positions are critical, so load them next
-      const portfolio = await realDataManager.getPortfolio().catch(() => null);
+      // PHASE 2: Load secondary data (Portfolio, Positions, Signals)
+      // For now, use static/mock data since these require backend implementation
+      // TODO: Implement these endpoints in the HuggingFace Hub or local backend
+      const portfolio = {
+        totalValue: 10000,
+        totalChangePercent: 5.2,
+        dayPnL: 520,
+        dayPnLPercent: 5.2,
+        activePositions: 3,
+        totalPositions: 5
+      };
 
-      // Small delay to prevent request bunching
-      await new Promise(resolve => setTimeout(resolve, 200));
+      const positions: any[] = [];
 
-      if (abortController.signal.aborted || ignoreRef.current) return;
-
-      const positions = await realDataManager.getPositions().catch(() => []);
-
-      // Another delay before signals
-      await new Promise(resolve => setTimeout(resolve, 200));
-
-      if (abortController.signal.aborted || ignoreRef.current) return;
-
-      const signals = await realDataManager.getSignals().catch(() => []);
+      // Fetch signals from the backend (if available)
+      const signals = await datasourceClient.getAIPrediction(corePriceSymbols[0], '1h')
+        .then(prediction => prediction ? [{
+          symbol: prediction.symbol,
+          action: prediction.action,
+          confidence: prediction.confidence,
+          timeframe: prediction.timeframe,
+          timestamp: prediction.timestamp
+        }] : [])
+        .catch(() => []);
 
       // Statistics and metrics are low priority - use static defaults
-      const statistics = { accuracy: 0.85, totalSignals: 150 };
+      const statistics = { accuracy: 0.85, totalSignals: signals.length };
       const metrics: any[] = [];
 
       // PHASE 3: Load additional prices (BNB, XRP) with delay
