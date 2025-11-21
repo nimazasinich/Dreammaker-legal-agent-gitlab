@@ -181,8 +181,9 @@ export class HealthCheckService {
         };
       }
 
-      // Simple fetch test
-      const response = await fetch('https://api.alternative.me/fng/?limit=1', {
+      // DEFENSIVE: Check external APIs through proxy endpoint instead of direct fetch
+      // This ensures we follow the Hub-and-Spoke architecture (frontend -> proxy only)
+      const response = await fetch('http://localhost:8001/api/sentiment/fear-greed', {
         signal: AbortSignal.timeout(5000)
       });
 

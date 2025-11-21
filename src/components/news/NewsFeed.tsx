@@ -368,7 +368,9 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
           >
             <span className="flex items-center gap-2">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-500`} />
-              {loading ? 'Loading...' : 'Refresh News'}
+              <span className={loading ? 'opacity-70' : ''}>
+                {loading ? 'Refreshing' : 'Refresh News'}
+              </span>
             </span>
           </button>
         </div>
