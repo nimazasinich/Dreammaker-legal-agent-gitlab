@@ -465,6 +465,7 @@ export const DashboardView: React.FC = () => {
                 }))} autoFetch={false} />
             </div>
 
+            {/* PREMIUM ANIMATIONS & STYLES */}
             <style>{`
                 @keyframes shimmer {
                     0% { background-position: -1000px 0; }
@@ -492,6 +493,11 @@ export const DashboardView: React.FC = () => {
                     }
                 }
                 
+                @keyframes fade-in {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
                 .animate-shimmer {
                     animation: shimmer 8s infinite linear;
                     background: linear-gradient(
@@ -515,21 +521,39 @@ export const DashboardView: React.FC = () => {
                     animation: slide-in 0.3s ease-out;
                 }
                 
+                .animate-fade-in {
+                    animation: fade-in 0.5s ease-out;
+                }
+                
+                /* PREVENT LAYOUT SHIFTS: Fixed heights for loading states */
+                .stat-card-skeleton {
+                    min-height: 180px;
+                }
+                
+                /* RESPONSIVE: Mobile-first design */
                 @media (max-width: 640px) {
                     .stat-card-value {
                         font-size: 1.5rem;
                     }
                 }
+                
+                /* SMOOTH TRANSITIONS: No jumping */
+                * {
+                    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                }
             `}</style>
 
-            {/* Header - Compact and Clean */}
+            {/* VISUAL HIERARCHY: Header - The Human Eye Starts Here */}
             <div className="mb-6 animate-slide-in">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 lg:gap-6">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent" style={{
+                            textShadow: '0 0 40px rgba(139, 92, 246, 0.3)',
+                            letterSpacing: '-0.02em'
+                        }}>
                             Dashboard Overview
                         </h1>
-                        <p className="text-slate-400 text-xs mt-1">Real-time market intelligence and portfolio analytics</p>
+                        <p className="text-slate-400 text-xs mt-2 font-medium tracking-wide">Real-time institutional market intelligence and portfolio analytics</p>
                         {error && (
                             <div className="mt-3 animate-fade-in">
                                 <div className="group relative flex items-center gap-3 px-4 py-3 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.01]"
@@ -618,7 +642,7 @@ export const DashboardView: React.FC = () => {
                             />
 
                                 <div className="relative z-10 p-6">
-                                {/* Icon */}
+                                {/* Icon with VISUAL FEEDBACK */}
                                 <div
                                     className="inline-flex p-3 rounded-xl mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500"
                                     style={{
@@ -627,16 +651,20 @@ export const DashboardView: React.FC = () => {
                                     }}
                                 >
                                     <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent to-white/30" />
-                                    <Icon className="w-6 h-6 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
+                                    <Icon className="w-6 h-6 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" style={{
+                                        filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))'
+                                    }} />
                                 </div>
 
-                                {/* Content */}
+                                {/* Content - DEFENSIVE: All values have fallbacks */}
                                 <div>
-                                    <p className="text-slate-400 text-[10px] font-medium mb-2 tracking-wide uppercase">{stat.label}</p>
-                                    <p className="text-2xl font-bold text-white mb-1 tracking-tight transition-all duration-300 group-hover:scale-105" style={{
-                                        textShadow: `0 0 20px rgba(${stat.glowColor}, 0.3)`
+                                    <p className="text-slate-400 text-[10px] font-bold mb-2 tracking-wider uppercase">{stat?.label || 'METRIC'}</p>
+                                    {/* THE MOST IMPORTANT: Value (Biggest & Boldest) */}
+                                    <p className="text-3xl font-extrabold text-white mb-2 tracking-tight transition-all duration-300 group-hover:scale-105" style={{
+                                        textShadow: `0 0 30px rgba(${stat.glowColor}, 0.4)`,
+                                        letterSpacing: '-0.02em'
                                     }}>
-                                        {stat.value || '—'}
+                                        {stat?.value || '—'}
                                     </p>
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className={`text-xs font-bold flex items-center gap-1 transition-all duration-300 ${stat.positive ? 'text-emerald-400' : 'text-rose-400'}`}
@@ -1031,9 +1059,9 @@ export const DashboardView: React.FC = () => {
                 </div>
             </div>
 
-            {/* Status Banner - Cleaner design */}
+            {/* DEFENSIVE UI: System Status Banner */}
             <div
-                className="rounded-xl p-4 backdrop-blur-sm mb-6 animate-slide-in"
+                className="rounded-xl p-4 backdrop-blur-sm mb-6 animate-slide-in transition-all duration-300 hover:scale-[1.01]"
                 style={{
                     background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 50%, rgba(236, 72, 153, 0.08) 100%)',
                     border: '1px solid rgba(139, 92, 246, 0.2)',
@@ -1041,23 +1069,25 @@ export const DashboardView: React.FC = () => {
                 }}
             >
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 lg:gap-4">
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2.5 flex-wrap">
                         <div
-                            className="w-2 h-2 rounded-full bg-emerald-400 animate-glow-pulse"
+                            className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-glow-pulse"
                             style={{ 
-                                boxShadow: '0 0 10px rgba(52, 211, 153, 0.8)'
+                                boxShadow: '0 0 12px rgba(52, 211, 153, 0.8)'
                             }}
                         />
-                        <span className="font-semibold text-sm text-white">
+                        <span className="font-bold text-sm text-white" style={{
+                            textShadow: '0 0 10px rgba(52, 211, 153, 0.3)'
+                        }}>
                             All Systems Operational
                         </span>
-                        <span className="text-xs text-slate-500 hidden sm:inline">
-                            • Real-time Data • AI Active • Market Streaming
+                        <span className="text-xs text-slate-500 hidden sm:inline font-medium">
+                            • Live Data • AI Neural Network Active • Real-time Streaming
                         </span>
                     </div>
-                    <div className="text-xs text-slate-400 flex items-center gap-1.5">
-                        <Clock className="w-3 h-3" />
-                        <span>{lastUpdate.toLocaleTimeString()}</span>
+                    <div className="text-xs text-slate-400 flex items-center gap-2 font-medium">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{lastUpdate ? lastUpdate.toLocaleTimeString() : 'Loading...'}</span>
                     </div>
                 </div>
             </div>

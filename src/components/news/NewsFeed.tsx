@@ -116,24 +116,40 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
   };
 
   return (
-    <div className="bg-gray-900 rounded-lg border border-gray-800 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <Newspaper className="text-blue-400" size={28} />
+    <div className="rounded-2xl p-6 backdrop-blur-sm transition-all duration-300" style={{
+      background: 'linear-gradient(135deg, rgba(15, 15, 24, 0.95) 0%, rgba(20, 20, 30, 0.95) 100%)',
+      border: '1px solid rgba(59, 130, 246, 0.2)',
+      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5), 0 0 60px rgba(59, 130, 246, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.08)'
+    }}>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl" style={{
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(99, 102, 241, 0.25) 100%)',
+            border: '1px solid rgba(59, 130, 246, 0.4)',
+            boxShadow: '0 8px 24px rgba(59, 130, 246, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2)'
+          }}>
+            <Newspaper className="w-5 h-5 text-blue-400" style={{
+              filter: 'drop-shadow(0 0 12px rgba(59, 130, 246, 0.8))'
+            }} />
+          </div>
           <div>
-            <h3 className="text-xl font-bold text-white">Market News</h3>
-            {loading && <p className="text-xs text-gray-400 animate-pulse">Fetching latest news...</p>}
+            <h3 className="text-lg font-bold text-white" style={{
+              textShadow: '0 0 20px rgba(59, 130, 246, 0.3)'
+            }}>Market News</h3>
+            {loading && <p className="text-[10px] text-slate-400 animate-pulse">Fetching latest institutional news...</p>}
             {error && (
-              <div className="mt-1">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{
+              <div className="mt-2 animate-fade-in">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 hover:scale-[1.01]" style={{
                   background: 'rgba(239, 68, 68, 0.15)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)'
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  boxShadow: '0 4px 16px rgba(239, 68, 68, 0.2)'
                 }}>
-                  <AlertCircle className="w-3 h-3 text-red-400" />
-                  <span className="text-red-300 text-xs">{error}</span>
+                  <AlertCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
+                  <span className="text-red-300 text-xs font-medium">{error || 'Failed to load news'}</span>
                   <button
                     onClick={() => setError(null)}
-                    className="ml-auto p-0.5 rounded hover:bg-red-500/20"
+                    className="ml-auto p-1 rounded hover:bg-red-500/20 transition-all duration-200"
+                    aria-label="Dismiss error"
                   >
                     <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -145,27 +161,33 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
             onClick={fetchNews}
             disabled={loading}
-            className="p-2 bg-gray-800 hover:bg-gray-700 text-white rounded border border-gray-700 transition-colors disabled:opacity-50"
+            className="group p-2.5 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Refresh news"
+            style={{
+              boxShadow: '0 4px 16px rgba(59, 130, 246, 0.2)'
+            }}
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={16} className={loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'} />
           </button>
-          <div className="flex space-x-2">
+          <div className="flex gap-1.5">
           {['all', 'positive', 'negative', 'neutral'].map((sentiment) => (
             <button
               type="button"
               key={sentiment}
               onClick={() => setFilter(sentiment as 'all' | 'positive' | 'negative' | 'neutral')}
-              className={`px-3 py-1 text-sm rounded font-medium transition-colors capitalize ${
+              className={`px-3 py-1.5 text-xs rounded-lg font-semibold transition-all duration-300 capitalize ${
                 filter === sentiment
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-blue-500/30 text-blue-300 border border-blue-500/50 scale-105 shadow-lg'
+                  : 'bg-slate-700/40 text-slate-400 border border-slate-600/30 hover:bg-slate-700/60 hover:scale-105'
               }`}
+              style={{
+                textShadow: filter === sentiment ? '0 0 10px rgba(59, 130, 246, 0.5)' : 'none'
+              }}
             >
               {sentiment}
             </button>
@@ -174,79 +196,181 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
         </div>
       </div>
 
-      {loading && news.length === 0 ? (
-        <div className="space-y-4 animate-pulse">
+      {loading && (!news || news.length === 0) ? (
+        <div className="space-y-3">
           {[1, 2, 3].map((idx) => (
-            <div key={idx} className="border rounded-lg p-4" style={{ background: 'rgba(255, 255, 255, 0.03)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <div className="h-4 w-4 bg-slate-700/30 rounded"></div>
-                  <div className="h-4 w-20 bg-slate-700/30 rounded"></div>
-                  <div className="h-5 w-16 bg-slate-700/40 rounded"></div>
+            <div key={idx} className="rounded-xl p-5 animate-pulse" style={{ 
+              background: 'rgba(255, 255, 255, 0.03)', 
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
+            }}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-4 w-4 bg-slate-700/40 rounded"></div>
+                  <div className="h-4 w-24 bg-slate-700/40 rounded"></div>
+                  <div className="h-6 w-16 bg-slate-700/50 rounded-lg"></div>
                 </div>
-                <div className="h-3 w-16 bg-slate-700/20 rounded"></div>
+                <div className="h-3 w-20 bg-slate-700/30 rounded"></div>
               </div>
-              <div className="h-5 bg-slate-700/40 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-slate-700/30 rounded w-full mb-1"></div>
-              <div className="h-4 bg-slate-700/30 rounded w-5/6"></div>
+              <div className="h-6 bg-slate-700/50 rounded w-3/4 mb-3"></div>
+              <div className="h-4 bg-slate-700/40 rounded w-full mb-2"></div>
+              <div className="h-4 bg-slate-700/40 rounded w-5/6 mb-3"></div>
+              <div className="h-3 bg-slate-700/30 rounded w-24"></div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="space-y-4 max-h-96 overflow-y-auto">
-          {(filteredNews || []).map((item) => (
-          <div
-            key={item.id}
-            className={`border rounded-lg p-4 transition-colors hover:bg-gray-800/50 ${getSentimentColor(item.sentiment)}`}
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                {getSentimentIcon(item.sentiment)}
-                <span className="text-gray-400 text-sm font-medium">{item.source}</span>
-                {getImpactBadge(item.impact)}
-              </div>
-              <span className="text-gray-500 text-xs">
-                {formatTimeAgo(item.publishedAt)}
-              </span>
-            </div>
+        <div className="space-y-3 max-h-[32rem] overflow-y-auto pr-2 custom-scrollbar">
+          <style>{`
+            .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+            .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 3px; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 3px; }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.5); }
+          `}</style>
+          {(filteredNews || []).map((item) => {
+            // DEFENSIVE: Robust null handling
+            const sentiment = item?.sentiment || 'neutral';
+            const impact = item?.impact || 'low';
+            const isPositive = sentiment === 'positive';
+            const isNegative = sentiment === 'negative';
             
-            <h4 className="text-white font-semibold mb-2 leading-tight">
-              {item.title}
-            </h4>
-            
-            <p className="text-gray-300 text-sm mb-3 leading-relaxed">
-              {item.description}
-            </p>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className={`w-2 h-2 rounded-full ${
-                  item.sentiment === 'positive' ? 'bg-green-400' :
-                  item.sentiment === 'negative' ? 'bg-red-400' : 'bg-gray-400'
-                }`}></span>
-                <span className="text-gray-400 text-xs capitalize">
-                  {item.sentiment} sentiment
-                </span>
-              </div>
-              
-              <button
-                type="button"
-                onClick={() => window.open(item.url, '_blank')}
-                className="flex items-center space-x-1 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+            return (
+              <div
+                key={item?.id || `news-${Math.random()}`}
+                className="group relative rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl cursor-pointer"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.05)'
+                }}
               >
-                <span>Read more</span>
-                <ExternalLink size={14} />
-              </button>
-            </div>
-          </div>
-          ))}
+                {/* Hover Glow Effect */}
+                <div
+                  className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
+                  style={{
+                    background: isPositive
+                      ? 'radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 70%)'
+                      : isNegative
+                      ? 'radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.1) 0%, transparent 70%)'
+                      : 'radial-gradient(circle at 50% 50%, rgba(148, 163, 184, 0.1) 0%, transparent 70%)',
+                    zIndex: -1
+                  }}
+                />
+                
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      {getSentimentIcon(sentiment)}
+                      <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+                        {item?.source || 'Unknown Source'}
+                      </span>
+                    </div>
+                    <div className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider" style={{
+                      background: impact === 'high'
+                        ? 'rgba(239, 68, 68, 0.2)'
+                        : impact === 'medium'
+                        ? 'rgba(234, 179, 8, 0.2)'
+                        : 'rgba(16, 185, 129, 0.2)',
+                      color: impact === 'high'
+                        ? 'rgb(251, 113, 133)'
+                        : impact === 'medium'
+                        ? 'rgb(251, 191, 36)'
+                        : 'rgb(52, 211, 153)',
+                      border: impact === 'high'
+                        ? '1px solid rgba(239, 68, 68, 0.3)'
+                        : impact === 'medium'
+                        ? '1px solid rgba(234, 179, 8, 0.3)'
+                        : '1px solid rgba(16, 185, 129, 0.3)'
+                    }}>
+                      {impact}
+                    </div>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-medium">
+                    {item?.publishedAt ? formatTimeAgo(item.publishedAt) : 'Unknown time'}
+                  </span>
+                </div>
+                
+                {/* Title - MOST IMPORTANT (Biggest & Boldest) */}
+                <h4 className="text-white font-bold text-base mb-3 leading-tight group-hover:text-blue-300 transition-colors" style={{
+                  textShadow: '0 0 10px rgba(255, 255, 255, 0.1)'
+                }}>
+                  {item?.title || 'No title available'}
+                </h4>
+                
+                {/* Description - Secondary Info (Lighter) */}
+                <p className="text-slate-400 text-sm mb-4 leading-relaxed line-clamp-2">
+                  {item?.description || 'No description available'}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${
+                      isPositive ? 'bg-emerald-400' :
+                      isNegative ? 'bg-rose-400' : 'bg-slate-400'
+                    }`} style={{
+                      boxShadow: isPositive
+                        ? '0 0 10px rgba(52, 211, 153, 0.6)'
+                        : isNegative
+                        ? '0 0 10px rgba(251, 113, 133, 0.6)'
+                        : '0 0 10px rgba(148, 163, 184, 0.4)'
+                    }}></div>
+                    <span className={`text-xs font-semibold capitalize ${
+                      isPositive ? 'text-emerald-400' :
+                      isNegative ? 'text-rose-400' : 'text-slate-400'
+                    }`}>
+                      {sentiment}
+                    </span>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={() => window.open(item?.url || '#', '_blank')}
+                    className="group/btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-blue-400 text-xs font-semibold transition-all duration-300 hover:scale-105"
+                    style={{
+                      background: 'rgba(59, 130, 246, 0.1)',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                      boxShadow: '0 0 20px rgba(59, 130, 246, 0.2)'
+                    }}
+                  >
+                    <span>Read More</span>
+                    <ExternalLink size={12} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {!loading && filteredNews.length === 0 && (
-        <div className="text-center text-gray-400 py-8">
-          <Newspaper size={48} className="mx-auto mb-4 opacity-50" />
-          <p>No news articles match the selected filter.</p>
+      {/* DEFENSIVE UI: Beautiful Empty State */}
+      {!loading && (!filteredNews || filteredNews.length === 0) && (
+        <div className="text-center py-12 animate-fade-in">
+          <div className="inline-flex p-6 rounded-2xl mb-4 animate-pulse" style={{
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: '1px solid rgba(59, 130, 246, 0.2)',
+            boxShadow: '0 0 40px rgba(59, 130, 246, 0.2)'
+          }}>
+            <Newspaper className="w-16 h-16 text-blue-400/50" style={{
+              filter: 'drop-shadow(0 0 12px rgba(59, 130, 246, 0.4))'
+            }} />
+          </div>
+          <p className="text-slate-400 font-bold text-lg mb-2" style={{
+            textShadow: '0 0 10px rgba(59, 130, 246, 0.2)'
+          }}>No news articles found</p>
+          <p className="text-slate-500 text-sm mb-6">Try changing the filter or refresh to load new articles</p>
+          <button
+            onClick={fetchNews}
+            disabled={loading}
+            className="group px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 hover:scale-105 transition-all duration-300 text-sm font-bold shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              boxShadow: '0 4px 16px rgba(59, 130, 246, 0.2)'
+            }}
+          >
+            <span className="flex items-center gap-2">
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-500`} />
+              {loading ? 'Loading...' : 'Refresh News'}
+            </span>
+          </button>
         </div>
       )}
     </div>
