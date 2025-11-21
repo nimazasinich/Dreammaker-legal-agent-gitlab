@@ -223,6 +223,21 @@ export class MultiProviderMarketDataService {
 
     const cacheKey = symbols.sort().join(',');
 
+    // Check if we should use the primary data source (HuggingFace proxy)
+    const primarySource = process.env.PRIMARY_DATA_SOURCE || 'huggingface';
+    if (primarySource === 'huggingface') {
+      try {
+        this.logger.info('Using HuggingFace proxy for market data');
+        const prices = await this.getPricesFromLocalProxy(symbols);
+        if (prices && prices.length > 0) {
+          this.priceCache.set(cacheKey, prices);
+          return prices;
+        }
+      } catch (error) {
+        this.logger.warn('Failed to get prices from HuggingFace proxy, falling back to other providers', error);
+      }
+    }
+
     // Use resource monitor to get recommended providers (smart prioritization)
     const recommendedProviders = this.resourceMonitor.getRecommendedProviders('market');
     
@@ -299,6 +314,41 @@ export class MultiProviderMarketDataService {
     console.error(errorMessage);
     // بازگشت آرایه خالی به جای throw error برای جلوگیری از crash
     return [];
+  }
+
+  /**
+   * Get prices from Local Proxy (HuggingFace)
+   */
+  private async getPricesFromLocalProxy(symbols: string[]): Promise<PriceData[]> {
+    try {
+      const baseUrl = process.env.VITE_API_BASE || 'http://localhost:8001';
+      
+      // For multiple symbols, make multiple requests
+      const pricePromises = symbols.map(async (symbol) => {
+        const response = await axios.get(`${baseUrl}/api/market`, {
+          params: { symbol: symbol.toUpperCase() },
+          timeout: 15000
+        });
+        
+        const data = Array.isArray(response.data) ? response.data : [response.data];
+        return data.map((item: any) => ({
+          symbol: item.symbol || symbol,
+          price: item.price || 0,
+          volume24h: item.volume24h || item.volume || 0,
+          change24h: item.change24h || 0,
+          changePercent24h: item.changePercent24h || item.change24h || 0,
+          marketCap: item.marketCap,
+          source: 'huggingface',
+          timestamp: Date.now()
+        }));
+      });
+      
+      const results = await Promise.all(pricePromises);
+      return results.flat();
+    } catch (error) {
+      this.logger.error('Failed to get prices from local proxy', error);
+      throw error;
+    }
   }
 
   /**

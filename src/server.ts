@@ -4004,6 +4004,51 @@ const shutdown = () => {
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
+// HUB PROXY ROUTES
+const getHubUrl = () => process.env.HF_ENGINE_BASE_URL || 'https://really-amin-datasourceforcryptocurrency.hf.space';
+
+// 1. Market Overview
+app.get('/api/market', async (req, res) => {
+    try {
+        const { limit = 50, symbol } = req.query;
+        const url = `${getHubUrl()}/api/market${symbol ? `?symbol=${symbol}` : `?limit=${limit}`}`;
+        const response = await axios.get(url, { timeout: 15000 });
+        res.json(response.data);
+    } catch (e) { res.json([]); }
+});
+
+// 2. OHLCV History
+app.get('/api/market/history', async (req, res) => {
+    try {
+        const { symbol, timeframe, limit } = req.query;
+        const url = `${getHubUrl()}/api/market/history?symbol=${symbol}&timeframe=${timeframe}&limit=${limit}`;
+        const response = await axios.get(url, { timeout: 15000 });
+        res.json(response.data);
+    } catch (e) { res.json([]); }
+});
+
+// 3. News Proxy
+app.get('/api/news/latest', async (req, res) => {
+    try {
+        const response = await axios.get(`${getHubUrl()}/api/news/latest`, { timeout: 10000 });
+        res.json(response.data);
+    } catch (e) { res.json([]); }
+});
+
+// 4. Stats & Sentiment
+app.get('/api/stats', async (req, res) => {
+    try {
+        const response = await axios.get(`${getHubUrl()}/api/stats`);
+        res.json(response.data);
+    } catch (e) { res.json({}); }
+});
+app.get('/api/sentiment', async (req, res) => {
+    try {
+        const response = await axios.get(`${getHubUrl()}/api/sentiment`);
+        res.json(response.data);
+    } catch (e) { res.json({ value: 50, classification: 'Neutral' }); }
+});
+
 // Start server with port collision prevention
 async function startServer() {
   try {
