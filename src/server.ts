@@ -4068,6 +4068,99 @@ Reference: MarkTechPost Article Implementation
   }
 }
 
+// ============================================================================
+// PHASE 2: PROXY ROUTES TO HUGGINGFACE HUB
+// ============================================================================
+const HF_ENGINE_BASE_URL = process.env.HF_ENGINE_BASE_URL || 'https://really-amin-datasourceforcryptocurrency.hf.space';
+
+// Proxy: GET /api/market -> HuggingFace Hub
+app.get('/api/market', async (req, res) => {
+  try {
+    const { limit, symbol } = req.query;
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', String(limit));
+    if (symbol) params.append('symbol', String(symbol));
+    
+    const url = `${HF_ENGINE_BASE_URL}/api/market${params.toString() ? '?' + params.toString() : ''}`;
+    logger.info('Proxying /api/market to HF Hub', { url });
+    
+    const response = await axios.get(url, { timeout: 30000 });
+    res.json(response.data);
+  } catch (error) {
+    logger.error('Proxy error for /api/market', {}, error as Error);
+    res.status(500).json({ error: 'Failed to proxy market data' });
+  }
+});
+
+// Proxy: GET /api/market/history -> HuggingFace Hub
+app.get('/api/market/history', async (req, res) => {
+  try {
+    const { symbol, timeframe, limit } = req.query;
+    const params = new URLSearchParams();
+    if (symbol) params.append('symbol', String(symbol));
+    if (timeframe) params.append('timeframe', String(timeframe));
+    if (limit) params.append('limit', String(limit));
+    
+    const url = `${HF_ENGINE_BASE_URL}/api/market/history${params.toString() ? '?' + params.toString() : ''}`;
+    logger.info('Proxying /api/market/history to HF Hub', { url });
+    
+    const response = await axios.get(url, { timeout: 30000 });
+    res.json(response.data);
+  } catch (error) {
+    logger.error('Proxy error for /api/market/history', {}, error as Error);
+    res.status(500).json({ error: 'Failed to proxy market history' });
+  }
+});
+
+// Proxy: GET /api/stats -> HuggingFace Hub
+app.get('/api/stats', async (req, res) => {
+  try {
+    const url = `${HF_ENGINE_BASE_URL}/api/stats`;
+    logger.info('Proxying /api/stats to HF Hub', { url });
+    
+    const response = await axios.get(url, { timeout: 30000 });
+    res.json(response.data);
+  } catch (error) {
+    logger.error('Proxy error for /api/stats', {}, error as Error);
+    res.status(500).json({ error: 'Failed to proxy stats' });
+  }
+});
+
+// Note: /api/news/latest already exists, no need to proxy
+
+// Proxy: GET /api/sentiment -> HuggingFace Hub
+app.get('/api/sentiment', async (req, res) => {
+  try {
+    const url = `${HF_ENGINE_BASE_URL}/api/sentiment`;
+    logger.info('Proxying /api/sentiment to HF Hub', { url });
+    
+    const response = await axios.get(url, { timeout: 30000 });
+    res.json(response.data);
+  } catch (error) {
+    logger.error('Proxy error for /api/sentiment', {}, error as Error);
+    res.status(500).json({ error: 'Failed to proxy sentiment data' });
+  }
+});
+
+// Proxy: POST /api/ai/predict -> /api/trading/decision on Hub
+app.post('/api/ai/predict', async (req, res) => {
+  try {
+    const url = `${HF_ENGINE_BASE_URL}/api/trading/decision`;
+    logger.info('Proxying /api/ai/predict to HF Hub /api/trading/decision', { url });
+    
+    const response = await axios.post(url, req.body, {
+      timeout: 30000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    logger.error('Proxy error for /api/ai/predict', {}, error as Error);
+    res.status(500).json({ error: 'Failed to proxy AI prediction' });
+  }
+});
+
 // Start the server
 startServer();
 

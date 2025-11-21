@@ -1,54 +1,72 @@
 // src/services/RealTradingService.ts
+// REFACTORED: Now uses DatasourceClient instead of RealMarketDataService
 import { Logger } from '../core/Logger.js';
-import { RealMarketDataService } from './RealMarketDataService.js';
 
 export class RealTradingService {
   private logger = Logger.getInstance();
-  private marketDataService: RealMarketDataService;
   private positions: Map<string, any> = new Map();
+  private datasourceClient: any = null;
 
   constructor() {
-    this.marketDataService = new RealMarketDataService();
+    // Load DatasourceClient lazily to avoid circular dependencies
   }
 
-  // آنالیز بازار با داده‌های واقعی
-  async analyzeMarket(symbol: string): Promise<any> {
-    const marketData = await this.marketDataService.getRealTimePrice(symbol);
-    const historicalData = await this.marketDataService.getHistoricalData(symbol, 7);
-    const sentiment = await this.marketDataService.getMarketSentiment();
+  private async loadDatasourceClient(): Promise<any> {
+    if (!this.datasourceClient) {
+      const module = await import('./DatasourceClient.js');
+      this.datasourceClient = module.default;
+    }
+    return this.datasourceClient;
+  }
 
-    // تحلیل تکنیکال با داده‌های واقعی
+  // Market analysis with real data
+  async analyzeMarket(symbol: string): Promise<any> {
+    const datasource = await this.loadDatasourceClient();
+    
+    // Get current price
+    const priceData = await datasource.getTopCoins(1, [symbol.replace('USDT', '')]);
+    const currentPrice = priceData.length > 0 ? priceData[0].price : 0;
+    
+    // Get historical data
+    const historicalData = await datasource.getPriceChart(symbol, '1h', 168); // 7 days * 24 hours
+    
+    // Get sentiment
+    const sentiment = await datasource.getMarketSentiment();
+
+    // Technical analysis
     const analysis = {
       symbol,
-      currentPrice: marketData,
+      currentPrice,
       trend: this.calculateTrend(historicalData),
       support: this.calculateSupportResistance(historicalData),
       rsi: this.calculateRSI(historicalData),
       sentiment: sentiment,
-      recommendation: this.generateRecommendation(marketData, historicalData, sentiment),
+      recommendation: this.generateRecommendation(currentPrice, historicalData, sentiment),
       timestamp: Date.now()
     };
 
     return analysis;
   }
 
-  // شبیه‌سازی تریدینگ با داده‌های واقعی (بدون اجرای واقعی)
+  // Trade simulation with real data (without actual execution)
   async simulateTrade(symbol: string, side: 'BUY' | 'SELL', amount: number): Promise<any> {
-    const marketData = await this.marketDataService.getRealTimePrice(symbol);
+    const datasource = await this.loadDatasourceClient();
+    const priceData = await datasource.getTopCoins(1, [symbol.replace('USDT', '')]);
+    const currentPrice = priceData.length > 0 ? priceData[0].price : 0;
 
     const trade = {
       id: `sim-${Date.now()}`,
       symbol,
       side,
       amount,
-      entryPrice: marketData,
+      entryPrice: currentPrice,
       timestamp: Date.now(),
       status: 'EXECUTED',
       simulated: true,
       analysis: await this.analyzeMarket(symbol)
     };
 
-    // ذخیره در پوزیشن‌های شبیه‌سازی شده
+    // Save in simulated positions
     if (side === 'BUY') {
       this.positions.set(trade.id, trade);
     }
@@ -56,12 +74,12 @@ export class RealTradingService {
     return trade;
   }
 
-  // محاسبه اندیکاتورهای تکنیکال با داده‌های واقعی
+  // Calculate technical indicators with real data
   private calculateTrend(historicalData: any[]): string {
     if (historicalData.length < 2) return 'NEUTRAL';
 
-    const firstPrice = historicalData[0].price;
-    const lastPrice = historicalData[historicalData.length - 1].price;
+    const firstPrice = historicalData[0].close || historicalData[0].price;
+    const lastPrice = historicalData[historicalData.length - 1].close || historicalData[historicalData.length - 1].price;
     const change = ((lastPrice - firstPrice) / firstPrice) * 100;
 
     if (change > 2) return 'BULLISH';
@@ -74,7 +92,7 @@ export class RealTradingService {
       return { support: 0, resistance: 0 };
     }
 
-    const prices = (historicalData || []).map(d => d.price);
+    const prices = (historicalData || []).map(d => d.close || d.price || 0);
     return {
       support: Math.min(...prices) * 0.98,
       resistance: Math.max(...prices) * 1.02
@@ -82,12 +100,14 @@ export class RealTradingService {
   }
 
   private calculateRSI(historicalData: any[]): number {
-    // محاسبه RSI ساده
+    // Simple RSI calculation
     if (historicalData.length < 14) return 50;
 
     const changes: number[] = [];
     for (let i = 1; i < historicalData.length; i++) {
-      changes.push(historicalData[i].price - historicalData[i - 1].price);
+      const currentPrice = historicalData[i].close || historicalData[i].price || 0;
+      const previousPrice = historicalData[i - 1].close || historicalData[i - 1].price || 0;
+      changes.push(currentPrice - previousPrice);
     }
 
     const gains = changes.filter(c => c > 0).reduce((a, b) => a + b, 0);
@@ -121,10 +141,13 @@ export class RealTradingService {
     let totalValue = 0;
     let totalPnL = 0;
 
+    const datasource = await this.loadDatasourceClient();
+
     for (const position of positionsArray) {
       try {
-        const currentData = await this.marketDataService.getRealTimePrice(position.symbol);
-        const currentValue = position.amount * currentData;
+        const priceData = await datasource.getTopCoins(1, [position.symbol.replace('USDT', '')]);
+        const currentPrice = priceData.length > 0 ? priceData[0].price : position.entryPrice;
+        const currentValue = position.amount * currentPrice;
         const entryValue = position.amount * position.entryPrice;
         const pnl = currentValue - entryValue;
 
