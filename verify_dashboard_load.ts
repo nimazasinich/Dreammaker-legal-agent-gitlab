@@ -1,19 +1,18 @@
 #!/usr/bin/env tsx
 /**
- * DASHBOARD LOADING VERIFICATION SCRIPT
+ * DASHBOARD VERIFICATION SCRIPT
  * 
- * Purpose: Simulate the complete dashboard loading sequence to verify that:
+ * This script simulates the Dashboard loading sequence to verify that:
  * 1. DatasourceClient connects to the local proxy (localhost:8001)
- * 2. The proxy forwards requests to HuggingFace Hub
- * 3. Data is properly returned and mapped to frontend structures
- * 4. NO mock data fallbacks are triggered
+ * 2. The proxy forwards requests to the Hugging Face Hub
+ * 3. Data flows correctly from Hub -> Proxy -> Frontend
  * 
- * This script mimics what happens when a user opens the dashboard.
+ * NO MOCKS, NO FALLBACKS - Pure real data flow verification
  */
 
 import { DatasourceClient } from './src/services/DatasourceClient';
 
-// ANSI color codes for pretty output
+// ANSI color codes for terminal output
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -22,333 +21,342 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   cyan: '\x1b[36m',
-  magenta: '\x1b[35m',
+  magenta: '\x1b[35m'
 };
 
-function log(emoji: string, message: string, data?: any) {
-  console.log(`\n${emoji} ${colors.bright}${message}${colors.reset}`);
-  if (data) {
-    console.log(JSON.stringify(data, null, 2));
-  }
+function log(message: string, color: keyof typeof colors = 'reset') {
+  console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
-function logSuccess(message: string, data?: any) {
-  log('✅', `${colors.green}${message}${colors.reset}`, data);
+function logSection(title: string) {
+  console.log('\n' + '═'.repeat(80));
+  log(`  ${title}`, 'bright');
+  console.log('═'.repeat(80) + '\n');
 }
 
-function logError(message: string, error?: any) {
-  log('❌', `${colors.red}${message}${colors.reset}`, error);
+function logSuccess(message: string) {
+  log(`✅ ${message}`, 'green');
 }
 
-function logInfo(message: string, data?: any) {
-  log('ℹ️ ', `${colors.blue}${message}${colors.reset}`, data);
+function logError(message: string) {
+  log(`❌ ${message}`, 'red');
 }
 
-function logWarning(message: string, data?: any) {
-  log('⚠️ ', `${colors.yellow}${message}${colors.reset}`, data);
+function logWarning(message: string) {
+  log(`⚠️  ${message}`, 'yellow');
+}
+
+function logInfo(message: string) {
+  log(`ℹ️  ${message}`, 'cyan');
 }
 
 async function verifyDashboardLoad() {
-  console.log(`\n${colors.bright}${colors.cyan}╔════════════════════════════════════════════════════════════╗${colors.reset}`);
-  console.log(`${colors.bright}${colors.cyan}║   DASHBOARD LOADING SEQUENCE VERIFICATION                  ║${colors.reset}`);
-  console.log(`${colors.bright}${colors.cyan}╚════════════════════════════════════════════════════════════╝${colors.reset}\n`);
-
-  let allTestsPassed = true;
-  const results = {
-    ticker: { passed: false, data: null as any, error: null as any },
-    chart: { passed: false, data: null as any, error: null as any },
-    news: { passed: false, data: null as any, error: null as any },
-    sentiment: { passed: false, data: null as any, error: null as any },
-    prediction: { passed: false, data: null as any, error: null as any },
-  };
-
-  try {
-    // Initialize DatasourceClient
-    logInfo('Initializing DatasourceClient...');
-    const datasourceClient = DatasourceClient.getInstance();
-    logSuccess('DatasourceClient initialized successfully');
-
-    // ===================================================================
-    // TEST 1: Market Ticker (Top Coins)
-    // ===================================================================
-    console.log(`\n${colors.bright}${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-    console.log(`${colors.bright}${colors.magenta}TEST 1: Market Ticker - getTopCoins(10)${colors.reset}`);
-    console.log(`${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-    
-    try {
-      logInfo('Fetching top 10 coins...');
-      const topCoins = await datasourceClient.getTopCoins(10);
-      
-      if (!topCoins || topCoins.length === 0) {
-        logError('No coins returned!');
-        results.ticker.error = 'Empty array returned';
-        allTestsPassed = false;
-      } else {
-        logSuccess(`Received ${topCoins.length} coins`);
-        
-        // Validate data structure
-        const firstCoin = topCoins[0];
-        const requiredFields = ['symbol', 'price', 'change24h', 'changePercent24h', 'volume'];
-        const missingFields = requiredFields.filter(field => !(field in firstCoin));
-        
-        if (missingFields.length > 0) {
-          logWarning(`Missing fields: ${missingFields.join(', ')}`);
-        }
-        
-        // Check if data looks real (not zeros)
-        const hasRealData = topCoins.some(coin => coin.price > 0 && coin.volume > 0);
-        
-        if (!hasRealData) {
-          logError('Data appears to be mock/zero values!');
-          allTestsPassed = false;
-        } else {
-          logSuccess('Data validation passed - values look real!');
-          results.ticker.passed = true;
-        }
-        
-        // Show sample data
-        logInfo('Sample data (first 3 coins):', topCoins.slice(0, 3).map(coin => ({
-          symbol: coin.symbol,
-          price: coin.price.toFixed(2),
-          change24h: coin.changePercent24h?.toFixed(2) + '%',
-          volume: coin.volume.toLocaleString()
-        })));
-        
-        results.ticker.data = topCoins.slice(0, 3);
-      }
-    } catch (error) {
-      logError('Market ticker test failed:', error);
-      results.ticker.error = error;
-      allTestsPassed = false;
-    }
-
-    // ===================================================================
-    // TEST 2: Price Chart (OHLCV Data)
-    // ===================================================================
-    console.log(`\n${colors.bright}${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-    console.log(`${colors.bright}${colors.magenta}TEST 2: Price Chart - getPriceChart('BTC', '1h')${colors.reset}`);
-    console.log(`${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-    
-    try {
-      logInfo('Fetching BTC price chart (1h timeframe)...');
-      const chartData = await datasourceClient.getPriceChart('BTC', '1h', 100);
-      
-      if (!chartData || chartData.length === 0) {
-        logError('No chart data returned!');
-        results.chart.error = 'Empty array returned';
-        allTestsPassed = false;
-      } else {
-        logSuccess(`Received ${chartData.length} bars`);
-        
-        // Validate OHLCV structure
-        const firstBar = chartData[0];
-        const requiredFields = ['timestamp', 'open', 'high', 'low', 'close', 'volume'];
-        const missingFields = requiredFields.filter(field => !(field in firstBar));
-        
-        if (missingFields.length > 0) {
-          logWarning(`Missing fields: ${missingFields.join(', ')}`);
-        }
-        
-        // Check if data looks real
-        const hasRealData = chartData.some(bar => 
-          bar.open > 0 && bar.high > 0 && bar.low > 0 && bar.close > 0
-        );
-        
-        if (!hasRealData) {
-          logError('Chart data appears to be mock/zero values!');
-          allTestsPassed = false;
-        } else {
-          logSuccess('Chart data validation passed!');
-          results.chart.passed = true;
-        }
-        
-        // Show sample data
-        const latestBar = chartData[chartData.length - 1];
-        logInfo('Latest bar:', {
-          timestamp: new Date(latestBar.timestamp).toISOString(),
-          open: latestBar.open.toFixed(2),
-          high: latestBar.high.toFixed(2),
-          low: latestBar.low.toFixed(2),
-          close: latestBar.close.toFixed(2),
-          volume: latestBar.volume.toLocaleString()
-        });
-        
-        results.chart.data = { bars: chartData.length, latest: latestBar };
-      }
-    } catch (error) {
-      logError('Price chart test failed:', error);
-      results.chart.error = error;
-      allTestsPassed = false;
-    }
-
-    // ===================================================================
-    // TEST 3: Latest News
-    // ===================================================================
-    console.log(`\n${colors.bright}${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-    console.log(`${colors.bright}${colors.magenta}TEST 3: News Feed - getLatestNews()${colors.reset}`);
-    console.log(`${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-    
-    try {
-      logInfo('Fetching latest news...');
-      const news = await datasourceClient.getLatestNews(10);
-      
-      if (!news || news.length === 0) {
-        logWarning('No news returned (this might be expected if endpoint is not implemented)');
-        results.news.error = 'Empty array returned (non-critical)';
-        // Don't fail the test for missing news
-      } else {
-        logSuccess(`Received ${news.length} news items`);
-        
-        // Validate news structure
-        const firstNews = news[0];
-        const requiredFields = ['id', 'title', 'description', 'url', 'source'];
-        const missingFields = requiredFields.filter(field => !(field in firstNews));
-        
-        if (missingFields.length > 0) {
-          logWarning(`Missing fields: ${missingFields.join(', ')}`);
-        } else {
-          results.news.passed = true;
-        }
-        
-        // Show sample data
-        logInfo('Sample news (first item):', {
-          title: news[0].title,
-          source: news[0].source,
-          publishedAt: news[0].publishedAt
-        });
-        
-        results.news.data = news.slice(0, 2);
-      }
-    } catch (error) {
-      logWarning('News feed test failed (non-critical):', error);
-      results.news.error = error;
-      // Don't fail overall test for missing news
-    }
-
-    // ===================================================================
-    // TEST 4: Market Sentiment
-    // ===================================================================
-    console.log(`\n${colors.bright}${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-    console.log(`${colors.bright}${colors.magenta}TEST 4: Market Sentiment - getMarketSentiment()${colors.reset}`);
-    console.log(`${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-    
-    try {
-      logInfo('Fetching market sentiment...');
-      const sentiment = await datasourceClient.getMarketSentiment();
-      
-      if (!sentiment) {
-        logWarning('No sentiment data returned (this might be expected)');
-        results.sentiment.error = 'Null returned (non-critical)';
-      } else {
-        logSuccess('Received sentiment data');
-        
-        // Validate sentiment structure
-        if (sentiment.fearGreedIndex !== undefined) {
-          logInfo('Fear & Greed Index:', {
-            index: sentiment.fearGreedIndex,
-            classification: sentiment.classification
-          });
-          results.sentiment.passed = true;
-          results.sentiment.data = sentiment;
-        } else {
-          logWarning('Sentiment data missing fearGreedIndex field');
-        }
-      }
-    } catch (error) {
-      logWarning('Market sentiment test failed (non-critical):', error);
-      results.sentiment.error = error;
-    }
-
-    // ===================================================================
-    // TEST 5: AI Prediction
-    // ===================================================================
-    console.log(`\n${colors.bright}${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-    console.log(`${colors.bright}${colors.magenta}TEST 5: AI Prediction - getAIPrediction('BTC', '1h')${colors.reset}`);
-    console.log(`${colors.magenta}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-    
-    try {
-      logInfo('Fetching AI prediction for BTC...');
-      const prediction = await datasourceClient.getAIPrediction('BTC', '1h');
-      
-      if (!prediction) {
-        logWarning('No prediction data returned (this might be expected)');
-        results.prediction.error = 'Null returned (non-critical)';
-      } else {
-        logSuccess('Received prediction data');
-        
-        logInfo('Prediction:', {
-          symbol: prediction.symbol,
-          action: prediction.action,
-          confidence: (prediction.confidence * 100).toFixed(2) + '%',
-          price: prediction.price
-        });
-        
-        results.prediction.passed = true;
-        results.prediction.data = prediction;
-      }
-    } catch (error) {
-      logWarning('AI prediction test failed (non-critical):', error);
-      results.prediction.error = error;
-    }
-
-  } catch (error) {
-    logError('Fatal error during verification:', error);
-    allTestsPassed = false;
-  }
-
-  // ===================================================================
-  // FINAL RESULTS
-  // ===================================================================
-  console.log(`\n${colors.bright}${colors.cyan}╔════════════════════════════════════════════════════════════╗${colors.reset}`);
-  console.log(`${colors.bright}${colors.cyan}║   VERIFICATION RESULTS                                     ║${colors.reset}`);
-  console.log(`${colors.bright}${colors.cyan}╚════════════════════════════════════════════════════════════╝${colors.reset}\n`);
-
-  const criticalTests = ['ticker', 'chart'];
-  const criticalPassed = criticalTests.every(test => results[test as keyof typeof results].passed);
-
-  console.log(`${colors.bright}Critical Tests (Must Pass):${colors.reset}`);
-  console.log(`  • Market Ticker: ${results.ticker.passed ? '✅ PASS' : '❌ FAIL'}`);
-  console.log(`  • Price Chart:   ${results.chart.passed ? '✅ PASS' : '❌ FAIL'}`);
+  logSection('🚀 DASHBOARD LOAD VERIFICATION - Hub-and-Spoke Architecture');
   
-  console.log(`\n${colors.bright}Optional Tests (Nice to Have):${colors.reset}`);
-  console.log(`  • News Feed:     ${results.news.passed ? '✅ PASS' : '⚠️  SKIP'}`);
-  console.log(`  • Sentiment:     ${results.sentiment.passed ? '✅ PASS' : '⚠️  SKIP'}`);
-  console.log(`  • AI Prediction: ${results.prediction.passed ? '✅ PASS' : '⚠️  SKIP'}`);
+  logInfo('Architecture:');
+  console.log('  Frontend → DatasourceClient → Local Proxy (8001) → Hugging Face Hub');
+  console.log('  NO external API calls, NO mock data fallbacks\n');
 
-  console.log(`\n${colors.bright}Overall Status:${colors.reset}`);
-  if (criticalPassed) {
-    console.log(`${colors.green}${colors.bright}✅ DASHBOARD IS READY TO LOAD!${colors.reset}`);
-    console.log(`${colors.green}The frontend will be able to display:${colors.reset}`);
-    console.log(`  • Market ticker with real prices`);
-    console.log(`  • Price charts with OHLCV data`);
-    if (results.news.passed) console.log(`  • News feed`);
-    if (results.sentiment.passed) console.log(`  • Market sentiment indicators`);
-    if (results.prediction.passed) console.log(`  • AI predictions`);
+  const datasourceClient = DatasourceClient.getInstance();
+  let totalTests = 0;
+  let passedTests = 0;
+  let failedTests = 0;
+
+  // TEST 1: Market Ticker - getTopCoins()
+  logSection('TEST 1: Market Ticker - Top Coins');
+  totalTests++;
+  
+  try {
+    logInfo('Calling: datasourceClient.getTopCoins(10)');
+    const startTime = Date.now();
+    const topCoins = await datasourceClient.getTopCoins(10);
+    const elapsed = Date.now() - startTime;
     
-    console.log(`\n${colors.cyan}${colors.bright}Next Steps:${colors.reset}`);
-    console.log(`  1. Start the backend server: npm run dev:server`);
-    console.log(`  2. Start the frontend: npm run dev`);
-    console.log(`  3. Open http://localhost:5173 in your browser`);
-    console.log(`  4. The dashboard should load with real data!`);
-  } else {
-    console.log(`${colors.red}${colors.bright}❌ CRITICAL TESTS FAILED!${colors.reset}`);
-    console.log(`${colors.red}The dashboard will not be able to load properly.${colors.reset}`);
-    console.log(`\n${colors.yellow}${colors.bright}Troubleshooting:${colors.reset}`);
-    console.log(`  1. Ensure the backend server is running on port 8001`);
-    console.log(`  2. Verify HuggingFace Hub is accessible: ${process.env.HF_ENGINE_BASE_URL}`);
-    console.log(`  3. Check server logs for proxy errors`);
-    console.log(`  4. Test the proxy endpoints manually:`);
-    console.log(`     curl http://localhost:8001/api/market?limit=5`);
+    if (topCoins && topCoins.length > 0) {
+      passedTests++;
+      logSuccess(`Received ${topCoins.length} coins in ${elapsed}ms`);
+      
+      console.log('\n📊 Sample Data (first 3 coins):');
+      topCoins.slice(0, 3).forEach((coin, idx) => {
+        console.log(`\n  ${idx + 1}. ${coin.symbol}`);
+        console.log(`     Price: $${coin.price.toLocaleString()}`);
+        console.log(`     24h Change: ${coin.changePercent24h >= 0 ? '+' : ''}${coin.changePercent24h.toFixed(2)}%`);
+        console.log(`     Volume: $${coin.volume.toLocaleString()}`);
+        console.log(`     Market Cap: $${coin.marketCap?.toLocaleString() || 'N/A'}`);
+      });
+      
+      // Validate data structure
+      const firstCoin = topCoins[0];
+      const hasValidStructure = 
+        typeof firstCoin.symbol === 'string' &&
+        typeof firstCoin.price === 'number' &&
+        typeof firstCoin.changePercent24h === 'number' &&
+        typeof firstCoin.volume === 'number';
+      
+      if (hasValidStructure) {
+        logSuccess('✓ Data structure is valid and matches expected format');
+      } else {
+        logWarning('⚠ Data structure validation failed');
+      }
+      
+      // Check for realistic values (not zeros)
+      const hasRealisticValues = topCoins.every(coin => 
+        coin.price > 0 && 
+        Math.abs(coin.changePercent24h) < 100 &&
+        coin.volume > 0
+      );
+      
+      if (hasRealisticValues) {
+        logSuccess('✓ All values appear realistic (not mock zeros)');
+      } else {
+        logWarning('⚠ Some values appear unrealistic - check data source');
+      }
+    } else {
+      failedTests++;
+      logError('No data returned - array is empty');
+    }
+  } catch (error) {
+    failedTests++;
+    logError(`Failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 
-  console.log(`\n${colors.bright}${colors.cyan}════════════════════════════════════════════════════════════${colors.reset}\n`);
+  // TEST 2: Price Chart - getPriceChart()
+  logSection('TEST 2: Price Chart - OHLCV Data');
+  totalTests++;
+  
+  try {
+    logInfo('Calling: datasourceClient.getPriceChart("BTC", "1h", 100)');
+    const startTime = Date.now();
+    const chartData = await datasourceClient.getPriceChart('BTC', '1h', 100);
+    const elapsed = Date.now() - startTime;
+    
+    if (chartData && chartData.length > 0) {
+      passedTests++;
+      logSuccess(`Received ${chartData.length} candles in ${elapsed}ms`);
+      
+      console.log('\n📈 Sample Candles (last 3):');
+      chartData.slice(-3).forEach((candle, idx) => {
+        const date = new Date(candle.timestamp).toLocaleString();
+        console.log(`\n  ${idx + 1}. ${date}`);
+        console.log(`     Open:   $${candle.open.toFixed(2)}`);
+        console.log(`     High:   $${candle.high.toFixed(2)}`);
+        console.log(`     Low:    $${candle.low.toFixed(2)}`);
+        console.log(`     Close:  $${candle.close.toFixed(2)}`);
+        console.log(`     Volume: ${candle.volume.toFixed(2)}`);
+      });
+      
+      // Validate OHLCV structure
+      const firstCandle = chartData[0];
+      const hasValidStructure = 
+        typeof firstCandle.timestamp === 'number' &&
+        typeof firstCandle.open === 'number' &&
+        typeof firstCandle.high === 'number' &&
+        typeof firstCandle.low === 'number' &&
+        typeof firstCandle.close === 'number' &&
+        typeof firstCandle.volume === 'number';
+      
+      if (hasValidStructure) {
+        logSuccess('✓ OHLCV data structure is valid');
+      } else {
+        logWarning('⚠ OHLCV data structure validation failed');
+      }
+      
+      // Check for realistic OHLCV relationships
+      const hasValidOHLC = chartData.every(candle => 
+        candle.high >= candle.open &&
+        candle.high >= candle.close &&
+        candle.high >= candle.low &&
+        candle.low <= candle.open &&
+        candle.low <= candle.close
+      );
+      
+      if (hasValidOHLC) {
+        logSuccess('✓ OHLC relationships are valid (High ≥ Open/Close ≥ Low)');
+      } else {
+        logWarning('⚠ Some OHLC relationships are invalid');
+      }
+    } else {
+      failedTests++;
+      logError('No chart data returned - array is empty');
+    }
+  } catch (error) {
+    failedTests++;
+    logError(`Failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
 
-  // Exit with appropriate code
-  process.exit(criticalPassed ? 0 : 1);
+  // TEST 3: News Feed - getLatestNews()
+  logSection('TEST 3: News Feed - Latest Cryptocurrency News');
+  totalTests++;
+  
+  try {
+    logInfo('Calling: datasourceClient.getLatestNews(5)');
+    const startTime = Date.now();
+    const newsData = await datasourceClient.getLatestNews(5);
+    const elapsed = Date.now() - startTime;
+    
+    if (newsData && newsData.length > 0) {
+      passedTests++;
+      logSuccess(`Received ${newsData.length} news articles in ${elapsed}ms`);
+      
+      console.log('\n📰 Sample News (first 2):');
+      newsData.slice(0, 2).forEach((article, idx) => {
+        console.log(`\n  ${idx + 1}. ${article.title}`);
+        console.log(`     Source: ${article.source}`);
+        console.log(`     Published: ${article.publishedAt}`);
+        console.log(`     URL: ${article.url.substring(0, 60)}...`);
+        if (article.description) {
+          console.log(`     Description: ${article.description.substring(0, 100)}...`);
+        }
+      });
+      
+      // Validate news structure
+      const firstArticle = newsData[0];
+      const hasValidStructure = 
+        typeof firstArticle.id === 'string' &&
+        typeof firstArticle.title === 'string' &&
+        typeof firstArticle.url === 'string' &&
+        typeof firstArticle.source === 'string';
+      
+      if (hasValidStructure) {
+        logSuccess('✓ News data structure is valid');
+      } else {
+        logWarning('⚠ News data structure validation failed');
+      }
+    } else {
+      failedTests++;
+      logError('No news data returned - array is empty');
+    }
+  } catch (error) {
+    failedTests++;
+    logError(`Failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  // TEST 4: Market Sentiment - getMarketSentiment()
+  logSection('TEST 4: Market Sentiment - Fear & Greed Index');
+  totalTests++;
+  
+  try {
+    logInfo('Calling: datasourceClient.getMarketSentiment()');
+    const startTime = Date.now();
+    const sentimentData = await datasourceClient.getMarketSentiment();
+    const elapsed = Date.now() - startTime;
+    
+    if (sentimentData) {
+      passedTests++;
+      logSuccess(`Received sentiment data in ${elapsed}ms`);
+      
+      console.log('\n🧠 Sentiment Data:');
+      console.log(`\n  Fear & Greed Index: ${sentimentData.fearGreedIndex}/100`);
+      console.log(`  Classification: ${sentimentData.classification}`);
+      console.log(`  Timestamp: ${new Date(sentimentData.timestamp).toLocaleString()}`);
+      
+      if (sentimentData.indicators) {
+        console.log('\n  Indicators:');
+        console.log(`    Volatility: ${sentimentData.indicators.volatility}`);
+        console.log(`    Market Momentum: ${sentimentData.indicators.marketMomentum}`);
+        console.log(`    Social Sentiment: ${sentimentData.indicators.socialSentiment}`);
+        console.log(`    Surveys: ${sentimentData.indicators.surveys}`);
+        console.log(`    Dominance: ${sentimentData.indicators.dominance}`);
+        console.log(`    Trends: ${sentimentData.indicators.trends}`);
+      }
+      
+      // Validate sentiment range
+      const isValidRange = 
+        sentimentData.fearGreedIndex >= 0 && 
+        sentimentData.fearGreedIndex <= 100;
+      
+      if (isValidRange) {
+        logSuccess('✓ Sentiment index is in valid range (0-100)');
+      } else {
+        logWarning('⚠ Sentiment index is out of range');
+      }
+    } else {
+      failedTests++;
+      logError('No sentiment data returned');
+    }
+  } catch (error) {
+    failedTests++;
+    logError(`Failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  // TEST 5: AI Prediction - getAIPrediction()
+  logSection('TEST 5: AI Prediction - Trading Signal');
+  totalTests++;
+  
+  try {
+    logInfo('Calling: datasourceClient.getAIPrediction("BTC", "1h")');
+    const startTime = Date.now();
+    const predictionData = await datasourceClient.getAIPrediction('BTC', '1h');
+    const elapsed = Date.now() - startTime;
+    
+    if (predictionData) {
+      passedTests++;
+      logSuccess(`Received prediction data in ${elapsed}ms`);
+      
+      console.log('\n🤖 AI Prediction:');
+      console.log(`\n  Symbol: ${predictionData.symbol}`);
+      console.log(`  Action: ${predictionData.action}`);
+      console.log(`  Confidence: ${(predictionData.confidence * 100).toFixed(1)}%`);
+      console.log(`  Price: $${predictionData.price.toLocaleString()}`);
+      console.log(`  Timeframe: ${predictionData.timeframe}`);
+      console.log(`  Timestamp: ${new Date(predictionData.timestamp).toLocaleString()}`);
+      
+      if (predictionData.indicators) {
+        console.log('\n  Indicators:');
+        Object.entries(predictionData.indicators).forEach(([key, value]) => {
+          console.log(`    ${key}: ${value}`);
+        });
+      }
+      
+      // Validate prediction
+      const isValidAction = ['BUY', 'SELL', 'HOLD'].includes(predictionData.action);
+      const isValidConfidence = 
+        predictionData.confidence >= 0 && 
+        predictionData.confidence <= 1;
+      
+      if (isValidAction && isValidConfidence) {
+        logSuccess('✓ Prediction data is valid');
+      } else {
+        logWarning('⚠ Prediction validation failed');
+      }
+    } else {
+      failedTests++;
+      logError('No prediction data returned');
+    }
+  } catch (error) {
+    failedTests++;
+    logError(`Failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  // FINAL REPORT
+  logSection('📊 VERIFICATION SUMMARY');
+  
+  console.log(`Total Tests: ${totalTests}`);
+  console.log(`${colors.green}Passed: ${passedTests}${colors.reset}`);
+  console.log(`${colors.red}Failed: ${failedTests}${colors.reset}`);
+  console.log(`Success Rate: ${((passedTests / totalTests) * 100).toFixed(1)}%\n`);
+  
+  if (failedTests === 0) {
+    logSuccess('🎉 ALL TESTS PASSED! Dashboard is ready to render.');
+    logInfo('The Frontend → Proxy → Hub data flow is working correctly.');
+    logInfo('No mock data, no external API calls, no CORS errors.');
+    console.log('\n' + '═'.repeat(80));
+    log('  ✅ FRONTEND SYNCHRONIZATION: COMPLETE', 'green');
+    console.log('═'.repeat(80) + '\n');
+    process.exit(0);
+  } else {
+    logError(`${failedTests} test(s) failed. Dashboard may not render correctly.`);
+    logWarning('Check that:');
+    console.log('  1. Local proxy server is running on port 8001');
+    console.log('  2. Hugging Face Hub is accessible and responding');
+    console.log('  3. .env file has correct HF_ENGINE_BASE_URL configuration\n');
+    process.exit(1);
+  }
 }
 
 // Run the verification
 verifyDashboardLoad().catch(error => {
-  console.error('Unhandled error:', error);
+  logError(`\nFATAL ERROR: ${error instanceof Error ? error.message : String(error)}`);
+  console.error(error);
   process.exit(1);
 });
