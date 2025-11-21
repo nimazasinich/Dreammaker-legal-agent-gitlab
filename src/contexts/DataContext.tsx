@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Logger } from '../core/Logger.js';
+import { DatasourceClient } from '../services/DatasourceClient';
 import { realDataManager, getPrices } from '../services/RealDataManager-old';
 import { useMode } from './ModeContext';
 import type { DataSource } from '../components/ui/DataSourceBadge';
@@ -177,10 +178,11 @@ export function DataProvider({
       logger.info('🔄 Loading all data (progressive)...', { data: new Date().toISOString() });
       lastBootstrapTimeRef.current = Date.now();
 
-      // PHASE 1: Load core prices (reduced from 5 to 3 symbols initially)
+      // PHASE 1: Load core prices using DatasourceClient
       // This is the minimum needed to render the dashboard
+      const datasourceClient = DatasourceClient.getInstance();
       const corePriceSymbols = ['BTC', 'ETH', 'SOL'];
-      const corePricesData = await realDataManager.getPrices(corePriceSymbols);
+      const corePricesData = await datasourceClient.getTopCoins(3, corePriceSymbols);
 
       logger.info('✅ Core prices loaded:', { data: corePricesData.length });
       setPrices(corePricesData);
@@ -229,7 +231,7 @@ export function DataProvider({
       if (abortController.signal.aborted || ignoreRef.current) return;
 
       const additionalPriceSymbols = ['BNB', 'XRP'];
-      const additionalPrices = await realDataManager.getPrices(additionalPriceSymbols).catch(() => []);
+      const additionalPrices = await datasourceClient.getTopCoins(2, additionalPriceSymbols).catch(() => []);
 
       // Merge all prices
       const allPricesData = [...corePricesData, ...additionalPrices];
@@ -268,9 +270,9 @@ export function DataProvider({
         const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
         setError(`خطا در بارگذاری داده‌ها: ${errorMessage}. لطفاً مطمئن شوید که سرور در حال اجرا است (پورت 3001)`);
 
-        // Fallback: Load minimal data (just BTC)
+        // Fallback: Load minimal data (just BTC) using DatasourceClient
         try {
-          const fallbackPrices = await realDataManager.getPrices(['BTC']);
+          const fallbackPrices = await datasourceClient.getTopCoins(1, ['BTC']);
           setPrices(fallbackPrices);
 
           setData((prev) => ({

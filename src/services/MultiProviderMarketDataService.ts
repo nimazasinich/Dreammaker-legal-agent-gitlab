@@ -195,6 +195,7 @@ export class MultiProviderMarketDataService {
 
   /**
    * Get real-time prices for multiple symbols
+   * REFACTORED: Now uses DatasourceClient instead of direct API calls
    */
   async getRealTimePrices(symbols: string[]): Promise<PriceData[]> {
     const cacheKey = symbols.sort().join(',');
@@ -207,12 +208,39 @@ export class MultiProviderMarketDataService {
     
     this.resourceMonitor.trackCacheMiss();
 
-    // استفاده از requestCoordinator برای جلوگیری از race conditions
-    return requestCoordinator.coordinate(
-      `prices:${cacheKey}`,
-      () => this.fetchRealTimePrices(symbols),
-      30000
-    );
+    // Use DatasourceClient instead of direct API calls
+    try {
+      const datasourceClient = await this.loadDatasourceClient();
+      const marketPrices = await datasourceClient.getTopCoins(symbols.length, symbols);
+      
+      // Convert to PriceData format
+      const priceData: PriceData[] = marketPrices.map(mp => ({
+        symbol: mp.symbol,
+        price: mp.price,
+        volume24h: mp.volume || 0,
+        change24h: mp.change24h || 0,
+        changePercent24h: mp.changePercent24h || 0,
+        marketCap: mp.marketCap,
+        source: 'datasourceclient',
+        timestamp: mp.timestamp || Date.now()
+      }));
+      
+      if (priceData.length > 0) {
+        this.priceCache.set(cacheKey, priceData);
+      }
+      
+      return priceData;
+    } catch (error) {
+      this.logger.error('Failed to get prices from DatasourceClient', {}, error as Error);
+      // Return empty array instead of throwing
+      return [];
+    }
+  }
+  
+  // Helper to dynamically import DatasourceClient (avoid circular dependencies)
+  private async loadDatasourceClient(): Promise<any> {
+    const module = await import('./DatasourceClient.js');
+    return module.default;
   }
 
   /**
@@ -866,7 +894,7 @@ export class MultiProviderMarketDataService {
 
   /**
    * Get historical OHLCV data
-   * Now includes HuggingFace datasets as a fallback for heavy historical requests
+   * REFACTORED: Now uses DatasourceClient as primary source
    */
   async getHistoricalData(
     symbol: string,
@@ -877,57 +905,35 @@ export class MultiProviderMarketDataService {
     const cached = this.ohlcvCache.get(cacheKey);
     if (cached) return cached;
 
-    // Convert interval to days if needed
-    const daysForInterval = this.convertIntervalToDays(interval, days);
+    // Calculate limit based on interval
+    const limit = days * (interval.includes('h') ? 24 : interval.includes('d') ? 1 : 1440);
 
-    // Prefer HF for large historical requests (>100 days) or when rate-limit pressure is high
-    const limit = daysForInterval * (interval.includes('h') ? 24 : interval.includes('d') ? 1 : 1440);
-    const preferHF = limit > 2000 || days > 100;
-
-    // Try providers in order: Kraken -> CoinGecko -> CryptoCompare -> HuggingFace (for OHLCV)
     try {
-      if (preferHF) {
-        // Try HF first for large requests
-        try {
-          this.logger.info('Using HuggingFace for large historical request', { symbol, days, limit });
-          const data = await this.getHistoricalFromHF(symbol, interval, limit);
-          this.ohlcvCache.set(cacheKey, data);
-          return data;
-        } catch (hfError) {
-          this.logger.warn('HF historical failed, falling back to traditional providers', {}, hfError as Error);
-        }
+      // Use DatasourceClient as primary source
+      const datasourceClient = await this.loadDatasourceClient();
+      const chartData = await datasourceClient.getPriceChart(symbol, interval, limit);
+      
+      // Convert to OHLCVData format
+      const ohlcvData: OHLCVData[] = chartData.map(bar => ({
+        timestamp: bar.timestamp,
+        open: bar.open,
+        high: bar.high,
+        low: bar.low,
+        close: bar.close,
+        volume: bar.volume,
+        symbol: symbol.toUpperCase(),
+        interval
+      }));
+      
+      if (ohlcvData.length > 0) {
+        this.ohlcvCache.set(cacheKey, ohlcvData);
       }
-
-      // Try Kraken first (most reliable for OHLCV)
-      try {
-        const data = await this.getHistoricalFromKraken(symbol, interval, daysForInterval);
-        this.ohlcvCache.set(cacheKey, data);
-        return data;
-      } catch (krakenError) {
-        this.logger.warn('Kraken historical failed, trying CoinGecko fallback', {}, krakenError as Error);
-      }
-
-      const data = await this.getHistoricalFromCoinGecko(symbol, daysForInterval);
-      this.ohlcvCache.set(cacheKey, data);
-      return data;
+      
+      return ohlcvData;
     } catch (error) {
-      this.logger.warn('CoinGecko historical failed, trying CryptoCompare fallback', {}, error as Error);
-      try {
-        const data = await this.getHistoricalFromCryptoCompare(symbol, interval, daysForInterval);
-        this.ohlcvCache.set(cacheKey, data);
-        return data;
-      } catch (fallbackError) {
-        this.logger.warn('CryptoCompare historical failed, trying HuggingFace as last resort', {}, fallbackError as Error);
-        try {
-          // Try HF as final fallback
-          const data = await this.getHistoricalFromHF(symbol, interval, limit);
-          this.ohlcvCache.set(cacheKey, data);
-          return data;
-        } catch (hfFinalError) {
-          this.logger.error('All historical data providers failed (including HF)', { symbol, interval }, hfFinalError as Error);
-          console.error(`Failed to fetch historical data for ${symbol}: ${(hfFinalError as Error).message}`);
-        }
-      }
+      this.logger.error('Failed to get historical data from DatasourceClient', { symbol, interval }, error as Error);
+      // Return empty array instead of throwing
+      return [];
     }
   }
 

@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Logger } from '../../core/Logger.js';
 import { MarketData } from '../../types';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { dataManager } from '../../services/dataManager';
-import { API_BASE } from '../../config/env.js';
+import { DatasourceClient } from '../../services/DatasourceClient';
 
 interface MarketTickerProps {
   marketData?: MarketData[];
@@ -36,33 +35,23 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
     
     fetchingRef.current = true;
     try {
-      const symbolsParam = symbols.join(',');
-      const response = await dataManager.fetchData<{
-        success: boolean;
-        prices: Array<{
-          symbol: string;
-          price: number;
-          change24h: number;
-          changePercent24h: number;
-          volume: number;
-        }>;
-      }>(`${API_BASE}/market/prices?symbols=${symbolsParam}`);
+      const datasourceClient = DatasourceClient.getInstance();
+      const cleanSymbols = symbols.map(s => s.replace('USDT', ''));
+      const priceData = await datasourceClient.getTopCoins(cleanSymbols.length, cleanSymbols);
       
-      if (response && response.success && response.prices) {
-        const formatted: MarketData[] = (response.prices || []).map((p) => ({
-          symbol: p.symbol,
-          open: p.price,
-          high: p.price,
-          low: p.price,
-          close: p.price,
-          price: p.price,
-          change24h: p.change24h,
-          changePercent24h: p.changePercent24h,
-          volume: p.volume || 0,
-          timestamp: Date.now()
-        }));
-        setMarketData(formatted);
-      }
+      const formatted: MarketData[] = priceData.map((p) => ({
+        symbol: p.symbol + 'USDT',
+        open: p.price,
+        high: p.price,
+        low: p.price,
+        close: p.price,
+        price: p.price,
+        change24h: p.change24h || 0,
+        changePercent24h: p.changePercent24h || 0,
+        volume: p.volume || 0,
+        timestamp: p.timestamp || Date.now()
+      }));
+      setMarketData(formatted);
     } catch (error) {
       if (import.meta.env.DEV) logger.error('Failed to fetch market data:', {}, error);
     } finally {
