@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
 import { PredictionData } from '../../types';
-import { Brain, Target, TrendingUp, TrendingDown, Minus, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Brain, Target, TrendingUp, TrendingDown, Minus, AlertTriangle, RefreshCw, AlertCircle } from 'lucide-react';
 import { dataManager } from '../../services/dataManager';
+import DatasourceClient from '../../services/DatasourceClient';
+import { showToast } from '../ui/Toast';
 
 interface AIPredictorProps {
   predictions?: Record<string, PredictionData>;
@@ -31,41 +33,38 @@ export const AIPredictor: React.FC<AIPredictorProps> = ({
 
   const fetchPrediction = async (symbol: string) => {
     setLoading(true);
+    setError(null);
     try {
-      // Check if predict method exists
-      if (typeof dataManager.predict !== 'function') {
-        console.error('dataManager.predict is not a function');
-      }
+      const datasource = DatasourceClient.getInstance();
+      const response = await datasource.getAIPrediction(symbol.replace('USDT', ''), '1h');
       
-      const response = await dataManager.predict(symbol.replace('USDT', ''), 'directional');
-      
-      // Handle different response structures
-      if (response && (response.prediction || response.success !== false)) {
-        // Normalize response structure
-        const predictionData = response.prediction || response;
-        const direction = predictionData.direction || 'NEUTRAL';
-        
+      if (response) {
         const prediction: PredictionData = {
           symbol: symbol.replace('USDT', ''),
-          prediction: direction === 'UP' ? 'BULL' : direction === 'DOWN' ? 'BEAR' : 'NEUTRAL',
-          confidence: predictionData.confidence || response.confidence || 0.5,
-          bullishProbability: predictionData.bullishProbability || response.probabilities?.bull || 0.33,
-          bearishProbability: predictionData.bearishProbability || response.probabilities?.bear || 0.33,
-          neutralProbability: predictionData.neutralProbability || response.probabilities?.neutral || 0.34,
-          timeframe: predictionData.timeframe || response.timeframe || '1h',
-          timestamp: predictionData.timestamp || response.timestamp || Date.now(),
-          riskScore: predictionData.risk || response.riskScore || 0.3,
-          targetPrice: predictionData.targetPrice || response.targetPrice,
-          stopLoss: predictionData.stopLoss || response.stopLoss
+          prediction: response.action === 'BUY' ? 'BULL' : response.action === 'SELL' ? 'BEAR' : 'NEUTRAL',
+          confidence: response.confidence || 0.5,
+          bullishProbability: response.action === 'BUY' ? response.confidence : 0.33,
+          bearishProbability: response.action === 'SELL' ? response.confidence : 0.33,
+          neutralProbability: response.action === 'HOLD' ? response.confidence : 0.34,
+          timeframe: response.timeframe || '1h',
+          timestamp: response.timestamp || Date.now(),
+          riskScore: 0.3,
+          targetPrice: response.price,
+          stopLoss: undefined
         };
 
         setPredictions(prev => ({
           ...prev,
           [symbol.replace('USDT', '')]: prediction
         }));
+        showToast('success', 'Prediction Updated', `AI prediction for ${symbol} updated successfully`);
+      } else {
+        showToast('warning', 'No Prediction', `No AI prediction available for ${symbol}`);
       }
     } catch (error) {
       if (import.meta.env.DEV) logger.error('Failed to fetch AI prediction:', {}, error);
+      setError('Failed to load prediction');
+      showToast('error', 'Prediction Failed', 'Failed to fetch AI prediction');
     } finally {
       setLoading(false);
     }
@@ -123,6 +122,26 @@ export const AIPredictor: React.FC<AIPredictorProps> = ({
           <Brain className="text-blue-400" size={28} />
           <h3 className="text-xl font-bold text-white">AI Predictions</h3>
         </div>
+        {error && (
+          <div className="mt-2">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{
+              background: 'rgba(239, 68, 68, 0.15)',
+              border: '1px solid rgba(239, 68, 68, 0.3)'
+            }}>
+              <AlertCircle className="w-3 h-3 text-red-400" />
+              <span className="text-red-300 text-xs">{error}</span>
+              <button
+                onClick={() => setError(null)}
+                className="ml-auto p-0.5 rounded hover:bg-red-500/20"
+              >
+                <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
         
         <div className="flex items-center gap-2">
           <select
@@ -149,9 +168,32 @@ export const AIPredictor: React.FC<AIPredictorProps> = ({
       </div>
 
       {loading && !currentPrediction ? (
-        <div className="text-center text-gray-400 py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p>Loading AI predictions...</p>
+        <div className="space-y-6 animate-pulse">
+          {/* Main Prediction Skeleton */}
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-4 mb-4">
+              <div className="w-6 h-6 bg-slate-700/40 rounded"></div>
+              <div>
+                <div className="h-8 w-24 bg-slate-700/40 rounded mb-2"></div>
+                <div className="h-6 w-32 bg-slate-700/30 rounded"></div>
+              </div>
+            </div>
+          </div>
+          {/* Probability Skeleton */}
+          <div className="space-y-3">
+            <div className="h-5 w-48 bg-slate-700/40 rounded mb-3"></div>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="h-4 w-16 bg-slate-700/30 rounded"></div>
+                  <div className="h-4 w-12 bg-slate-700/30 rounded"></div>
+                </div>
+                <div className="w-full h-2 bg-gray-800 rounded-full">
+                  <div className="h-2 bg-slate-700/40 rounded-full" style={{ width: '60%' }}></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : currentPrediction ? (
         <div className="space-y-6">

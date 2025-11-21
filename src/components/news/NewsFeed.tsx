@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
 import { NewsItem } from '../../types';
-import { Newspaper, ExternalLink, TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
-import { apiUrl } from '../../lib/api';
+import { Newspaper, ExternalLink, TrendingUp, TrendingDown, Minus, RefreshCw, AlertCircle } from 'lucide-react';
+import DatasourceClient from '../../services/DatasourceClient';
+import { showToast } from '../ui/Toast';
 
 interface NewsFeedProps {
   autoRefresh?: boolean;
@@ -24,36 +25,36 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
 
   const fetchNews = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await fetch(apiUrl('/news/latest'), { mode: "cors", headers: { "Content-Type": "application/json" } });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.news) {
-          // Convert API news format to NewsItem format
-          const formattedNews: NewsItem[] = (data.news || []).map((item: Record<string, unknown>, index: number) => {
-            const sentimentScore = typeof item.sentiment_score === 'number' ? item.sentiment_score : 0;
-            return {
-              id: item.id || `news-${index}-${Date.now()}`,
-              title: item.title || item.headline || 'No title',
-              description: item.description || item.summary || item.content || '',
-              url: item.url || item.link || '#',
-              source: item.source || item.source_name || 'Unknown',
-              publishedAt: item.publishedAt || item.published_at || item.timestamp || new Date().toISOString(),
-              sentiment: item.sentiment || (sentimentScore > 0.1 ? 'positive' : sentimentScore < -0.1 ? 'negative' : 'neutral'),
-              impact: item.impact || (Math.abs(sentimentScore) > 0.5 ? 'high' : Math.abs(sentimentScore) > 0.2 ? 'medium' : 'low')
-            };
-          });
-          setNews(formattedNews);
-        }
+      const datasource = DatasourceClient.getInstance();
+      const newsData = await datasource.getLatestNews(20);
+      
+      if (newsData && newsData.length > 0) {
+        // Convert to NewsItem format
+        const formattedNews: NewsItem[] = newsData.map((item: any, index: number) => {
+          const sentimentScore = typeof item.sentiment_score === 'number' ? item.sentiment_score : 0;
+          return {
+            id: item.id || `news-${index}-${Date.now()}`,
+            title: item.title || item.headline || 'No title',
+            description: item.description || item.summary || item.content || '',
+            url: item.url || item.link || '#',
+            source: item.source || item.source_name || 'Unknown',
+            publishedAt: item.publishedAt || item.published_at || item.timestamp || new Date().toISOString(),
+            sentiment: item.sentiment || (sentimentScore > 0.1 ? 'positive' : sentimentScore < -0.1 ? 'negative' : 'neutral'),
+            impact: item.impact || (Math.abs(sentimentScore) > 0.5 ? 'high' : Math.abs(sentimentScore) > 0.2 ? 'medium' : 'low')
+          };
+        });
+        setNews(formattedNews);
       } else {
-        // No mock data - show empty state
-        if (import.meta.env.DEV) logger.warn('Failed to fetch real news');
         setNews([]);
+        showToast('warning', 'No News', 'No news articles available at the moment');
       }
     } catch (error) {
       if (import.meta.env.DEV) logger.error('Failed to fetch news:', {}, error);
-      // No mock data - show empty state instead
+      setError('Failed to load news');
       setNews([]);
+      showToast('error', 'News Fetch Failed', 'Failed to load news articles');
     } finally {
       setLoading(false);
     }
@@ -121,7 +122,26 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
           <Newspaper className="text-blue-400" size={28} />
           <div>
             <h3 className="text-xl font-bold text-white">Market News</h3>
-            {loading && <p className="text-xs text-gray-400">Loading latest news...</p>}
+            {loading && <p className="text-xs text-gray-400 animate-pulse">Fetching latest news...</p>}
+            {error && (
+              <div className="mt-1">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)'
+                }}>
+                  <AlertCircle className="w-3 h-3 text-red-400" />
+                  <span className="text-red-300 text-xs">{error}</span>
+                  <button
+                    onClick={() => setError(null)}
+                    className="ml-auto p-0.5 rounded hover:bg-red-500/20"
+                  >
+                    <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
@@ -155,9 +175,22 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
       </div>
 
       {loading && news.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading news...</p>
+        <div className="space-y-4 animate-pulse">
+          {[1, 2, 3].map((idx) => (
+            <div key={idx} className="border rounded-lg p-4" style={{ background: 'rgba(255, 255, 255, 0.03)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="h-4 w-4 bg-slate-700/30 rounded"></div>
+                  <div className="h-4 w-20 bg-slate-700/30 rounded"></div>
+                  <div className="h-5 w-16 bg-slate-700/40 rounded"></div>
+                </div>
+                <div className="h-3 w-16 bg-slate-700/20 rounded"></div>
+              </div>
+              <div className="h-5 bg-slate-700/40 rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-slate-700/30 rounded w-full mb-1"></div>
+              <div className="h-4 bg-slate-700/30 rounded w-5/6"></div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="space-y-4 max-h-96 overflow-y-auto">

@@ -15,7 +15,9 @@ import {
 import { PriceChart, MarketTicker } from '../components/market';
 import { NewsFeed } from '../components/news';
 import { AIPredictor } from '../components/ai';
-import { dataManager } from '../services/dataManager';
+import DatasourceClient from '../services/DatasourceClient';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { showToast } from '../components/ui/Toast';
 import { LiveDataContext } from '../components/LiveDataContext';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import ResponseHandler from '../components/ui/ResponseHandler';
@@ -195,31 +197,35 @@ export const MarketView: React.FC = () => {
             setLoading(true);
             setError(null);
 
-            // Fetch prices for top 20 pairs for the overview
-            const symbolsToFetch = pairs.slice(0, 20).map(p => p.symbolBinance).join(',');
-            const result = await dataManager.fetchData(`/api/market/prices?symbols=${symbolsToFetch}`) as any;
+            // Fetch prices using DatasourceClient
+            const datasource = DatasourceClient.getInstance();
+            const symbolsList = pairs.slice(0, 20).map(p => p.symbolBinance.replace('USDT', ''));
+            const priceData = await datasource.getTopCoins(20, symbolsList);
 
-            if (result && result.success && result.data) {
-                const formatted = ((result.data as any[]) || []).map((p: any) => ({
+            if (priceData && priceData.length > 0) {
+                const formatted = priceData.map((p: any) => ({
                     symbol: p.symbol,
                     price: p.price,
                     change24h: p.change24h || 0,
                     changePercent24h: p.changePercent24h || 0,
                     volume24h: p.volume || 0,
-                    high24h: p.high24h || p.price * 1.02,
-                    low24h: p.low24h || p.price * 0.98
+                    high24h: p.price * 1.02,
+                    low24h: p.price * 0.98
                 }));
                 setMarketData(formatted);
+                showToast('success', 'Market Data Loaded', 'Successfully fetched latest market data');
             } else {
                 logger.error('No market data available from API', {});
-                setError('No market data available. Please ensure backend is running.');
+                setError('No market data available');
+                showToast('error', 'No Data', 'No market data available. Please ensure backend is running.');
             }
 
             // Fetch analysis data for selected symbol
             await fetchAnalysisData(selectedSymbol);
         } catch (err) {
             logger.error('Failed to fetch market data:', {}, err);
-            setError('Failed to fetch market data. Please check your connection and try again.');
+            setError('Failed to fetch market data');
+            showToast('error', 'Fetch Failed', 'Failed to fetch market data. Please check your connection.');
         } finally {
             setLoading(false);
         }
@@ -332,9 +338,27 @@ export const MarketView: React.FC = () => {
                         </h1>
                         <p className="text-slate-400 text-xs">Comprehensive market intelligence and trading insights</p>
                         {error && (
-                            <div className="mt-2 flex items-center gap-2 text-orange-400 text-xs">
-                                <AlertCircle className="w-3 h-3" />
-                                <span>{error}</span>
+                            <div className="mt-3 animate-fade-in">
+                                <div className="group relative flex items-center gap-3 px-4 py-3 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.01]"
+                                    style={{
+                                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)',
+                                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                                        boxShadow: '0 4px 16px rgba(239, 68, 68, 0.2)'
+                                    }}>
+                                    <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" style={{
+                                        filter: 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.6))'
+                                    }} />
+                                    <span className="text-red-300 text-xs font-medium flex-1">{error}</span>
+                                    <button
+                                        onClick={() => setError(null)}
+                                        className="ml-2 p-1 rounded-lg hover:bg-red-500/20 transition-all duration-200"
+                                        aria-label="Dismiss error"
+                                    >
+                                        <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -476,8 +500,13 @@ export const MarketView: React.FC = () => {
                     </div>
 
                     {loading ? (
-                        <div className="text-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
+                        <div className="space-y-3">
+                            {[1, 2, 3].map((idx) => (
+                                <div key={idx} className="p-3 rounded-lg animate-pulse" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
+                                    <div className="h-4 bg-slate-700/30 rounded w-24 mb-2"></div>
+                                    <div className="h-6 bg-slate-700/40 rounded w-32"></div>
+                                </div>
+                            ))}
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -518,8 +547,13 @@ export const MarketView: React.FC = () => {
                     </div>
 
                     {loading ? (
-                        <div className="text-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500 mx-auto"></div>
+                        <div className="space-y-3">
+                            {[1, 2, 3].map((idx) => (
+                                <div key={idx} className="p-3 rounded-lg animate-pulse" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
+                                    <div className="h-4 bg-slate-700/30 rounded w-24 mb-2"></div>
+                                    <div className="h-6 bg-slate-700/40 rounded w-32"></div>
+                                </div>
+                            ))}
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -560,8 +594,11 @@ export const MarketView: React.FC = () => {
                     </div>
 
                     {loading ? (
-                        <div className="text-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+                        <div className="space-y-4 animate-pulse">
+                            <div className="h-4 bg-slate-700/30 rounded w-32 mb-2"></div>
+                            <div className="h-8 bg-slate-700/40 rounded w-20 mb-4"></div>
+                            <div className="h-4 bg-slate-700/30 rounded w-32 mb-2"></div>
+                            <div className="h-8 bg-slate-700/40 rounded w-24"></div>
                         </div>
                     ) : (
                         <div className="space-y-4">

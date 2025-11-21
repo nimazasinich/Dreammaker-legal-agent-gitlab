@@ -7,6 +7,9 @@ import { RealPortfolioConnector } from '../components/connectors/RealPortfolioCo
 import RiskCenterPro from '../components/portfolio/RiskCenterPro';
 import { showToast } from '../components/ui/Toast';
 import { useConfirmModal } from '../components/ui/ConfirmModal';
+import DatasourceClient from '../services/DatasourceClient';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { AlertCircle } from 'lucide-react';
 
 const logger = Logger.getInstance();
 
@@ -27,7 +30,7 @@ interface Position {
 export const PortfolioPage: React.FC = () => {
   const { confirm, ModalComponent } = useConfirmModal();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [marketData, setMarketData] = useState<MarketData[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(false);
@@ -39,24 +42,24 @@ export const PortfolioPage: React.FC = () => {
   }, []);
 
   const loadData = async () => {
+    setLoading(true);
+    setError(null);
     try {
+      const datasource = DatasourceClient.getInstance();
+      
       // Fetch market data and positions in parallel
-      const [marketRes, positionsRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/market/data`, { mode: "cors", headers: { "Content-Type": "application/json" } }).then((r) => (r.ok ? r.json() : null)),
+      const [marketData, positionsRes] = await Promise.allSettled([
+        datasource.getTopCoins(20),
         fetch(`${API_BASE}/positions/open`, { credentials: 'include' }).then((r) =>
           r.ok ? r.json() : null
         ),
       ]);
 
       // Handle market data
-      if (marketRes.status === 'fulfilled' && marketRes.value) {
-        const data = marketRes.value;
-        if (Array.isArray(data)) {
-          setMarketData(data);
-        } else if (data.success && Array.isArray(data.data)) {
-          setMarketData(data.data);
-        } else if (Array.isArray(data.marketData)) {
-          setMarketData(data.marketData);
+      if (marketData.status === 'fulfilled' && marketData.value) {
+        const data = marketData.value;
+        if (Array.isArray(data) && data.length > 0) {
+          setMarketData(data as MarketData[]);
         }
       }
 
@@ -75,6 +78,10 @@ export const PortfolioPage: React.FC = () => {
       }
     } catch (error) {
       logger.error('Failed to load portfolio data:', {}, error as Error);
+      setError('Failed to load portfolio data');
+      showToast('error', 'Load Failed', 'Failed to load portfolio data');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,6 +133,27 @@ export const PortfolioPage: React.FC = () => {
             Real-time data • Auto-refresh enabled
           </div>
         </div>
+        {error && (
+          <div className="mt-4 animate-fade-in">
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{
+              background: 'rgba(239, 68, 68, 0.15)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              boxShadow: '0 4px 16px rgba(239, 68, 68, 0.2)'
+            }}>
+              <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+              <span className="text-red-700 text-sm font-medium flex-1">{error}</span>
+              <button
+                onClick={() => setError(null)}
+                className="ml-2 p-1 rounded-lg hover:bg-red-500/20 transition-all duration-200"
+                aria-label="Dismiss error"
+              >
+                <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Holdings Summary Section */}
         <section>

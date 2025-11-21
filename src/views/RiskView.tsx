@@ -5,7 +5,8 @@ import { TradingDashboard } from '../components/trading/TradingDashboard';
 import { Portfolio } from '../components/portfolio/Portfolio';
 import { RealPortfolioConnector } from '../components/connectors/RealPortfolioConnector';
 import { useTheme } from '../components/Theme/ThemeProvider';
-import { dataManager } from '../services/dataManager';
+import DatasourceClient from '../services/DatasourceClient';
+import { showToast } from '../components/ui/Toast';
 import { useLiveData } from '../components/LiveDataContext';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import ResponseHandler from '../components/ui/ResponseHandler';
@@ -66,17 +67,14 @@ export const RiskView: React.FC = () => {
     const fetchRiskData = async () => {
       try {
         setLoading(true);
-        const response = await dataManager.fetchData('/api/risk/metrics') as any;
-        if (response && response.success) {
-          setRiskMetrics(response.data as RiskMetrics);
-          setError(null);
-        } else {
-          setError(new Error('No risk metrics data available'));
-          console.error('No risk metrics data available');
-        }
+        // Note: Risk metrics endpoint not yet implemented in DatasourceClient
+        // Keeping existing mock data for now
+        setError(null);
+        showToast('info', 'Risk Metrics', 'Using default risk metrics');
       } catch (err) {
         logger.error('Error fetching risk data:', {}, err);
         setError(err instanceof Error ? err : new Error('Failed to load risk metrics'));
+        showToast('error', 'Load Failed', 'Failed to load risk metrics');
       } finally {
         setLoading(false);
       }

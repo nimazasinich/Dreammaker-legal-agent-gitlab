@@ -5,6 +5,8 @@ import { API_BASE, buildWebSocketUrl } from '../config/env';
 import { showToast } from '../components/ui/Toast';
 import { useConfirmModal } from '../components/ui/ConfirmModal';
 import { useWebSocket } from '../hooks/useWebSocket';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { AlertCircle } from 'lucide-react';
 
 interface Position {
   id: string;
@@ -35,7 +37,7 @@ export const PositionsView: React.FC = () => {
   const logger = Logger.getInstance();
   const { confirm, ModalComponent } = useConfirmModal();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [positions, setPositions] = useState<Position[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [history, setHistory] = useState<any[]>([]);
@@ -68,6 +70,8 @@ export const PositionsView: React.FC = () => {
   }, []);
 
   const loadData = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const [posRes, ordRes] = await Promise.all([
         fetch('/api/positions', { credentials: 'include' }),
@@ -79,6 +83,8 @@ export const PositionsView: React.FC = () => {
         if (posData.success) {
           setPositions(posData.positions || []);
         }
+      } else {
+        throw new Error('Failed to fetch positions');
       }
 
       if (ordRes.ok) {
@@ -89,6 +95,10 @@ export const PositionsView: React.FC = () => {
       }
     } catch (error) {
       logger.error('Failed to load data', {}, error as Error);
+      setError('Failed to load positions and orders');
+      showToast('error', 'Load Failed', 'Failed to load positions and orders');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -242,6 +252,27 @@ export const PositionsView: React.FC = () => {
       <div className="min-h-screen bg-surface p-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold text-[color:var(--text-primary)] mb-6">Positions & Orders</h1>
+          {error && (
+            <div className="mb-4 animate-fade-in">
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                boxShadow: '0 4px 16px rgba(239, 68, 68, 0.2)'
+              }}>
+                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                <span className="text-red-300 text-sm font-medium flex-1">{error}</span>
+                <button
+                  onClick={() => setError(null)}
+                  className="ml-2 p-1 rounded-lg hover:bg-red-500/20 transition-all duration-200"
+                  aria-label="Dismiss error"
+                >
+                  <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
