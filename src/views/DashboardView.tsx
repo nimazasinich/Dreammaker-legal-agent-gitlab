@@ -535,6 +535,12 @@ export const DashboardView: React.FC = () => {
                     .stat-card-value {
                         font-size: 1.5rem;
                     }
+                    .stat-card-icon {
+                        padding: 0.5rem;
+                    }
+                    h1 {
+                        font-size: 1.5rem !important;
+                    }
                 }
                 
                 /* SMOOTH TRANSITIONS: No jumping */
@@ -583,7 +589,7 @@ export const DashboardView: React.FC = () => {
                     <div className="flex items-center gap-2 flex-wrap">
                         <button
                             onClick={() => setAutoRefresh(!autoRefresh)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
                                 autoRefresh 
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30' 
                                     : 'bg-slate-700/40 text-slate-400 border border-slate-600/30 hover:bg-slate-700/60'
@@ -595,7 +601,7 @@ export const DashboardView: React.FC = () => {
                         <button
                             onClick={handleRefresh}
                             disabled={isRefreshing || dataLoading}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 hover:scale-105 active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
                             title="Refresh data"
                         >
                             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -660,7 +666,7 @@ export const DashboardView: React.FC = () => {
                                 <div>
                                     <p className="text-slate-400 text-[10px] font-bold mb-2 tracking-wider uppercase">{stat?.label || 'METRIC'}</p>
                                     {/* THE MOST IMPORTANT: Value (Biggest & Boldest) */}
-                                    <p className="text-3xl font-extrabold text-white mb-2 tracking-tight transition-all duration-300 group-hover:scale-105" style={{
+                                    <p className="text-3xl sm:text-4xl font-extrabold text-white mb-2 tracking-tight transition-all duration-500 group-hover:scale-105" style={{
                                         textShadow: `0 0 30px rgba(${stat.glowColor}, 0.4)`,
                                         letterSpacing: '-0.02em'
                                     }}>
@@ -787,7 +793,7 @@ export const DashboardView: React.FC = () => {
 
                                     <div className="flex items-center gap-4 flex-1 w-full sm:w-auto">
                                         <div>
-                                            <span className="font-bold text-white text-base block mb-1 group-hover:text-purple-300 transition-colors">{item.pair || 'N/A'}</span>
+                                            <span className="font-bold text-white text-sm sm:text-base block mb-1 group-hover:text-purple-300 transition-colors">{item.pair || 'N/A'}</span>
                                             <div className="flex items-center gap-2">
                                                 <Clock className="w-3 h-3 text-slate-500" />
                                                 <span className="text-[10px] text-slate-500">{item.timeframe}</span>
@@ -898,7 +904,7 @@ export const DashboardView: React.FC = () => {
                             <button
                                 onClick={handleRefresh}
                                 disabled={isRefreshing}
-                                className="group px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-500/20 to-violet-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30 hover:scale-105 transition-all duration-300 text-xs font-semibold shadow-lg hover:shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="group px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-500/20 to-violet-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30 hover:scale-105 active:scale-95 transition-all duration-300 text-xs font-semibold shadow-lg hover:shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{
                                     boxShadow: '0 4px 16px rgba(139, 92, 246, 0.2)'
                                 }}
@@ -1044,7 +1050,7 @@ export const DashboardView: React.FC = () => {
                             <button
                                 onClick={handleRefresh}
                                 disabled={isRefreshing}
-                                className="group px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 hover:scale-105 transition-all duration-300 text-xs font-semibold shadow-lg hover:shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="group px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 hover:scale-105 active:scale-95 transition-all duration-300 text-xs font-semibold shadow-lg hover:shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{
                                     boxShadow: '0 4px 16px rgba(6, 182, 212, 0.2)'
                                 }}

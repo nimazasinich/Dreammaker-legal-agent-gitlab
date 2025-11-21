@@ -164,7 +164,7 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
               </span>
               
               {/* Price - THE MOST IMPORTANT (Biggest & Boldest) */}
-              <span className="text-white font-extrabold text-xl group-hover:scale-110 transition-transform" style={{
+              <span className="text-white font-extrabold text-xl group-hover:scale-110 transition-all duration-500" style={{
                 textShadow: '0 0 10px rgba(255, 255, 255, 0.2)',
                 letterSpacing: '-0.02em'
               }}>
@@ -175,7 +175,7 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
               </span>
               
               {/* Change Percentage - Visual Feedback with Smooth Transitions */}
-              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 group-hover:shadow-lg ${
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-500 group-hover:shadow-lg group-hover:scale-105 ${
                 isPositive 
                   ? 'bg-emerald-500/20 group-hover:bg-emerald-500/30' 
                   : 'bg-rose-500/20 group-hover:bg-rose-500/30'
