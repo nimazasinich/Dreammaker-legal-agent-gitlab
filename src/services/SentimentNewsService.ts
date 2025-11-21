@@ -100,6 +100,28 @@ export class SentimentNewsService {
     const cached = this.fearGreedCache.get('fear_greed');
     if (cached) return cached;
 
+    // Check if we should use the primary data source (HuggingFace proxy)
+    const primarySource = process.env.PRIMARY_DATA_SOURCE || 'huggingface';
+    if (primarySource === 'huggingface') {
+      try {
+        const baseUrl = process.env.VITE_API_BASE || 'http://localhost:8001';
+        const response = await axios.get(`${baseUrl}/api/sentiment`, {
+          timeout: 10000
+        });
+
+        const result: FearGreedIndex = {
+          value: response.data.value || 50,
+          classification: response.data.classification || 'Neutral',
+          timestamp: new Date()
+        };
+
+        this.fearGreedCache.set('fear_greed', result);
+        return result;
+      } catch (error) {
+        this.logger.warn('Failed to fetch sentiment from HuggingFace proxy, falling back to Alternative.me', {}, error as Error);
+      }
+    }
+
     await this.alternativeLimiter.wait();
 
     try {
@@ -140,6 +162,34 @@ export class SentimentNewsService {
     const cacheKey = `news_${limit}`;
     const cached = this.newsCache.get(cacheKey);
     if (cached) return cached;
+
+    // Check if we should use the primary data source (HuggingFace proxy)
+    const primarySource = process.env.PRIMARY_DATA_SOURCE || 'huggingface';
+    if (primarySource === 'huggingface') {
+      try {
+        const baseUrl = process.env.VITE_API_BASE || 'http://localhost:8001';
+        const response = await axios.get(`${baseUrl}/api/news/latest`, {
+          params: { limit },
+          timeout: 10000
+        });
+
+        const newsItems: NewsItem[] = (response.data || []).map((item: any) => ({
+          title: item.title || '',
+          url: item.url || '',
+          source: item.source || 'HuggingFace',
+          published: item.published ? new Date(item.published) : new Date(),
+          sentiment: item.sentiment || 'neutral',
+          sentimentScore: item.sentimentScore || 0
+        }));
+
+        if (newsItems.length > 0) {
+          this.newsCache.set(cacheKey, newsItems);
+          return newsItems;
+        }
+      } catch (error) {
+        this.logger.warn('Failed to fetch news from HuggingFace proxy, falling back to direct APIs', {}, error as Error);
+      }
+    }
 
     await this.cryptopanicLimiter.wait();
 
