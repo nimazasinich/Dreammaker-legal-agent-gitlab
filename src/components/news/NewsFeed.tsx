@@ -291,14 +291,14 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                 </div>
                 
                 {/* Title - MOST IMPORTANT (Biggest & Boldest) */}
-                <h4 className="text-white font-bold text-base mb-3 leading-tight group-hover:text-blue-300 transition-colors" style={{
+                <h4 className="text-white font-bold text-base sm:text-lg mb-3 leading-tight group-hover:text-blue-300 transition-all duration-300" style={{
                   textShadow: '0 0 10px rgba(255, 255, 255, 0.1)'
                 }}>
                   {item?.title || 'No title available'}
                 </h4>
                 
                 {/* Description - Secondary Info (Lighter) */}
-                <p className="text-slate-400 text-sm mb-4 leading-relaxed line-clamp-2">
+                <p className="text-slate-400 text-xs sm:text-sm mb-4 leading-relaxed line-clamp-2">
                   {item?.description || 'No description available'}
                 </p>
                 
@@ -325,7 +325,7 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                   <button
                     type="button"
                     onClick={() => window.open(item?.url || '#', '_blank')}
-                    className="group/btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-blue-400 text-xs font-semibold transition-all duration-300 hover:scale-105"
+                    className="group/btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-blue-400 text-xs font-semibold transition-all duration-300 hover:scale-105 active:scale-95"
                     style={{
                       background: 'rgba(59, 130, 246, 0.1)',
                       border: '1px solid rgba(59, 130, 246, 0.3)',
@@ -361,7 +361,7 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
           <button
             onClick={fetchNews}
             disabled={loading}
-            className="group px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 hover:scale-105 transition-all duration-300 text-sm font-bold shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 hover:scale-105 active:scale-95 transition-all duration-300 text-sm font-bold shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               boxShadow: '0 4px 16px rgba(59, 130, 246, 0.2)'
             }}

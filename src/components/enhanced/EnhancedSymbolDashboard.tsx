@@ -196,13 +196,13 @@ export default function EnhancedSymbolDashboard({ symbol, timeframe, hideBottomD
             <div className="flex items-center justify-between">
               <div>
                 {/* THE MOST IMPORTANT: Sentiment Value (Biggest & Boldest) */}
-                <div className={`text-5xl font-extrabold ${getSentimentStyle().color} group-hover:scale-110 transition-transform duration-300`} style={{
+                <div className={`text-5xl sm:text-6xl font-extrabold ${getSentimentStyle().color} group-hover:scale-110 transition-all duration-500`} style={{
                   textShadow: '0 0 30px currentColor',
                   letterSpacing: '-0.03em'
                 }}>
                   {sent?.fearGreedValue ?? sent?.overall ?? 50}
                 </div>
-                <div className="text-slate-500 text-xs mt-2 font-medium">/100</div>
+                <div className="text-slate-500 text-xs mt-2 font-medium tracking-wide">/100</div>
               </div>
               <div
                 className="px-5 py-3 rounded-xl transition-all duration-300 group-hover:scale-105"
@@ -277,15 +277,15 @@ export default function EnhancedSymbolDashboard({ symbol, timeframe, hideBottomD
                 const score = sig?.score ?? 0;
                 
                 return (
-                  <div
-                    key={idx}
-                    className="group/item flex items-center justify-between p-4 rounded-xl transition-all duration-300 hover:scale-[1.03] hover:shadow-lg cursor-pointer"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
-                    }}
-                  >
+                <div
+                  key={idx}
+                  className="group/item flex items-center justify-between p-4 rounded-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:shadow-lg cursor-pointer"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                  }}
+                >
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-lg ${isBuy ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`} style={{
                         border: isBuy ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)'
@@ -297,12 +297,12 @@ export default function EnhancedSymbolDashboard({ symbol, timeframe, hideBottomD
                         )}
                       </div>
                       <div>
-                        <div className={`text-sm font-extrabold ${isBuy ? 'text-emerald-400' : 'text-rose-400'}`} style={{
+                        <div className={`text-sm font-extrabold transition-all duration-300 ${isBuy ? 'text-emerald-400' : 'text-rose-400'}`} style={{
                           textShadow: isBuy ? '0 0 10px rgba(52, 211, 153, 0.6)' : '0 0 10px rgba(251, 113, 133, 0.6)'
                         }}>
                           {sig?.side?.toUpperCase() || 'NEUTRAL'}
                         </div>
-                        <div className="text-[10px] text-slate-500 font-medium mt-0.5">
+                        <div className="text-[10px] text-slate-500 font-medium mt-0.5 transition-all duration-300">
                           ${price ? (typeof price === 'number' ? price.toFixed(4) : price) : '0.0000'}
                         </div>
                       </div>
