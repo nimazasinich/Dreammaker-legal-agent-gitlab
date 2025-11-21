@@ -23,7 +23,6 @@ import { useData } from '../contexts/DataContext';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ResponseHandler from '../components/ui/ResponseHandler';
-import { realDataManager } from '../services/RealDataManager';
 import EnhancedSymbolDashboard from '../components/enhanced/EnhancedSymbolDashboard';
 
 interface MarketPrice {
