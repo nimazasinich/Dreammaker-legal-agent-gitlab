@@ -324,15 +324,15 @@ export const DashboardView: React.FC = () => {
     const statCards: StatCard[] = [
         {
             label: 'Total Portfolio',
-            value: portfolioData && portfolioValue !== undefined 
+            value: portfolioData && portfolioValue !== undefined && portfolioValue !== null
                 ? `$${portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
-                : (loading ? '' : '$0.00'),
-            change: portfolioData && portfolioChange !== undefined 
+                : (loading ? '—' : '$0.00'),
+            change: portfolioData && portfolioChange !== undefined && portfolioChange !== null
                 ? `${portfolioChange >= 0 ? '+' : ''}${portfolioChange.toFixed(2)}%` 
-                : '0.00%',
-            subValue: portfolioData && portfolioChangeAmount !== undefined 
+                : (loading ? '—' : '0.00%'),
+            subValue: portfolioData && portfolioChangeAmount !== undefined && portfolioChangeAmount !== null
                 ? `${portfolioChange >= 0 ? '+' : ''}$${Math.abs(portfolioChangeAmount).toLocaleString('en-US', { minimumFractionDigits: 2 })}` 
-                : '$0.00',
+                : (loading ? '—' : '$0.00'),
             positive: portfolioChange >= 0,
             icon: Wallet,
             gradient: 'from-blue-500/20 via-blue-600/10 to-cyan-500/20',
@@ -341,9 +341,9 @@ export const DashboardView: React.FC = () => {
         },
         {
             label: 'Active Positions',
-            value: activePositions.toString(),
-            change: `+${newPositionsToday} today`,
-            subValue: `${totalPositions} total positions`,
+            value: activePositions !== undefined && activePositions !== null ? activePositions.toString() : (loading ? '—' : '0'),
+            change: newPositionsToday !== undefined ? `+${newPositionsToday} today` : (loading ? '—' : '+0 today'),
+            subValue: totalPositions !== undefined ? `${totalPositions} total positions` : (loading ? '—' : '0 total positions'),
             positive: true,
             icon: Target,
             gradient: 'from-emerald-500/20 via-emerald-600/10 to-teal-500/20',
@@ -352,9 +352,15 @@ export const DashboardView: React.FC = () => {
         },
         {
             label: '24h P&L',
-            value: `${dayPnL >= 0 ? '+' : ''}$${Math.abs(dayPnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            change: `${dayPnLPercent >= 0 ? '+' : ''}${dayPnLPercent.toFixed(2)}%`,
-            subValue: `7d: ${weekPnL >= 0 ? '+' : ''}$${weekPnL.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+            value: dayPnL !== undefined && dayPnL !== null
+                ? `${dayPnL >= 0 ? '+' : ''}$${Math.abs(dayPnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : (loading ? '—' : '$0.00'),
+            change: dayPnLPercent !== undefined && dayPnLPercent !== null
+                ? `${dayPnLPercent >= 0 ? '+' : ''}${dayPnLPercent.toFixed(2)}%`
+                : (loading ? '—' : '0.00%'),
+            subValue: weekPnL !== undefined && weekPnL !== null
+                ? `7d: ${weekPnL >= 0 ? '+' : ''}$${weekPnL.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+                : (loading ? '—' : '7d: $0.00'),
             positive: dayPnL >= 0,
             icon: dayPnL >= 0 ? TrendingUp : TrendingDown,
             gradient: dayPnL >= 0 ? 'from-green-500/20 via-green-600/10 to-emerald-500/20' : 'from-red-500/20 via-red-600/10 to-rose-500/20',
@@ -363,9 +369,9 @@ export const DashboardView: React.FC = () => {
         },
         {
             label: 'AI Signals',
-            value: aiSignalsCount.toString(),
-            change: `${aiAccuracy}% accuracy`,
-            subValue: `${aiActiveModels} models active`,
+            value: aiSignalsCount !== undefined && aiSignalsCount !== null ? aiSignalsCount.toString() : (loading ? '—' : '0'),
+            change: aiAccuracy !== undefined && aiAccuracy !== null ? `${aiAccuracy}% accuracy` : (loading ? '—' : '0% accuracy'),
+            subValue: aiActiveModels !== undefined ? `${aiActiveModels} models active` : (loading ? '—' : '0 models active'),
             positive: true,
             icon: Brain,
             gradient: 'from-purple-500/20 via-purple-600/10 to-violet-500/20',
@@ -374,13 +380,67 @@ export const DashboardView: React.FC = () => {
         },
     ];
 
-    if (loading && portfolioValue === 0) {
+    // Premium skeleton loader for initial load
+    if (loading && !portfolioData && marketPrices.length === 0) {
         return (
-            <div className="w-full min-h-full animate-fade-in flex items-center justify-center">
+            <div className="w-full min-h-full animate-fade-in">
                 <ErrorBoundary>
-                    <div className="text-center">
-                        <LoadingSpinner size="large" />
-                        <p className="text-slate-400 mt-4">Loading dashboard data...</p>
+                    {/* Skeleton Market Ticker */}
+                    <div className="mb-6 bg-gray-900 border-b border-gray-800 p-4 rounded-lg animate-pulse">
+                        <div className="h-8 bg-slate-700/30 rounded w-full"></div>
+                    </div>
+
+                    {/* Skeleton Header */}
+                    <div className="mb-6">
+                        <div className="h-8 bg-slate-700/30 rounded w-64 mb-2 animate-pulse"></div>
+                        <div className="h-4 bg-slate-700/20 rounded w-96 animate-pulse"></div>
+                    </div>
+
+                    {/* Skeleton Stats Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        {[1, 2, 3, 4].map((idx) => (
+                            <div
+                                key={`skeleton-stat-${idx}`}
+                                className="relative overflow-hidden rounded-2xl p-6 animate-pulse"
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(15, 15, 24, 0.95) 0%, rgba(20, 20, 30, 0.95) 100%)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5)'
+                                }}
+                            >
+                                <div className="h-10 w-10 bg-slate-700/30 rounded-xl mb-4"></div>
+                                <div className="h-3 bg-slate-700/30 rounded w-24 mb-3"></div>
+                                <div className="h-8 bg-slate-700/40 rounded w-32 mb-2"></div>
+                                <div className="h-3 bg-slate-700/30 rounded w-20 mb-2"></div>
+                                <div className="h-2 bg-slate-700/20 rounded w-28"></div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Skeleton Main Content */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                        <div className="lg:col-span-2 rounded-2xl p-6 animate-pulse" style={{
+                            background: 'linear-gradient(135deg, rgba(15, 15, 24, 0.95) 0%, rgba(20, 20, 30, 0.95) 100%)',
+                            border: '1px solid rgba(139, 92, 246, 0.2)'
+                        }}>
+                            <div className="h-6 bg-slate-700/30 rounded w-48 mb-4"></div>
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="h-20 bg-slate-700/20 rounded-xl mb-3"></div>
+                            ))}
+                        </div>
+                        <div className="rounded-2xl p-6 animate-pulse" style={{
+                            background: 'linear-gradient(135deg, rgba(15, 15, 24, 0.95) 0%, rgba(20, 20, 30, 0.95) 100%)',
+                            border: '1px solid rgba(6, 182, 212, 0.2)'
+                        }}>
+                            <div className="h-6 bg-slate-700/30 rounded w-32 mb-4"></div>
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="h-24 bg-slate-700/20 rounded-xl mb-3"></div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="text-center mt-8">
+                        <LoadingSpinner size="large" text="Loading institutional-grade data..." />
                     </div>
                 </ErrorBoundary>
             </div>
@@ -411,6 +471,27 @@ export const DashboardView: React.FC = () => {
                     100% { background-position: 1000px 0; }
                 }
                 
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-10px); }
+                }
+                
+                @keyframes glow-pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                }
+                
+                @keyframes slide-in {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
                 .animate-shimmer {
                     animation: shimmer 8s infinite linear;
                     background: linear-gradient(
@@ -421,20 +502,57 @@ export const DashboardView: React.FC = () => {
                     );
                     background-size: 1000px 100%;
                 }
+                
+                .animate-float {
+                    animation: float 3s ease-in-out infinite;
+                }
+                
+                .animate-glow-pulse {
+                    animation: glow-pulse 2s ease-in-out infinite;
+                }
+                
+                .animate-slide-in {
+                    animation: slide-in 0.3s ease-out;
+                }
+                
+                @media (max-width: 640px) {
+                    .stat-card-value {
+                        font-size: 1.5rem;
+                    }
+                }
             `}</style>
 
             {/* Header - Compact and Clean */}
-            <div className="mb-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="mb-6 animate-slide-in">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 lg:gap-6">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                             Dashboard Overview
                         </h1>
                         <p className="text-slate-400 text-xs mt-1">Real-time market intelligence and portfolio analytics</p>
                         {error && (
-                            <div className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                                <AlertCircle className="w-3 h-3 text-orange-400" />
-                                <span className="text-orange-400 text-xs">{error}</span>
+                            <div className="mt-3 animate-fade-in">
+                                <div className="group relative flex items-center gap-3 px-4 py-3 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.01]"
+                                    style={{
+                                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)',
+                                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                                        boxShadow: '0 4px 16px rgba(239, 68, 68, 0.2)'
+                                    }}>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                    <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" style={{
+                                        filter: 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.6))'
+                                    }} />
+                                    <span className="text-red-300 text-xs font-medium flex-1">{error}</span>
+                                    <button
+                                        onClick={() => setError(null)}
+                                        className="ml-2 p-1 rounded-lg hover:bg-red-500/20 transition-all duration-200"
+                                        aria-label="Dismiss error"
+                                    >
+                                        <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -474,13 +592,13 @@ export const DashboardView: React.FC = () => {
             </div>
 
             {/* Stats Grid - Improved spacing and responsiveness */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
                 {(statCards || []).map((stat, index) => {
                     const Icon = stat.icon;
                     return (
                         <div
                             key={`stat-${stat.label}-${index}`}
-                            className="group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.03]"
+                            className="group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl cursor-pointer"
                             style={{
                                 background: 'linear-gradient(135deg, rgba(15, 15, 24, 0.95) 0%, rgba(20, 20, 30, 0.95) 100%)',
                                 border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -499,39 +617,39 @@ export const DashboardView: React.FC = () => {
                                 }}
                             />
 
-                            <div className="relative z-10 p-6">
+                                <div className="relative z-10 p-6">
                                 {/* Icon */}
                                 <div
-                                    className="inline-flex p-3 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-500"
+                                    className="inline-flex p-3 rounded-xl mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500"
                                     style={{
                                         background: `linear-gradient(135deg, ${stat.gradient})`,
                                         boxShadow: `0 12px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(${stat.glowColor}, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.25)`
                                     }}
                                 >
                                     <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent to-white/30" />
-                                    <Icon className="w-6 h-6 text-white relative z-10" />
+                                    <Icon className="w-6 h-6 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
                                 </div>
 
                                 {/* Content */}
                                 <div>
                                     <p className="text-slate-400 text-[10px] font-medium mb-2 tracking-wide uppercase">{stat.label}</p>
-                                    <p className="text-2xl font-bold text-white mb-1 tracking-tight" style={{
+                                    <p className="text-2xl font-bold text-white mb-1 tracking-tight transition-all duration-300 group-hover:scale-105" style={{
                                         textShadow: `0 0 20px rgba(${stat.glowColor}, 0.3)`
                                     }}>
-                                        {stat.value}
+                                        {stat.value || '—'}
                                     </p>
                                     <div className="flex items-center gap-2 mb-2">
-                                        <span className={`text-xs font-bold flex items-center gap-1 ${stat.positive ? 'text-emerald-400' : 'text-rose-400'}`}
+                                        <span className={`text-xs font-bold flex items-center gap-1 transition-all duration-300 ${stat.positive ? 'text-emerald-400' : 'text-rose-400'}`}
                                             style={{
                                                 textShadow: stat.positive
                                                     ? '0 0 10px rgba(52, 211, 153, 0.5)'
                                                     : '0 0 10px rgba(251, 113, 133, 0.5)'
                                             }}>
-                                            {stat.positive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                            {stat.change}
+                                            {stat.positive ? <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" /> : <ArrowDownRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-transform" />}
+                                            {stat.change || '—'}
                                         </span>
                                     </div>
-                                    <p className="text-[10px] text-slate-500">{stat.subValue}</p>
+                                    <p className="text-[10px] text-slate-500">{stat.subValue || '—'}</p>
                                 </div>
                             </div>
                         </div>
@@ -540,7 +658,7 @@ export const DashboardView: React.FC = () => {
             </div>
 
             {/* Main Content Area - Better responsive layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
                 {/* Top AI Signals Panel */}
                 <div
                     className="lg:col-span-2 rounded-2xl p-6 backdrop-blur-sm"
@@ -592,21 +710,37 @@ export const DashboardView: React.FC = () => {
                     {loading && !topSignals.length ? (
                         <div className="space-y-3">
                             {[1, 2, 3].map((idx) => (
-                                <div key={idx} className="p-4 rounded-xl animate-pulse" style={{
+                                <div key={idx} className="group relative p-4 rounded-xl animate-pulse" style={{
                                     background: 'rgba(255, 255, 255, 0.03)',
                                     border: '1px solid rgba(255, 255, 255, 0.08)'
                                 }}>
-                                    <div className="h-4 bg-slate-700 rounded w-1/3 mb-2"></div>
-                                    <div className="h-3 bg-slate-700 rounded w-1/2"></div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4 flex-1">
+                                            <div className="h-4 bg-slate-700/40 rounded w-24 mb-2"></div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-8 w-20 bg-slate-700/40 rounded-lg"></div>
+                                            <div className="h-6 w-16 bg-slate-700/30 rounded"></div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2">
+                                        <div className="flex items-center justify-between">
+                                            <div className="h-3 bg-slate-700/30 rounded w-20"></div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-2 w-20 bg-slate-700/30 rounded-full"></div>
+                                                <div className="h-4 w-12 bg-slate-700/40 rounded"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                    ) : (topSignals?.length || 0) > 0 ? (
+                    ) : topSignals && (topSignals?.length || 0) > 0 ? (
                         <div className="space-y-3">
                             {(topSignals || []).map((item, idx) => (
                                 <div 
                                     key={idx} 
-                                    className="group relative flex items-center justify-between p-4 rounded-xl transition-all duration-300 hover:scale-[1.02]"
+                                    className="group relative flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl cursor-pointer"
                                     style={{
                                         background: 'rgba(255, 255, 255, 0.03)',
                                         border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -623,18 +757,18 @@ export const DashboardView: React.FC = () => {
                                         }}
                                     />
 
-                                    <div className="flex items-center gap-4 flex-1">
+                                    <div className="flex items-center gap-4 flex-1 w-full sm:w-auto">
                                         <div>
-                                            <span className="font-bold text-white text-base block mb-1">{item.pair}</span>
+                                            <span className="font-bold text-white text-base block mb-1 group-hover:text-purple-300 transition-colors">{item.pair || 'N/A'}</span>
                                             <div className="flex items-center gap-2">
                                                 <Clock className="w-3 h-3 text-slate-500" />
                                                 <span className="text-[10px] text-slate-500">{item.timeframe}</span>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-wrap">
                                             <div
-                                                className="px-3 py-1.5 rounded-lg"
+                                                className="px-3 py-1.5 rounded-lg group-hover:scale-105 transition-transform duration-300"
                                                 style={{
                                                     background: item.prediction === 'BULLISH'
                                                         ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.25) 100%)'
@@ -655,7 +789,7 @@ export const DashboardView: React.FC = () => {
                                                             : '0 0 10px rgba(251, 113, 133, 0.8)'
                                                     }}
                                                 >
-                                                    {item.prediction}
+                                                    {item.prediction || 'NEUTRAL'}
                                                 </span>
                                             </div>
 
@@ -679,21 +813,21 @@ export const DashboardView: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-right">
+                                    <div className="flex items-center gap-4 mt-3 sm:mt-0 w-full sm:w-auto">
+                                        <div className="text-right flex-1 sm:flex-initial">
                                             <p className="text-[10px] text-slate-400 mb-1">Confidence</p>
                                             <div className="flex items-center gap-2">
                                                 <div className="w-20 h-2 bg-slate-800/50 rounded-full overflow-hidden" style={{
                                                     boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.5)'
                                                 }}>
                                                     <div 
-                                                        className={`h-full rounded-full transition-all duration-1000 ${
+                                                        className={`h-full rounded-full transition-all duration-1000 group-hover:animate-pulse ${
                                                             item.prediction === 'BULLISH' 
                                                                 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
                                                                 : 'bg-gradient-to-r from-rose-500 to-rose-400'
                                                         }`}
                                                         style={{ 
-                                                            width: `${item.confidence}%`,
+                                                            width: `${item.confidence || 0}%`,
                                                             boxShadow: item.prediction === 'BULLISH'
                                                                 ? '0 0 10px rgba(16, 185, 129, 0.6)'
                                                                 : '0 0 10px rgba(239, 68, 68, 0.6)'
@@ -701,7 +835,7 @@ export const DashboardView: React.FC = () => {
                                                     />
                                                 </div>
                                                 <span 
-                                                    className={`text-base font-bold w-12 text-right ${
+                                                    className={`text-base font-bold w-12 text-right group-hover:scale-110 transition-transform ${
                                                         item.prediction === 'BULLISH' ? 'text-emerald-400' : 'text-rose-400'
                                                     }`}
                                                     style={{
@@ -710,7 +844,7 @@ export const DashboardView: React.FC = () => {
                                                             : '0 0 10px rgba(251, 113, 133, 0.8)'
                                                     }}
                                                 >
-                                                    {item.confidence}%
+                                                    {item.confidence !== undefined && item.confidence !== null ? `${item.confidence}%` : '0%'}
                                                 </span>
                                             </div>
                                         </div>
@@ -719,21 +853,32 @@ export const DashboardView: React.FC = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-12">
-                            <div className="inline-flex p-4 rounded-2xl mb-4" style={{
+                        <div className="text-center py-12 animate-fade-in">
+                            <div className="inline-flex p-4 rounded-2xl mb-4 animate-pulse" style={{
                                 background: 'rgba(139, 92, 246, 0.1)',
-                                border: '1px solid rgba(139, 92, 246, 0.2)'
+                                border: '1px solid rgba(139, 92, 246, 0.2)',
+                                boxShadow: '0 0 40px rgba(139, 92, 246, 0.2)'
                             }}>
-                                <Brain className="w-12 h-12 text-purple-400/50" />
+                                <Brain className="w-12 h-12 text-purple-400/50" style={{
+                                    filter: 'drop-shadow(0 0 12px rgba(139, 92, 246, 0.4))'
+                                }} />
                             </div>
-                            <p className="text-slate-400 font-medium mb-1">No signals available</p>
-                            <p className="text-slate-500 text-xs">Signals will appear here when generated by the AI engine</p>
+                            <p className="text-slate-400 font-semibold mb-2" style={{
+                                textShadow: '0 0 10px rgba(139, 92, 246, 0.2)'
+                            }}>No AI signals available</p>
+                            <p className="text-slate-500 text-xs mb-6">Signals will appear here when generated by the neural network</p>
                             <button
                                 onClick={handleRefresh}
                                 disabled={isRefreshing}
-                                className="mt-4 px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30 transition-all text-xs font-medium"
+                                className="group px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-500/20 to-violet-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30 hover:scale-105 transition-all duration-300 text-xs font-semibold shadow-lg hover:shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{
+                                    boxShadow: '0 4px 16px rgba(139, 92, 246, 0.2)'
+                                }}
                             >
-                                Refresh Data
+                                <span className="flex items-center gap-2">
+                                    <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-500`} />
+                                    {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                                </span>
                             </button>
                         </div>
                     )}
@@ -778,18 +923,27 @@ export const DashboardView: React.FC = () => {
                                     background: 'rgba(255, 255, 255, 0.03)',
                                     border: '1px solid rgba(255, 255, 255, 0.08)'
                                 }}>
-                                    <div className="h-4 bg-slate-700 rounded w-2/3 mb-2"></div>
-                                    <div className="h-6 bg-slate-700 rounded w-1/2 mb-2"></div>
-                                    <div className="h-3 bg-slate-700 rounded w-1/3"></div>
+                                    <div className="flex justify-between items-center mb-3">
+                                        <div className="h-4 bg-slate-700/40 rounded w-24"></div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-3 w-3 bg-slate-700/30 rounded"></div>
+                                            <div className="h-6 w-16 bg-slate-700/40 rounded"></div>
+                                        </div>
+                                    </div>
+                                    <div className="h-7 bg-slate-700/40 rounded w-32 mb-3"></div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="h-3 bg-slate-700/30 rounded w-20"></div>
+                                        <div className="h-3 bg-slate-700/30 rounded w-16"></div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                    ) : (marketPrices?.length || 0) > 0 ? (
+                    ) : marketPrices && (marketPrices?.length || 0) > 0 ? (
                         <div className="space-y-3">
                             {(marketPrices || []).map((item, idx) => (
                                 <div 
                                     key={idx}
-                                    className="group p-4 rounded-xl transition-all duration-300 hover:scale-[1.02]"
+                                    className="group relative p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-xl cursor-pointer"
                                     style={{
                                         background: 'rgba(255, 255, 255, 0.03)',
                                         border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -807,7 +961,7 @@ export const DashboardView: React.FC = () => {
                                     />
 
                                     <div className="flex justify-between items-center mb-3">
-                                        <span className="text-xs font-bold text-white">{item.symbol}</span>
+                                        <span className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">{item.symbol || 'N/A'}</span>
                                         <div className="flex items-center gap-2">
                                             {item.change >= 0 ?
                                                 <ArrowUpRight className="w-3 h-3 text-emerald-400" /> :
@@ -831,35 +985,46 @@ export const DashboardView: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <p className="text-xl font-bold text-white mb-2" style={{
+                                    <p className="text-xl font-bold text-white mb-2 group-hover:scale-105 transition-transform duration-300" style={{
                                         textShadow: '0 0 15px rgba(255, 255, 255, 0.2)'
                                     }}>
-                                        ${item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        ${item.price !== undefined && item.price !== null ? item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
                                     </p>
 
                                     <div className="flex items-center justify-between text-[10px]">
                                         <span className="text-slate-500">24h Volume</span>
-                                        <span className="text-slate-400 font-semibold">{item.volume}</span>
+                                        <span className="text-slate-400 font-semibold">{item.volume || 'N/A'}</span>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-12">
-                            <div className="inline-flex p-4 rounded-2xl mb-4" style={{
+                        <div className="text-center py-12 animate-fade-in">
+                            <div className="inline-flex p-4 rounded-2xl mb-4 animate-pulse" style={{
                                 background: 'rgba(6, 182, 212, 0.1)',
-                                border: '1px solid rgba(6, 182, 212, 0.2)'
+                                border: '1px solid rgba(6, 182, 212, 0.2)',
+                                boxShadow: '0 0 40px rgba(6, 182, 212, 0.2)'
                             }}>
-                                <Activity className="w-12 h-12 text-cyan-400/50" />
+                                <Activity className="w-12 h-12 text-cyan-400/50" style={{
+                                    filter: 'drop-shadow(0 0 12px rgba(6, 182, 212, 0.4))'
+                                }} />
                             </div>
-                            <p className="text-slate-400 font-medium mb-1">No market data</p>
-                            <p className="text-slate-500 text-xs">Market prices will appear here when available</p>
+                            <p className="text-slate-400 font-semibold mb-2" style={{
+                                textShadow: '0 0 10px rgba(6, 182, 212, 0.2)'
+                            }}>No market data available</p>
+                            <p className="text-slate-500 text-xs mb-6">Real-time prices will appear here when the data feed is active</p>
                             <button
                                 onClick={handleRefresh}
                                 disabled={isRefreshing}
-                                className="mt-4 px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 transition-all text-xs font-medium"
+                                className="group px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 hover:scale-105 transition-all duration-300 text-xs font-semibold shadow-lg hover:shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{
+                                    boxShadow: '0 4px 16px rgba(6, 182, 212, 0.2)'
+                                }}
                             >
-                                Load Data
+                                <span className="flex items-center gap-2">
+                                    <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-500`} />
+                                    {isRefreshing ? 'Loading...' : 'Load Data'}
+                                </span>
                             </button>
                         </div>
                     )}
@@ -868,25 +1033,25 @@ export const DashboardView: React.FC = () => {
 
             {/* Status Banner - Cleaner design */}
             <div
-                className="rounded-xl p-3 backdrop-blur-sm mb-6"
+                className="rounded-xl p-4 backdrop-blur-sm mb-6 animate-slide-in"
                 style={{
                     background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 50%, rgba(236, 72, 153, 0.08) 100%)',
                     border: '1px solid rgba(139, 92, 246, 0.2)',
+                    boxShadow: '0 4px 16px rgba(139, 92, 246, 0.1)'
                 }}
             >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 lg:gap-4">
                     <div className="flex items-center gap-2 flex-wrap">
                         <div
-                            className="w-2 h-2 rounded-full bg-emerald-400"
+                            className="w-2 h-2 rounded-full bg-emerald-400 animate-glow-pulse"
                             style={{ 
-                                boxShadow: '0 0 10px rgba(52, 211, 153, 0.8)',
-                                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                                boxShadow: '0 0 10px rgba(52, 211, 153, 0.8)'
                             }}
                         />
                         <span className="font-semibold text-sm text-white">
                             All Systems Operational
                         </span>
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-slate-500 hidden sm:inline">
                             • Real-time Data • AI Active • Market Streaming
                         </span>
                     </div>
@@ -898,7 +1063,7 @@ export const DashboardView: React.FC = () => {
             </div>
 
             {/* Enhanced Dashboard: Chart + News + Sentiment + Signals (unified) */}
-            <div className="mt-8">
+            <div className="mt-8 animate-slide-in">
                 <EnhancedSymbolDashboard
                     symbol={currentSymbol}
                     timeframe={currentTimeframe}
