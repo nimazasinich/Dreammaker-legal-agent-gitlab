@@ -134,48 +134,52 @@ export class SentimentNewsService {
   }
 
   /**
-   * Get crypto news from CryptoPanic
+   * Get crypto news
+   * REFACTORED: Now uses DatasourceClient instead of direct API calls
    */
   async getCryptoNews(limit: number = 20): Promise<NewsItem[]> {
     const cacheKey = `news_${limit}`;
     const cached = this.newsCache.get(cacheKey);
     if (cached) return cached;
 
-    await this.cryptopanicLimiter.wait();
-
     try {
-      const response = await this.cryptopanicClient.get('/posts/', {
-        params: {
-          public: true,
-          kind: 'news',
-          filter: 'hot',
-          currencies: 'BTC,ETH',
-          limit: limit
-        }
-      });
-
-      if (!response.data.results || !Array.isArray(response.data.results)) {
-        console.error('Invalid CryptoPanic response');
-      }
-
-      const newsItems: NewsItem[] = (response.data.results || []).map((post: any) => ({
-        title: post.title,
-        url: post.url,
-        source: post.source?.title || 'Unknown',
-        published: new Date(post.published_at),
-        sentiment: this.mapCryptoPanicSentiment(post.sentiment),
-        sentimentScore: this.getSentimentScore(post.sentiment)
+      // Use DatasourceClient instead of direct API calls
+      const datasourceClient = await this.loadDatasourceClient();
+      const newsData = await datasourceClient.getLatestNews(limit);
+      
+      // Convert to NewsItem format
+      const newsItems: NewsItem[] = newsData.map((item: any) => ({
+        title: item.title || '',
+        url: item.url || '',
+        source: item.source || 'Unknown',
+        published: new Date(item.publishedAt || Date.now()),
+        sentiment: item.sentiment as 'positive' | 'negative' | 'neutral' || 'neutral',
+        sentimentScore: this.getSentimentScoreFromString(item.sentiment)
       }));
 
-      this.newsCache.set(cacheKey, newsItems);
+      if (newsItems.length > 0) {
+        this.newsCache.set(cacheKey, newsItems);
+      }
       return newsItems;
     } catch (error) {
-      this.logger.warn('Failed to fetch CryptoPanic news', {}, error as Error);
-      
-      // Fallback to NewsAPI if CryptoPanic fails
-      const newsapiNews = await this.getNewsFromNewsAPI(limit);
-      return newsapiNews || []; // Return empty array if NewsAPI also fails
+      this.logger.warn('Failed to fetch news from DatasourceClient', {}, error as Error);
+      return []; // Return empty array on failure
     }
+  }
+  
+  // Helper to dynamically import DatasourceClient
+  private async loadDatasourceClient(): Promise<any> {
+    const module = await import('./DatasourceClient.js');
+    return module.default;
+  }
+  
+  // Helper to get sentiment score from string
+  private getSentimentScoreFromString(sentiment?: string): number {
+    if (!sentiment) return 0;
+    const s = sentiment.toLowerCase();
+    if (s === 'positive' || s.includes('bullish')) return 1;
+    if (s === 'negative' || s.includes('bearish')) return -1;
+    return 0;
   }
 
   /**
@@ -256,60 +260,87 @@ export class SentimentNewsService {
 
   /**
    * Get aggregated sentiment data
+   * REFACTORED: Now uses DatasourceClient for sentiment data
    */
   async getAggregatedSentiment(): Promise<SentimentData> {
     const cached = this.sentimentCache.get('aggregated');
     if (cached) return cached;
 
     try {
-      const [fearGreedIndex, newsItems] = await Promise.all([
-        this.getFearGreedIndex(),
-        this.getCryptoNews(50)
-      ]);
-
-      // Calculate news sentiment
-      const newsSentiment = {
-        positive: newsItems.filter(n => n.sentiment === 'positive').length,
-        negative: newsItems.filter(n => n.sentiment === 'negative').length,
-        neutral: newsItems.filter(n => n.sentiment === 'neutral').length,
-        total: newsItems.length
-      };
-
-      // Calculate overall sentiment score
-      // Fear & Greed: 0-100 (subtract 50 to get -50 to +50)
-      const fearGreedScore = (fearGreedIndex.value - 50) / 50 * 50; // Scale to -50 to +50
-
-      // News sentiment: weighted average
-      const newsScore = newsSentiment.total > 0
-        ? ((newsSentiment.positive - newsSentiment.negative) / newsSentiment.total) * 50
-        : 0;
-
-      // Combined score: -100 to +100
-      const overallScore = fearGreedScore + newsScore;
+      // Get sentiment from DatasourceClient
+      const datasourceClient = await this.loadDatasourceClient();
+      const marketSentiment = await datasourceClient.getMarketSentiment();
       
-      // Determine overall sentiment
-      let overallSentiment: 'bullish' | 'bearish' | 'neutral';
-      if (overallScore > 20) {
-        overallSentiment = 'bullish';
-      } else if (overallScore < -20) {
-        overallSentiment = 'bearish';
-      } else {
-        overallSentiment = 'neutral';
-      }
+      if (marketSentiment) {
+        // Convert to SentimentData format
+        const fearGreedIndex: FearGreedIndex = {
+          value: marketSentiment.fearGreedIndex || 50,
+          classification: marketSentiment.classification || 'Neutral',
+          timestamp: new Date(marketSentiment.timestamp || Date.now())
+        };
+        
+        // Get news for sentiment analysis
+        const newsItems = await this.getCryptoNews(50);
+        
+        // Calculate news sentiment
+        const newsSentiment = {
+          positive: newsItems.filter(n => n.sentiment === 'positive').length,
+          negative: newsItems.filter(n => n.sentiment === 'negative').length,
+          neutral: newsItems.filter(n => n.sentiment === 'neutral').length,
+          total: newsItems.length
+        };
 
-      const result: SentimentData = {
-        fearGreedIndex,
-        newsSentiment,
-        overallSentiment,
-        overallScore: Math.max(-100, Math.min(100, overallScore)),
+        // Use fear/greed from datasource
+        const fearGreedScore = (fearGreedIndex.value - 50);
+        
+        // News sentiment: weighted average
+        const newsScore = newsSentiment.total > 0
+          ? ((newsSentiment.positive - newsSentiment.negative) / newsSentiment.total) * 50
+          : 0;
+
+        // Combined score: -100 to +100
+        const overallScore = fearGreedScore + newsScore;
+        
+        // Determine overall sentiment
+        let overallSentiment: 'bullish' | 'bearish' | 'neutral';
+        if (overallScore > 20) {
+          overallSentiment = 'bullish';
+        } else if (overallScore < -20) {
+          overallSentiment = 'bearish';
+        } else {
+          overallSentiment = 'neutral';
+        }
+
+        const result: SentimentData = {
+          fearGreedIndex,
+          newsSentiment,
+          overallSentiment,
+          overallScore: Math.max(-100, Math.min(100, overallScore)),
+          timestamp: Date.now()
+        };
+
+        this.sentimentCache.set('aggregated', result);
+        return result;
+      }
+      
+      // Fallback if datasource fails
+      return {
+        fearGreedIndex: { value: 50, classification: 'Neutral', timestamp: new Date() },
+        newsSentiment: { positive: 0, negative: 0, neutral: 0, total: 0 },
+        overallSentiment: 'neutral',
+        overallScore: 0,
         timestamp: Date.now()
       };
-
-      this.sentimentCache.set('aggregated', result);
-      return result;
     } catch (error) {
       this.logger.error('Failed to get aggregated sentiment', {}, error as Error);
-      throw error;
+      // Return neutral sentiment on error
+      return {
+        fearGreedIndex: { value: 50, classification: 'Neutral', timestamp: new Date() },
+        newsSentiment: { positive: 0, negative: 0, neutral: 0, total: 0 },
+        overallSentiment: 'neutral',
+        overallScore: 0,
+        timestamp: Date.now()
+      };
     }
   }
 

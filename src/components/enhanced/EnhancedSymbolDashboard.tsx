@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { Activity, TrendingUp, TrendingDown, Brain, Newspaper } from 'lucide-react';
-import { fetchOHLC } from '../../services/enhanced/ohlcClient';
-import { fetchNews } from '../../services/enhanced/newsProvider';
-import { fetchSentimentCompact } from '../../services/enhanced/sentimentProvider';
-import { fetchSignals } from '../../services/enhanced/signalsClient';
+import { DatasourceClient } from '../../services/DatasourceClient';
 import NewsPanel from '../news/NewsPanel';
 import { PriceChart } from '../market/PriceChart';
 import ErrorStateCard from '../ui/ErrorStateCard';
@@ -23,13 +20,56 @@ export default function EnhancedSymbolDashboard({ symbol, timeframe, hideBottomD
   const fetchOnce = React.useCallback(async () => {
     setLoading(true); setErr(null);
     try {
-      const [b, n, s, g] = await Promise.all([
-        fetchOHLC(symbol, timeframe, 500),
-        fetchNews(symbol.replace('USDT','')),
-        fetchSignals(symbol),
-        fetchSentimentCompact(),
+      const datasourceClient = DatasourceClient.getInstance();
+      
+      // Fetch data from DatasourceClient
+      const [chartData, newsData, sentimentData, predictionData] = await Promise.all([
+        datasourceClient.getPriceChart(symbol, timeframe, 500),
+        datasourceClient.getLatestNews(20),
+        datasourceClient.getMarketSentiment(),
+        datasourceClient.getAIPrediction(symbol, timeframe)
       ]);
-      setBars(b); setNews(n); setSignals(s); setSent(g);
+      
+      // Convert chart data to bars format
+      const bars = chartData.map((d: any) => ({
+        time: d.timestamp,
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close,
+        volume: d.volume
+      }));
+      
+      // Convert news to expected format
+      const news = newsData.map((item: any) => ({
+        id: item.id || `news-${Date.now()}-${Math.random()}`,
+        title: item.title,
+        description: item.description,
+        url: item.url,
+        source: item.source,
+        publishedAt: item.publishedAt
+      }));
+      
+      // Convert sentiment data
+      const sent = sentimentData ? {
+        overall: sentimentData.fearGreedIndex || 50,
+        fearGreedValue: sentimentData.fearGreedIndex || 50,
+        label: sentimentData.classification || 'Neutral'
+      } : null;
+      
+      // Convert prediction to signals format
+      const signals = predictionData ? [{
+        ts: predictionData.timestamp,
+        symbol: predictionData.symbol,
+        side: predictionData.action.toLowerCase(),
+        score: predictionData.confidence,
+        price: predictionData.price
+      }] : [];
+      
+      setBars(bars);
+      setNews(news);
+      setSignals(signals);
+      setSent(sent);
     } catch(e:any) {
       setErr(e?.message || 'load_failed');
     } finally {
