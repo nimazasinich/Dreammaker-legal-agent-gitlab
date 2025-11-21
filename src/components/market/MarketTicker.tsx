@@ -92,11 +92,25 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
     };
   }, [autoFetch, refreshInterval, symbolsKey, fetchMarketData]);
 
-  if (!marketData.length) {
+  // DEFENSIVE UI: Empty State with Beautiful Placeholder
+  if (!marketData || marketData.length === 0) {
     if (autoFetch) {
       return (
-        <div className="bg-gray-900 border-b border-gray-800 p-3 text-center">
-          <p className="text-gray-400 text-sm">Loading market data...</p>
+        <div className="relative overflow-hidden" style={{
+          background: 'linear-gradient(90deg, rgba(15, 15, 24, 0.95) 0%, rgba(20, 20, 30, 0.95) 50%, rgba(15, 15, 24, 0.95) 100%)',
+          borderBottom: '1px solid rgba(59, 130, 246, 0.2)',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
+        }}>
+          <div className="flex items-center justify-center py-4 px-6 gap-3">
+            <div className="animate-pulse flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '0ms' }} />
+              <div className="w-2 h-2 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '150ms' }} />
+              <div className="w-2 h-2 bg-pink-400 rounded-full animate-ping" style={{ animationDelay: '300ms' }} />
+            </div>
+            <p className="text-slate-300 text-sm font-medium tracking-wide">
+              Loading institutional-grade market data...
+            </p>
+          </div>
         </div>
       );
     }
@@ -104,43 +118,93 @@ export const MarketTicker: React.FC<MarketTickerProps> = ({
   }
 
   return (
-    <div className="bg-gray-900 border-b border-gray-800 overflow-hidden">
+    <div className="relative overflow-hidden" style={{
+      background: 'linear-gradient(90deg, rgba(15, 15, 24, 0.95) 0%, rgba(20, 20, 30, 0.95) 50%, rgba(15, 15, 24, 0.95) 100%)',
+      borderBottom: '1px solid rgba(59, 130, 246, 0.2)',
+      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
+    }}>
       <style>{`
         @keyframes scroll {
-          0% { transform: translateX(100%); }
-          100% { transform: translateX(-100%); }
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
         }
         .animate-scroll {
-          animation: scroll 60s linear infinite;
+          animation: scroll 40s linear infinite;
+        }
+        .ticker-item:hover {
+          transform: scale(1.05);
         }
       `}</style>
-      <div className="flex animate-scroll whitespace-nowrap py-3">
-        {(marketData || []).map((coin) => {
-          const price = coin.price || 0;
-          const changePercent = coin.changePercent24h || coin.change24h || 0;
-          const symbol = coin.symbol || '';
+      
+      {/* Gradient Overlays for Edge Fade */}
+      <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none" style={{
+        background: 'linear-gradient(to right, rgba(15, 15, 24, 0.95) 0%, transparent 100%)'
+      }} />
+      <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none" style={{
+        background: 'linear-gradient(to left, rgba(15, 15, 24, 0.95) 0%, transparent 100%)'
+      }} />
+      
+      <div className="flex animate-scroll whitespace-nowrap py-4">
+        {/* DEFENSIVE: Double the data to create seamless loop */}
+        {[...(marketData || []), ...(marketData || [])].map((coin, index) => {
+          // DEFENSIVE: Robust null handling
+          const price = coin?.price ?? 0;
+          const changePercent = coin?.changePercent24h ?? coin?.change24h ?? 0;
+          const symbol = coin?.symbol || 'UNKNOWN';
+          const isPositive = changePercent >= 0;
           
           return (
-            <div key={symbol} className="flex items-center px-6 min-w-max">
-              <span className="text-gray-300 font-medium mr-2">
+            <div 
+              key={`${symbol}-${index}`} 
+              className="ticker-item flex items-center gap-4 px-8 min-w-max transition-all duration-300 cursor-pointer group"
+            >
+              {/* Symbol with Visual Hierarchy */}
+              <span className="text-slate-300 font-bold text-sm tracking-wider group-hover:text-white transition-colors">
                 {symbol}
               </span>
-              <span className="text-white font-semibold mr-3">
-                ${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}
+              
+              {/* Price - THE MOST IMPORTANT (Biggest & Boldest) */}
+              <span className="text-white font-extrabold text-xl group-hover:scale-110 transition-transform" style={{
+                textShadow: '0 0 10px rgba(255, 255, 255, 0.2)',
+                letterSpacing: '-0.02em'
+              }}>
+                ${price ? price.toLocaleString('en-US', { 
+                  minimumFractionDigits: 2, 
+                  maximumFractionDigits: price < 1 ? 6 : 2 
+                }) : '---'}
               </span>
-              <div className={`flex items-center ${
-                changePercent >= 0 ? 'text-green-400' : 'text-red-400'
-              }`}>
-                {changePercent >= 0 ? (
-                  <TrendingUp size={16} className="mr-1" />
+              
+              {/* Change Percentage - Visual Feedback with Smooth Transitions */}
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 group-hover:shadow-lg ${
+                isPositive 
+                  ? 'bg-emerald-500/20 group-hover:bg-emerald-500/30' 
+                  : 'bg-rose-500/20 group-hover:bg-rose-500/30'
+              }`} style={{
+                border: isPositive 
+                  ? '1px solid rgba(16, 185, 129, 0.3)' 
+                  : '1px solid rgba(239, 68, 68, 0.3)',
+                boxShadow: isPositive
+                  ? '0 0 20px rgba(16, 185, 129, 0.2)'
+                  : '0 0 20px rgba(239, 68, 68, 0.2)'
+              }}>
+                {isPositive ? (
+                  <TrendingUp size={14} className="text-emerald-400 group-hover:translate-y-[-2px] transition-transform" />
                 ) : (
-                  <TrendingDown size={16} className="mr-1" />
+                  <TrendingDown size={14} className="text-rose-400 group-hover:translate-y-[2px] transition-transform" />
                 )}
-                <span className="font-medium">
-                  {changePercent >= 0 ? '+' : ''}
-                  {changePercent.toFixed(2)}%
+                <span className={`font-bold text-sm ${
+                  isPositive ? 'text-emerald-400' : 'text-rose-400'
+                }`} style={{
+                  textShadow: isPositive
+                    ? '0 0 10px rgba(52, 211, 153, 0.5)'
+                    : '0 0 10px rgba(251, 113, 133, 0.5)'
+                }}>
+                  {isPositive ? '+' : ''}{changePercent ? changePercent.toFixed(2) : '0.00'}%
                 </span>
               </div>
+              
+              {/* Separator */}
+              <div className="w-px h-6 bg-slate-700/50 group-hover:bg-slate-600 transition-colors" />
             </div>
           );
         })}
