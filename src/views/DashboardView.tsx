@@ -911,7 +911,9 @@ export const DashboardView: React.FC = () => {
                             >
                                 <span className="flex items-center gap-2">
                                     <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-500`} />
-                                    {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                                    <span className={isRefreshing ? 'opacity-70' : ''}>
+                                        {isRefreshing ? 'Refreshing' : 'Refresh Data'}
+                                    </span>
                                 </span>
                             </button>
                         </div>
@@ -1057,7 +1059,9 @@ export const DashboardView: React.FC = () => {
                             >
                                 <span className="flex items-center gap-2">
                                     <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-500`} />
-                                    {isRefreshing ? 'Loading...' : 'Load Data'}
+                                    <span className={isRefreshing ? 'opacity-70' : ''}>
+                                        {isRefreshing ? 'Refreshing' : 'Load Data'}
+                                    </span>
                                 </span>
                             </button>
                         </div>
@@ -1093,7 +1097,7 @@ export const DashboardView: React.FC = () => {
                     </div>
                     <div className="text-xs text-slate-400 flex items-center gap-2 font-medium">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>{lastUpdate ? lastUpdate.toLocaleTimeString() : 'Loading...'}</span>
+                        <span className="tabular-nums">{lastUpdate ? lastUpdate.toLocaleTimeString() : '--:--:--'}</span>
                     </div>
                 </div>
             </div>
