@@ -63,6 +63,72 @@ interface AIPrediction {
   timestamp: number;
 }
 
+interface PortfolioPosition {
+  symbol: string;
+  quantity: number;
+  averagePrice: number;
+  currentPrice: number;
+  pnl: number;
+  pnlPercent: number;
+  allocation: number;
+}
+
+interface PortfolioData {
+  positions: PortfolioPosition[];
+  totalValue: number;
+  totalPnL: number;
+  totalPnLPercent: number;
+}
+
+interface ScoringSnapshot {
+  timestamp: string;
+  symbol: string;
+  judicialProceedings: {
+    supremeVerdict: {
+      direction: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+      quantumScore: number;
+      action: string;
+      conviction: number;
+    };
+    timeframeCourts: Array<{
+      tf: string;
+      direction: string;
+      final_score: number;
+    }>;
+  };
+  detectorPerformance: Array<{
+    detector: string;
+    currentScore: number;
+    historicalAccuracy: number;
+    confidenceLevel: number;
+  }>;
+}
+
+interface ScoringWeights {
+  detector_weights: {
+    technical_analysis: Record<string, number>;
+    fundamental_analysis: Record<string, number>;
+  };
+  timeframe_weights: Record<string, number>;
+}
+
+interface TrainingJobResponse {
+  job_id: string;
+  status: string;
+  message: string;
+}
+
+interface TrainingStatusResponse {
+  job_id: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  progress: number;
+  metrics?: {
+    epoch: number;
+    loss: number;
+    accuracy: number;
+  };
+}
+
 export class DatasourceClient {
   private static instance: DatasourceClient;
   private baseUrl: string;
@@ -227,6 +293,123 @@ export class DatasourceClient {
       return stats !== null;
     } catch {
       return false;
+    }
+  }
+
+  // Portfolio Management
+  async getPortfolio(): Promise<PortfolioData | null> {
+    try {
+      const url = `${this.baseUrl}/api/trading/portfolio`;
+      const response = await this.fetchJSON<{ success: boolean; portfolio: PortfolioData }>(url);
+      return response.success ? response.portfolio : null;
+    } catch (error) {
+      console.error('getPortfolio error:', error);
+      return null;
+    }
+  }
+
+  // Scoring System
+  async getScoringSnapshot(symbol: string): Promise<ScoringSnapshot | null> {
+    try {
+      const url = `${this.baseUrl}/api/scoring/snapshot?symbol=${symbol}`;
+      const response = await this.fetchJSON<{ success: boolean; snapshot: ScoringSnapshot }>(url);
+      return response.success ? response.snapshot : null;
+    } catch (error) {
+      console.error('getScoringSnapshot error:', error);
+      return null;
+    }
+  }
+
+  async getScoringWeights(): Promise<ScoringWeights | null> {
+    try {
+      const url = `${this.baseUrl}/api/scoring/weights`;
+      const response = await this.fetchJSON<{ success: boolean; weights: ScoringWeights }>(url);
+      return response.success ? response.weights : null;
+    } catch (error) {
+      console.error('getScoringWeights error:', error);
+      return null;
+    }
+  }
+
+  async updateScoringWeights(weights: ScoringWeights): Promise<boolean> {
+    try {
+      const url = `${this.baseUrl}/api/scoring/weights`;
+      const response = await this.fetchJSON<{ success: boolean }>(url, {
+        method: 'POST',
+        body: JSON.stringify(weights)
+      });
+      return response.success;
+    } catch (error) {
+      console.error('updateScoringWeights error:', error);
+      return false;
+    }
+  }
+
+  async resetScoringWeights(): Promise<boolean> {
+    try {
+      const url = `${this.baseUrl}/api/scoring/weights/reset`;
+      const response = await this.fetchJSON<{ success: boolean }>(url, {
+        method: 'POST'
+      });
+      return response.success;
+    } catch (error) {
+      console.error('resetScoringWeights error:', error);
+      return false;
+    }
+  }
+
+  // AI Training
+  async startTraining(config: {
+    dataset: string;
+    symbols: string[];
+    timeframe: string;
+    task: 'classification' | 'regression';
+    model: string;
+  }): Promise<TrainingJobResponse | null> {
+    try {
+      const url = `${this.baseUrl}/api/ai/train-epoch`;
+      const response = await this.fetchJSON<TrainingJobResponse>(url, {
+        method: 'POST',
+        body: JSON.stringify(config)
+      });
+      return response;
+    } catch (error) {
+      console.error('startTraining error:', error);
+      return null;
+    }
+  }
+
+  async getTrainingStatus(jobId: string): Promise<TrainingStatusResponse | null> {
+    try {
+      const url = `${this.baseUrl}/api/ai/training-status?job_id=${jobId}`;
+      const response = await this.fetchJSON<TrainingStatusResponse>(url);
+      return response;
+    } catch (error) {
+      console.error('getTrainingStatus error:', error);
+      return null;
+    }
+  }
+
+  async getTrainingMetrics(): Promise<any[]> {
+    try {
+      const url = `${this.baseUrl}/api/training-metrics`;
+      const response = await this.fetchJSON<{ metrics: any[] }>(url);
+      return response.metrics || [];
+    } catch (error) {
+      console.error('getTrainingMetrics error:', error);
+      return [];
+    }
+  }
+
+  // Historical Market Data (for AI training and analysis)
+  async getHistoricalData(symbol: string, timeframe: string, limit: number): Promise<any[]> {
+    try {
+      const url = `${this.baseUrl}/api/market/historical?symbol=${symbol}&timeframe=${timeframe}&limit=${limit}`;
+      const response = await this.fetchJSON<any[]>(url);
+      return Array.isArray(response) ? response : [];
+    } catch (error) {
+      console.error('getHistoricalData error:', error);
+      return [];
     }
   }
 }
