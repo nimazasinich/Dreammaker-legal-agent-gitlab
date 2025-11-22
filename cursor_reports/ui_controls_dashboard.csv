@@ -1,0 +1,12 @@
+control_id,element_type,action,network_calls,final_ui_state,pass,fix_commit_hash
+auto-refresh-toggle,button,click,0,toggle_state_changed,pending,N/A
+refresh-button,button,click,5,data_refreshed,pending,N/A
+market-ticker,component,scroll,0,ticker_scrolling,pending,N/A
+stat-card-portfolio,card,hover,0,glow_effect_active,pending,N/A
+stat-card-positions,card,hover,0,glow_effect_active,pending,N/A
+stat-card-pnl,card,hover,0,glow_effect_active,pending,N/A
+stat-card-ai-signals,card,hover,0,glow_effect_active,pending,N/A
+top-signals-panel,panel,scroll,0,signals_visible,pending,N/A
+live-market-panel,panel,scroll,0,prices_visible,pending,N/A
+symbol-dashboard,component,interact,0,chart_visible,pending,N/A
+dismiss-error-button,button,click,0,error_dismissed,pending,N/A

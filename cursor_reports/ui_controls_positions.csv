@@ -1,0 +1,11 @@
+control_id,element_type,action,network_calls,final_ui_state,pass,fix_commit_hash
+tab-positions,button,click,0,positions_tab_active,pending,N/A
+tab-orders,button,click,0,orders_tab_active,pending,N/A
+tab-history,button,click,0,history_tab_active,pending,N/A
+close-position-button,button,click,1,confirm_modal_shown,pending,N/A
+reduce-position-button,button,click,1,confirm_modal_shown,pending,N/A
+reverse-position-button,button,click,1,confirm_modal_shown,pending,N/A
+cancel-order-button,button,click,1,confirm_modal_shown,pending,N/A
+confirm-modal-confirm,button,click,1,action_executed,pending,N/A
+confirm-modal-cancel,button,click,0,modal_dismissed,pending,N/A
+dismiss-error-button,button,click,0,error_dismissed,pending,N/A

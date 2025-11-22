@@ -1,0 +1,190 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2025-11-22T00:00:00Z",
+  "views": [
+    {
+      "path": "src/views/DashboardView.tsx",
+      "route": "dashboard",
+      "component": "DashboardView",
+      "dependencies": [
+        "/api/portfolio",
+        "/api/positions",
+        "/api/market-data",
+        "/api/signals",
+        "/api/training-metrics"
+      ],
+      "mock_data_usage": {
+        "has_mock_data": false,
+        "fallback_handling": "relies_on_context",
+        "issues": [
+          "Shows empty portfolio data when DataContext returns null",
+          "No explicit DATA_UNAVAILABLE label for missing integrations"
+        ]
+      },
+      "priority": "CRITICAL",
+      "test_coverage": {
+        "unit": false,
+        "integration": false,
+        "e2e": false
+      }
+    },
+    {
+      "path": "src/views/FuturesTradingView.tsx",
+      "route": "futures",
+      "component": "FuturesTradingView",
+      "dependencies": [
+        "/api/futures/positions",
+        "/api/futures/orders",
+        "/api/futures/balance",
+        "/api/futures/orderbook",
+        "/api/scoring/snapshot"
+      ],
+      "mock_data_usage": {
+        "has_mock_data": false,
+        "fallback_handling": "empty_arrays",
+        "issues": [
+          "Empty arrays for positions/orders when backend unavailable",
+          "No labeled fallback state"
+        ]
+      },
+      "priority": "CRITICAL",
+      "test_coverage": {
+        "unit": false,
+        "integration": false,
+        "e2e": true
+      }
+    },
+    {
+      "path": "src/views/TradingHubView.tsx",
+      "route": "trading-hub",
+      "component": "TradingHubView",
+      "dependencies": [],
+      "mock_data_usage": {
+        "has_mock_data": false,
+        "fallback_handling": "n/a",
+        "issues": []
+      },
+      "priority": "CRITICAL",
+      "test_coverage": {
+        "unit": false,
+        "integration": false,
+        "e2e": false
+      }
+    },
+    {
+      "path": "src/views/PositionsView.tsx",
+      "route": "positions",
+      "component": "PositionsView",
+      "dependencies": [
+        "/api/positions",
+        "/api/orders"
+      ],
+      "mock_data_usage": {
+        "has_mock_data": false,
+        "fallback_handling": "empty_arrays",
+        "issues": [
+          "Shows 'No open positions' without indicating if due to no data or no integration"
+        ]
+      },
+      "priority": "CRITICAL",
+      "test_coverage": {
+        "unit": false,
+        "integration": true,
+        "e2e": false
+      }
+    },
+    {
+      "path": "src/views/PortfolioPage.tsx",
+      "route": "portfolio",
+      "component": "PortfolioPage",
+      "dependencies": [
+        "/api/positions/open",
+        "/api/market-data"
+      ],
+      "mock_data_usage": {
+        "has_mock_data": false,
+        "fallback_handling": "empty_arrays",
+        "issues": [
+          "No indication when data is unavailable vs empty"
+        ]
+      },
+      "priority": "CRITICAL",
+      "test_coverage": {
+        "unit": false,
+        "integration": false,
+        "e2e": false
+      }
+    },
+    {
+      "path": "src/views/ChartingView.tsx",
+      "route": "charting",
+      "component": "ChartingView",
+      "dependencies": [
+        "/api/ohlcv"
+      ],
+      "mock_data_usage": {
+        "has_mock_data": false,
+        "fallback_handling": "error_state",
+        "issues": []
+      },
+      "priority": "HIGH",
+      "test_coverage": {
+        "unit": true,
+        "integration": false,
+        "e2e": false
+      }
+    },
+    {
+      "path": "src/views/RiskView.tsx",
+      "route": "risk",
+      "component": "RiskView",
+      "dependencies": [
+        "/api/risk-metrics"
+      ],
+      "mock_data_usage": {
+        "has_mock_data": true,
+        "fallback_handling": "mock_banner",
+        "issues": [
+          "Shows mock data banner (USE_MOCK_DATA flag)",
+          "Mock risk metrics displayed as production data"
+        ]
+      },
+      "priority": "HIGH",
+      "test_coverage": {
+        "unit": true,
+        "integration": false,
+        "e2e": false
+      }
+    },
+    {
+      "path": "src/contexts/DataContext.tsx",
+      "route": "n/a",
+      "component": "DataProvider",
+      "dependencies": [
+        "DatasourceClient"
+      ],
+      "mock_data_usage": {
+        "has_mock_data": true,
+        "fallback_handling": "static_values",
+        "issues": [
+          "Portfolio data is static: { totalValue: 10000, dayPnL: 520, etc }",
+          "No clear indication to UI that data is static vs real",
+          "Should return labeled states like DISABLED_BY_CONFIG instead"
+        ]
+      },
+      "priority": "CRITICAL",
+      "test_coverage": {
+        "unit": false,
+        "integration": true,
+        "e2e": false
+      }
+    }
+  ],
+  "summary": {
+    "total_views": 8,
+    "critical_priority": 5,
+    "high_priority": 2,
+    "mock_data_views": 2,
+    "untested_views": 6
+  }
+}
