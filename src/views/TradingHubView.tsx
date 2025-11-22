@@ -170,9 +170,6 @@ export const TradingHubView: React.FC = () => {
                       className={`w-4 h-4 relative z-10 transition-all duration-300 ${
                         isActive ? 'text-purple-400' : 'text-[color:var(--text-secondary)] group-hover:text-purple-400'
                       }`}
-                      style={isActive ? {
-                        filter: 'drop-shadow(0 0 6px rgba(167, 139, 250, 0.6))'
-                      } : {}}
                     />
                     
                     {/* Label */}

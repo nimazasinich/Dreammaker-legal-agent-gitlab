@@ -114,7 +114,7 @@ export const ScoringEditor: React.FC = () => {
       // Load scoring snapshot from backend via DatasourceClient
       const snapshotData = await DatasourceClient.getScoringSnapshot(symbol);
       if (snapshotData) {
-        setSnapshot(snapshotData);
+        setSnapshot(snapshotData as any);
         setError(null);
       } else {
         setError('No scoring data available for this symbol. The backend may still be processing data.');

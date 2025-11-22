@@ -33,7 +33,7 @@ export const AISignalsScanner: React.FC = () => {
         setIsLoading(true);
         
         // Fetch AI predictions using DatasourceClient
-        const datasource = DatasourceClient.getInstance();
+        const datasource = DatasourceClient;
         let convertedSignals: AISignal[] = [];
         
         try {

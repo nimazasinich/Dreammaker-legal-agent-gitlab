@@ -35,8 +35,7 @@ export const AIPredictor: React.FC<AIPredictorProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const datasource = DatasourceClient.getInstance();
-      const response = await datasource.getAIPrediction(symbol.replace('USDT', ''), '1h');
+      const response = await DatasourceClient.getAIPrediction(symbol.replace('USDT', ''), '1h');
       
       if (response) {
         const prediction: PredictionData = {
@@ -464,7 +463,7 @@ export const AIPredictor: React.FC<AIPredictorProps> = ({
           </div>
         </div>
       ) : (
-        {/* DEFENSIVE UI: Beautiful Empty State */}
+        // DEFENSIVE UI: Beautiful Empty State
         <div className="text-center py-16 animate-fade-in">
           <div className="inline-flex p-6 rounded-2xl mb-4 animate-pulse" style={{
             background: 'rgba(139, 92, 246, 0.1)',

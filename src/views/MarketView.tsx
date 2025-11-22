@@ -106,19 +106,20 @@ export const MarketView: React.FC = () => {
     const fetchAnalysisData = React.useCallback(async (symbol: string) => {
         const binanceSymbol = toBinanceSymbol(symbol);
         try {
-            // Use existing analysis endpoints
+            // Use existing analysis endpoints (direct fetch for now)
+            const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8001';
             const [smcResult, elliottResult, harmonicResult] = await Promise.allSettled([
-                dataManager.fetchData(`/api/analysis/smc?symbol=${binanceSymbol}`),
-                dataManager.fetchData(`/api/analysis/elliott`, {
+                fetch(`${API_BASE}/api/analysis/smc?symbol=${binanceSymbol}`).then(r => r.json()),
+                fetch(`${API_BASE}/api/analysis/elliott`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ symbol: binanceSymbol })
-                }),
-                dataManager.fetchData(`/api/analysis/harmonic`, {
+                }).then(r => r.json()),
+                fetch(`${API_BASE}/api/analysis/harmonic`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ symbol: binanceSymbol })
-                })
+                }).then(r => r.json())
             ]);
 
             const analysis: AnalysisData = {};
@@ -198,7 +199,7 @@ export const MarketView: React.FC = () => {
             setError(null);
 
             // Fetch prices using DatasourceClient
-            const datasource = DatasourceClient.getInstance();
+            const datasource = DatasourceClient;
             const symbolsList = pairs.slice(0, 20).map(p => p.symbolBinance.replace('USDT', ''));
             const priceData = await datasource.getTopCoins(20, symbolsList);
 

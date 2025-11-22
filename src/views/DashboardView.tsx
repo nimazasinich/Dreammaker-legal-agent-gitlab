@@ -657,9 +657,7 @@ export const DashboardView: React.FC = () => {
                                     }}
                                 >
                                     <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent to-white/30" />
-                                    <Icon className="w-6 h-6 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" style={{
-                                        filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))'
-                                    }} />
+                                    <Icon className="w-6 h-6 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
                                 </div>
 
                                 {/* Content - DEFENSIVE: All values have fallbacks */}
