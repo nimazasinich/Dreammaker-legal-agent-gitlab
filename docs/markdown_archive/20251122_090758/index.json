@@ -1,0 +1,1322 @@
+[
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FINAL_UI_FUNCTIONALITY_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FINAL_UI_FUNCTIONALITY_REPORT.md",
+    "title": "Final UI Functionality Report",
+    "summary": "**Generated:** 2025-11-14\r **Assessment Type:** Post-Implementation Technical Audit"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/CHART_VALIDATION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/CHART_VALIDATION_REPORT.md",
+    "title": "Chart Validation Report",
+    "summary": "**Comprehensive Testing of All Chart Components and Visualizations**\r ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/API_ROUTING_VALIDATION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/API_ROUTING_VALIDATION_REPORT.md",
+    "title": "API Routing Validation Report",
+    "summary": "**Comprehensive Validation of All API Endpoints and Response Envelopes**\r ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/scripts/README-ADDITIVE-MERGE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/scripts/README-ADDITIVE-MERGE.md",
+    "title": "راهنمای Additive Merge و جلوگیری از Overwrite",
+    "summary": "این مستندات توضیح می‌دهد چطور **بدون حذف یا overwrite کردن** فایل‌های موجود، تغییرات را به صورت افزوده (additive) اعمال کنیم. ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/ENV_SETUP_AND_RUN.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/ENV_SETUP_AND_RUN.md",
+    "title": "Environment Setup and Running Guide",
+    "summary": "This guide explains how to set up and run the Dreammaker Crypto Trading Dashboard on your local machine.\r ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/15m_signal_report.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/15m_signal_report.md",
+    "title": "15-Minute Signal Test Report",
+    "summary": "**Test Date**: 2025-11-07 **Environment**: Development (Node.js v22.21.1, Linux)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/search_hits.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/search_hits.md",
+    "title": "Search Hits",
+    "summary": "Command: `rg -n --glob 'src/**' \"createServer|app\\\\.listen|express\" -S` - src/server.ts:1 `import express from 'express';`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/VERIFICATION_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/VERIFICATION_SUMMARY.md",
+    "title": "🎯 KuCoin Integration Production Readiness - Verification Summary",
+    "summary": "**Date:** January 5, 2025  \r **Project:** crypto-scoring-fixed"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/REPORT_kucoin_delta.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/REPORT_kucoin_delta.md",
+    "title": "🔍 KuCoin Integration Delta Report",
+    "summary": "**Date:** January 5, 2025  \r **Baseline:** PROJECT_ANALYSIS_CHECKLIST.md & KUCOIN_INTEGRATION_FINAL_REPORT.md"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/PHASE2_PATCHES_COMPLETE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/PHASE2_PATCHES_COMPLETE.md",
+    "title": "✅ Phase 2 Transition Complete - Patches Applied, Ready for Runtime",
+    "summary": "**Date:** January 5, 2025  \r **Status:** ✅ **PATCHES DEPLOYED - AWAITING RUNTIME VERIFICATION**"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/FUTURES_INTEGRATION_COMPLETE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/FUTURES_INTEGRATION_COMPLETE.md",
+    "title": "Futures Trading Integration - Completion Report",
+    "summary": "Successfully integrated Futures trading capabilities from Project A (DreammakerFinalBoltaiCryptoSignalAndTrader) into Project B (baseline crypto-scoring-system-fixed). The integration follows B's arch"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/patches/PATCHES_APPLIED.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/patches/PATCHES_APPLIED.md",
+    "title": "🔧 Critical Patches Applied - KuCoin Integration Optimization",
+    "summary": "**Date:** January 5, 2025  \r **Status:** ✅ **COMPLETED**"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/REPORT_static_analysis.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/REPORT_static_analysis.md",
+    "title": "📋 Static Analysis Report - KuCoin Integration",
+    "summary": "**Date:** January 5, 2025  \r **Project:** crypto-scoring-fixed"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/REPORT_test_coverage.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/REPORT_test_coverage.md",
+    "title": "📊 Test Coverage Report - Phase 8",
+    "summary": "**Date:** January 5, 2025  \r **Status:** ✅ **ANALYSIS COMPLETE**"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/dependency_map.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/dependency_map.md",
+    "title": "Dependency Map",
+    "summary": "- `src/server.ts` wires Express routes and WebSocket handlers to singleton services. It imports `Logger`, `ConfigManager`, `Database`, multiple analysis services, AI engines, and orchestrates lifecycl"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/PRODUCTION_READINESS_FINAL_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/PRODUCTION_READINESS_FINAL_REPORT.md",
+    "title": "🎯 Production Readiness Verification - Final Report",
+    "summary": "**Project:** crypto-scoring-fixed (KuCoin Integration)  \r **Verification Date:** January 5, 2025"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/artifacts/COMPLETION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/artifacts/COMPLETION_REPORT.md",
+    "title": "🎉 KuCoin Integration - Completion Report",
+    "summary": "**Project:** crypto-scoring-fixed  \r **Completion Date:** January 5, 2025"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/راهنمای_رفع_مشکلات.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/راهنمای_رفع_مشکلات.md",
+    "title": "راهنمای رفع مشکلات",
+    "summary": "**خطا**: `ws://localhost:3001/ws/ws`\r **راه‌حل**: اصلاح `src/config/env.ts` برای برگرداندن base URL بدون `/ws`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/README_PRODUCTION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/README_PRODUCTION.md",
+    "title": "Production Runbook",
+    "summary": "- Server: `ghcr.io/nimazasinich/dcs-server:<tag|latest>` - Client: `ghcr.io/nimazasinich/dcs-client:<tag|latest>`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/SETUP_AND_TESTING_GUIDE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/SETUP_AND_TESTING_GUIDE.md",
+    "title": "🚀 Complete Setup and Testing Guide",
+    "summary": "This guide provides step-by-step instructions to complete the setup and test all upgraded detectors with real data. ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/راهنمای_کنترل_منابع.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/راهنمای_کنترل_منابع.md",
+    "title": "🎯 راهنمای کامل کنترل منابع و جلوگیری از درخواست‌های بی‌رویه",
+    "summary": "**قبل از اصلاح:**\r ```"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FIXES_APPLIED_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FIXES_APPLIED_SUMMARY.md",
+    "title": "✅ FIXES APPLIED SUMMARY",
+    "summary": "**Date**: 2025-11-16  \r **Status**: **COMPLETE** ✅"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/HF_DATA_ENGINE_INTEGRATION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/HF_DATA_ENGINE_INTEGRATION.md",
+    "title": "HuggingFace Data Engine Integration",
+    "summary": "This document describes the integration of the HuggingFace Data Engine as the primary data source for the Dreammaker Crypto Dashboard.\r A centralized configuration system for managing data sources:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FREE_RESOURCES_INTEGRATION_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FREE_RESOURCES_INTEGRATION_SUMMARY.md",
+    "title": "📋 Free Resources Self-Test Integration Summary",
+    "summary": "تاریخ: 2025-11-10  \r نسخه: 1.0.0"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/README_START.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/README_START.md",
+    "title": "🚀 راهنمای سریع اجرای پروژه",
+    "summary": "```powershell\r powershell -ExecutionPolicy Bypass -File start-all.ps1"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DEPLOY_TO_HF.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DEPLOY_TO_HF.md",
+    "title": "راهنمای سریع Deploy به Hugging Face Spaces",
+    "summary": "1. برید به: https://huggingface.co/new-space 2. اطلاعات رو پر کنید:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/VALIDATION_CHECKLIST.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/VALIDATION_CHECKLIST.md",
+    "title": "Validation & PR Finalization Checklist",
+    "summary": "**Branch:** `feature/futures-integration`   **Status:** ✅ Code Complete - Ready for Testing"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/GO_LIVE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/GO_LIVE.md",
+    "title": "🚀 Go-Live Summary - Futures Integration",
+    "summary": "**Status:** ✅ **READY FOR DEPLOYMENT** **Date:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/PR_MERGE_CHECKLIST.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/PR_MERGE_CHECKLIST.md",
+    "title": "PR Merge Checklist",
+    "summary": "**Branch:** `feature/futures-integration`   **Target:** `main`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/RUNBOOK.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/RUNBOOK.md",
+    "title": "Futures Trading Integration - Operations Runbook",
+    "summary": "**Version:** 1.0   **Last Updated:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/INCREMENTAL_UPGRADE_SCAN_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/INCREMENTAL_UPGRADE_SCAN_REPORT.md",
+    "title": "Incremental Upgrade Scan Report",
+    "summary": "**Date:** 2025-11-07 **Mode:** Non-Breaking Enhancement (Security Unchanged)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/REPOSITORY_STATUS_FINAL.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/REPOSITORY_STATUS_FINAL.md",
+    "title": "Repository Status - Final Verification",
+    "summary": "**Date:** 2025-11-06   **Branch:** `main`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/INTEGRATION_COMPLETE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/INTEGRATION_COMPLETE.md",
+    "title": "Integration Complete - Ready for Testing & Merge",
+    "summary": "All integration work is complete and committed to `feature/futures-integration` branch. ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/DEPLOYMENT_CHECKLIST.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/DEPLOYMENT_CHECKLIST.md",
+    "title": "Futures Integration - Pre-Deployment Checklist",
+    "summary": "**Use this checklist before enabling futures trading in production.** ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/DEPLOYMENT_STATUS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/DEPLOYMENT_STATUS.md",
+    "title": "Deployment Status",
+    "summary": "**Date:** 2025-11-06   **Integration:** KuCoin Futures via adapter pattern"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/FUTURES_QUICKSTART.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/FUTURES_QUICKSTART.md",
+    "title": "Futures Integration - Quick Start Guide",
+    "summary": "The futures trading capabilities from Project A have been successfully integrated into Project B (baseline crypto-scoring-system-fixed). Copy `.env.example` to `.env` and update KuCoin Futures credent"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/GIT_WORKFLOW.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/GIT_WORKFLOW.md",
+    "title": "Safe Push & Merge to `main` - Futures Integration",
+    "summary": "**Purpose:** Safe, repeatable workflow to land the futures integration into `main` with minimal risk and instant rollback capability. ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/STATUS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/STATUS.md",
+    "title": "🎉 Integration Complete - Final Status",
+    "summary": "**Date:** 2025-11-06   **Integration:** KuCoin Futures via adapter pattern"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/PROJECT_ANALYSIS_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/PROJECT_ANALYSIS_REPORT.md",
+    "title": "Project Analysis & UI Review Report",
+    "summary": "This comprehensive analysis of the crypto trading platform reveals a well-structured React/TypeScript application with modern UI components, comprehensive error handling, and accessibility features. T"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/FINALIZATION_STATUS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/FINALIZATION_STATUS.md",
+    "title": "✅ Finalization Complete - PR Ready for Review",
+    "summary": "**Date:** 2025-11-06   **PR:** #1 - https://github.com/nimazasinich/DreammakerCryptoSignalAndTrader/pull/1"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/FUTURES_INTEGRATION_FINAL_STATUS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/FUTURES_INTEGRATION_FINAL_STATUS.md",
+    "title": "Futures Integration - Final Status Report",
+    "summary": "**Date:** 2025-11-06   **Branch:** `feature/futures-integration`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/INTEGRATION_PROMPT_ALIGNMENT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/INTEGRATION_PROMPT_ALIGNMENT.md",
+    "title": "Integration Prompt Alignment — Final",
+    "summary": "**Summary:** The integration follows Project B's architecture, is feature-flagged for safe rollout, and maintains backward compatibility. Below is the step-by-step alignment with concrete evidence and"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/FINAL_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/FINAL_SUMMARY.md",
+    "title": "🎯 Final Integration Summary",
+    "summary": "**Integration Status:** ✅ **COMPLETE & READY FOR DEPLOYMENT** ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/DEPLOYMENT_CHECKLIST_TIGHT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/DEPLOYMENT_CHECKLIST_TIGHT.md",
+    "title": "Deployment Checklist - Tight Do-This-Now Guide",
+    "summary": "**Status:** ✅ Code on `main` - Ready for deployment   **Time Estimate:** ~30 min staging + ~15 min production"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/DEPLOYMENT_PLAYBOOK.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/DEPLOYMENT_PLAYBOOK.md",
+    "title": "Production Rollout Playbook",
+    "summary": "**Status:** ✅ Code merged to `main` - Ready for deployment ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/SCORING_FIX_SUMMARY_EN.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/SCORING_FIX_SUMMARY_EN.md",
+    "title": "Quantum Scoring System - Integration Complete ✅",
+    "summary": "The Quantum Scoring System (8-9 stage analysis pipeline) had its API routes defined in `server.ts`, but the dev script was running `server-real-data.ts`, causing: - ❌ Scoring endpoints `/api/scoring/*"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/CHANGELOG.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/CHANGELOG.md",
+    "title": "Changelog",
+    "summary": "All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/SCORING_FIX_COMPLETE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/SCORING_FIX_COMPLETE.md",
+    "title": "🔧 گزارش کامل تغییرات سیستم Scoring",
+    "summary": "سیستم Quantum Scoring که شامل 8-9 مرحله تحلیل است، روت‌های API آن در فایل `server.ts` تعریف شده بود، در حالی که اسکریپت `dev` از فایل `server-real-data.ts` استفاده می‌کرد. این باعث می‌شد که: ❌ روت‌های"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/PR_DESCRIPTION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/PR_DESCRIPTION.md",
+    "title": "PR Description Template",
+    "summary": "``` feat(futures): adapter-based futures integration behind flag"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/archive/2025-11-07/PROJECT_ANALYSIS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/archive/2025-11-07/PROJECT_ANALYSIS.md",
+    "title": "🔎 PROJECT ANALYSIS REPORT",
+    "summary": "**Analysis Date:** 2025-01-27   **Project Root:** `/workspace`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/src/components/TopSignalsPanel.README.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/src/components/TopSignalsPanel.README.md",
+    "title": "TopSignalsPanel Component",
+    "summary": "کامپوننت TopSignalsPanel یک پنل مدرن و حرفه‌ای برای نمایش 3 سیگنال برتر AI است که در زیر چارت قیمت قرار می‌گیرد. کامپوننت به صورت کامل پیاده‌سازی شده و آماده استفاده است."
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/VALIDATION_COMPLETE_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/VALIDATION_COMPLETE_SUMMARY.md",
+    "title": "✅ Frontend Functional Validation - COMPLETE SUMMARY",
+    "summary": "**Validation Date:** 2025-11-22  \r **Validation Scope:** Complete Frontend Exhaustive Validation"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/RELEASE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/RELEASE.md",
+    "title": "Release Guide",
+    "summary": "This guide covers the complete release workflow for DreammakerCryptoSignalAndTrader, from local testing to production deployment. 1. [Quick Release](#quick-release)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DEPLOYMENT_READY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DEPLOYMENT_READY.md",
+    "title": "✅ DEPLOYMENT READY - All Changes Committed and Pushed",
+    "summary": "**Date**: 2025-11-16  \r **Status**: ✅ **READY FOR DEPLOYMENT**"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DEPLOYMENT_READINESS_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DEPLOYMENT_READINESS_SUMMARY.md",
+    "title": "Deployment Readiness Summary",
+    "summary": "**Project**: DreammakerCryptoSignalAndTrader  \r **Date**: 2025-11-16"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FINAL_VERIFICATION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FINAL_VERIFICATION_REPORT.md",
+    "title": "🔍 FINAL VERIFICATION & HONEST AUDIT REPORT",
+    "summary": "**Generated:** 2025-11-16\r **Branch:** cursor/final-verification-and-self-correction-prompt-91d9"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/CHECKLIST_MANIFEST.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/CHECKLIST_MANIFEST.md",
+    "title": "Checklist Export Manifest",
+    "summary": "**Created:** 2025-11-16  \r **Purpose:** Production checklist export to JSON and GitHub issue templates"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/خلاصه_بررسی_نهایی.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/خلاصه_بررسی_نهایی.md",
+    "title": "📋 خلاصه بررسی نهایی و اصلاحات (Final Verification Summary)",
+    "summary": "**تاریخ:** ۱۴۰۴/۰۸/۲۶ (2025-11-16)\r **شاخه:** `cursor/final-verification-and-self-correction-prompt-91d9`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/SETUP_ONLINE_MODE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/SETUP_ONLINE_MODE.md",
+    "title": "🚀 راهنمای سریع: فعال‌سازی حالت ONLINE (واقعی)",
+    "summary": "**چرا؟** قیمت‌های واقعی crypto 1. برو به: https://coinmarketcap.com/api/"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FIXES_QUICK_REFERENCE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FIXES_QUICK_REFERENCE.md",
+    "title": "🚀 QUICK REFERENCE - What Changed & How to Use",
+    "summary": "**Quick 2-minute guide to the most important changes**\r ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/deploy/TESTING.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/deploy/TESTING.md",
+    "title": "Local Testing & Release Guide",
+    "summary": "```bash cd deploy"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/PLAYWRIGHT_FIX_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/PLAYWRIGHT_FIX_SUMMARY.md",
+    "title": "خلاصه رفع مشکل Playwright - خطای EACCES",
+    "summary": "خطای `connect EACCES ::1:xxxxx` در فایل `playwright.config.ts`\r این خطا به دلیل مشکلات اتصال شبکه در ویندوز رخ می‌دهد که Playwright نمی‌تواند به سرور محلی متصل شود."
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/REQUEST_STORM_FIX_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/REQUEST_STORM_FIX_REPORT.md",
+    "title": "🛑 Request Storm Fix - Engineering Report",
+    "summary": "**Issue:** App startup triggered ~16+ HTTP requests + 1 WebSocket connection, causing free-tier API rate limit exhaustion and queue overflows.\r **Root Cause:** Multiple contexts independently loading"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/QUICK_TEST_GUIDE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/QUICK_TEST_GUIDE.md",
+    "title": "🚀 Quick Test Guide - Data Fetch & WebSocket Fixes",
+    "summary": "**After applying fixes, follow this quick test guide to verify everything works.**\r ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/APP_STATUS_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/APP_STATUS_REPORT.md",
+    "title": "گزارش وضعیت برنامه Dreammaker Crypto Signal & Trader",
+    "summary": "**تاریخ:** 2025-11-14\r **ساعت:** 19:42 UTC"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/MERGE_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/MERGE_SUMMARY.md",
+    "title": "Merge Summary: API Versioning and Backend Route Verification",
+    "summary": "- **Source Branch:** `claude/verify-backend-paths-011CUy2yiFoWh613KemKaJij` - **Target Branch:** `main`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/reports/diagnostic/APP_RUNTIME_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/reports/diagnostic/APP_RUNTIME_REPORT.md",
+    "title": "Application Runtime Audit Report",
+    "summary": "**Project:** DreammakerCryptoSignalAndTrader **Audit Date:** 2025-11-07"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DASHBOARD_OPTIMIZATION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DASHBOARD_OPTIMIZATION_REPORT.md",
+    "title": "Dashboard Optimization & Performance Fix Report",
+    "summary": "Successfully completed optimization of the main dashboard to eliminate request storms and improve visual/UX quality without breaking existing functionality or adding any mock data.\r ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/REQUEST_STORM_FIX_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/REQUEST_STORM_FIX_SUMMARY.md",
+    "title": "🎯 Request Storm Fix - Quick Summary",
+    "summary": "**Problem:** App sent ~16 HTTP requests on startup → hit free-tier rate limits  \r **Solution:** Reduced to ~8 requests (staggered) + added throttling"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/README_FIXED.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/README_FIXED.md",
+    "title": "Dreammaker Crypto Trader - Fixed Version",
+    "summary": "1. Fixed `.env` configuration (PORT 3001, Redis disabled) 2. Created `UnifiedProxyService` - handles all API calls with caching"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/ENTERPRISE_ENHANCEMENT_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/ENTERPRISE_ENHANCEMENT_REPORT.md",
+    "title": "🚀 ENTERPRISE ENHANCEMENT - COMPLETE CHANGES REPORT",
+    "summary": "All MOCK DATA has been eliminated from the project and replaced with proper error handling.  The application now uses 100% REAL DATA from APIs or shows appropriate error states."
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/UI_GRACEFUL_DEGRADATION_FIX.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/UI_GRACEFUL_DEGRADATION_FIX.md",
+    "title": "🎨 UI Graceful Degradation Fix",
+    "summary": "برخی صفحات UI زمانی که endpoint ها داده برنمی‌گردانند یا خطا می‌دهند، کاملاً غیرفعال می‌شدند یا پیام خطا نمایش می‌دادند به جای اینکه با داده خالی نمایش داده شوند.\r **قبل:**"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/TESTING_CHECKLIST.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/TESTING_CHECKLIST.md",
+    "title": "🧪 Testing Checklist - UI Error States & Retry Logic",
+    "summary": "**Branch:** `claude/ui-error-states-retry-01WpBj7rQsRyB3m8VujSFfGw`\r **Date:** 2025-11-14"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/دستورالعمل_Restart_Frontend.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/دستورالعمل_Restart_Frontend.md",
+    "title": "دستورالعمل Restart Frontend",
+    "summary": "WebSocket هنوز به `/ws/ws` متصل می‌شود به جای `/ws`\r - ✅ `.env.local`: `VITE_WS_BASE=ws://localhost:3001` (بدون `/ws`)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/UI_NULL_GUARD_FIXES_COMPLETE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/UI_NULL_GUARD_FIXES_COMPLETE.md",
+    "title": "UI Null-Guard Fixes - Complete Report",
+    "summary": "**Date:** 2025-11-16  \r **Branch:** `cursor/fix-ui-view-null-guard-issues-3cd3`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FRONTEND_VALIDATION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FRONTEND_VALIDATION_REPORT.md",
+    "title": "Frontend Functional Validation Report",
+    "summary": "**Date:** 2025-11-22\r **Scope:** Complete frontend validation - all pages, routes, buttons, charts, data flows"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/READ_ME_FIRST.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/READ_ME_FIRST.md",
+    "title": "🎉 پروژه شما آماده است!",
+    "summary": "تمام داده‌های Mock/Fake از پروژه حذف شده‌اند: - ❌ Math.random() ها حذف شدند"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/CHECKLIST_EXPORT_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/CHECKLIST_EXPORT_SUMMARY.md",
+    "title": "Production Checklist Export - Summary",
+    "summary": "**Date:** 2025-11-16  \r **Status:** ✅ Complete"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/NEXT_PHASE_PROMPT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/NEXT_PHASE_PROMPT.md",
+    "title": "🚀 Next Phase: Performance, Monitoring & Advanced UI Features",
+    "summary": "**Branch:** `claude/ui-error-states-retry-01WpBj7rQsRyB3m8VujSFfGw`\r **Current Phase:** UI Error States & Retry Logic ✅ COMPLETE"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/خلاصه_اصلاحات_نهایی.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/خلاصه_اصلاحات_نهایی.md",
+    "title": "خلاصه اصلاحات نهایی",
+    "summary": "**مشکل**: `Access-Control-Allow-Origin` با wildcard `*` و `credentials: include` سازگار نیست\r **راه‌حل**:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/API_TESTING_MODULE_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/API_TESTING_MODULE_SUMMARY.md",
+    "title": "خلاصه ماژول تست API",
+    "summary": "1. **`src/testing/api-test-framework.ts`** (432 خط)\r    - چارچوب اصلی تست API"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/05-exchange-selector-cleanup.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/05-exchange-selector-cleanup.md",
+    "title": "docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/05-exchange-selector-cleanup",
+    "summary": "---\r name: Exchange selector cleanup"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/04-minimal-tests.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/04-minimal-tests.md",
+    "title": "docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/04-minimal-tests",
+    "summary": "---\r name: Minimal tests for RiskGuard & TradeEngine"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/03-hash-based-navigation.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/03-hash-based-navigation.md",
+    "title": "docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/03-hash-based-navigation",
+    "summary": "---\r name: Hash-based navigation"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/02-auto-refresh-user-control.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/02-auto-refresh-user-control.md",
+    "title": "docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/02-auto-refresh-user-control",
+    "summary": "---\r name: Auto-refresh with user control"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/01-hf-adapter-scope.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/01-hf-adapter-scope.md",
+    "title": "docs/markdown_archive/20251122_090758/.github/ISSUE_TEMPLATE/01-hf-adapter-scope",
+    "summary": "---\r name: HF Adapter Scope Clarification"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FRONTEND_SYNC_COMPLETE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FRONTEND_SYNC_COMPLETE.md",
+    "title": "✅ FRONTEND SYNCHRONIZATION COMPLETE",
+    "summary": "**Date:** 2025-11-21  \r **Mission:** Complete Frontend Synchronization & Verification"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/COMPREHENSIVE_ACID_TEST_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/COMPREHENSIVE_ACID_TEST_REPORT.md",
+    "title": "🔬 COMPREHENSIVE ACID TEST REPORT",
+    "summary": "**Test Date:** 2025-11-22  \r **Testing Environment:** Offline Mode + Live Backend"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/API_TESTING_COMPLETE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/API_TESTING_COMPLETE.md",
+    "title": "✅ ماژول تست API - تکمیل شده",
+    "summary": "یک **ماژول کامل و حرفه‌ای** برای تست خودکار API با موفقیت ایجاد و در پروژه بارگذاری شد.\r ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/VIEWS_COMPREHENSIVE_AUDIT_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/VIEWS_COMPREHENSIVE_AUDIT_REPORT.md",
+    "title": "📊 Views Comprehensive Audit Report",
+    "summary": "**تاریخ:** 2025-11-10  \r **تعداد فایل‌های بررسی شده:** 21 View"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/TEST_PLAN.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/TEST_PLAN.md",
+    "title": "UI Error States & Retry Logic - Comprehensive Test Plan",
+    "summary": "This document provides a comprehensive test plan for validating the UI error states and retry functionality implemented in the frontend.\r **Branch:** `claude/ui-error-states-retry-01WpBj7rQsRyB3m8VujS"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/integrations/lastchance/adapters/README_integration.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/integrations/lastchance/adapters/README_integration.md",
+    "title": "LastChance Minimal API Bundle — Integration Guide (Minimal Diffs)",
+    "summary": "This bundle contains a curated set of **real-data** backend snippets (FastAPI) and small **client adapters** you can drop into your project to consume **real OHLC/Prices, Signals/Backtest, Predictions"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/خلاصه_تغییرات.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/خلاصه_تغییرات.md",
+    "title": "خلاصه تغییرات و راه‌اندازی پروژه",
+    "summary": "- **فایل**: `src/config/env.ts`\r - **تغییرات**:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/IMPROVEMENTS_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/IMPROVEMENTS_SUMMARY.md",
+    "title": "🎯 خلاصه بهبودها و تغییرات",
+    "summary": "--- **فایل‌های جدید:**"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/HUGGINGFACE_ONLINE_MODE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/HUGGINGFACE_ONLINE_MODE.md",
+    "title": "راهنمای فعال‌سازی حالت واقعی (ONLINE) در Hugging Face Spaces",
+    "summary": "- ✅ داده‌های نمونه و Mock - ✅ بدون نیاز به API Key"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/API_TESTING_README.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/API_TESTING_README.md",
+    "title": "🧪 ماژول تست API - راهنمای سریع",
+    "summary": "> یک ماژول قدرتمند برای تست خودکار API با قابلیت‌های پیشرفته\r این ماژول برای **جلوگیری از بازگشت خطاها** و **اطمینان از صحت عملکرد API‌ها** طراحی شده است."
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/backend_route_analysis.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/backend_route_analysis.md",
+    "title": "Backend Route Analysis",
+    "summary": "**Status:** All routes have been updated with API v1 versioning All API routes now follow the pattern: `/api/v1/{resource}`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/API_INTEGRATION_GUIDE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/API_INTEGRATION_GUIDE.md",
+    "title": "API Integration Guide",
+    "summary": "This project now includes a comprehensive multi-source API integration system that provides: - ✅ **Load Balancing**: Automatic distribution of requests across multiple API providers"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/COMPLETE_INTEGRATION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/COMPLETE_INTEGRATION.md",
+    "title": "Complete System Integration Documentation",
+    "summary": "این مستندات اتصال کامل همه مؤلفه‌های سیستم را نشان می‌دهد. 1. **XavierInitializer** - وزن‌دهی اولیه شبکه عصبی"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/OPTIONAL_PROVIDERS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/OPTIONAL_PROVIDERS.md",
+    "title": "Optional Data Providers",
+    "summary": "This document describes the **optional** alternative data providers that have been added to the project. These are **SAFE, NON-BREAKING additions** that do not replace or interfere with existing funct"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/DEPLOYMENT_CHECKLIST.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/DEPLOYMENT_CHECKLIST.md",
+    "title": "Deployment Checklist",
+    "summary": "This comprehensive checklist ensures safe, reliable deployment of the DreammakerCryptoSignalAndTrader application to staging and production environments. - [ ] **HF Engine endpoint is healthy**"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/README_enhanced_dashboard_pack.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/README_enhanced_dashboard_pack.md",
+    "title": "Enhanced Dashboard Pack — Chart + News + Sentiment + Signals (Minimal Diffs)",
+    "summary": "This pack adds **real-data** News/Sentiment integration bound to the selected symbol, plus a simple **enhanced symbol dashboard** component. It uses your API_BASE endpoints: - `GET /market/candlestick"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/PRODUCTION_SMOKE_TEST_PLAN.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/PRODUCTION_SMOKE_TEST_PLAN.md",
+    "title": "Production Smoke Test Plan",
+    "summary": "**Last Updated:** 2025-11-16  \r **Purpose:** Provide a clear, repeatable manual test plan for validating production readiness"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/FREE_CRYPTO_APIS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/FREE_CRYPTO_APIS.md",
+    "title": "Free & Unrestricted Crypto Data Sources",
+    "summary": "This document describes all the free crypto API integrations in this project. The `EnhancedMarketDataService` integrates **9 different free data sources** with automatic fallback, caching, and rate li"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/hf-engine-scope.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/hf-engine-scope.md",
+    "title": "HF Engine Scope & Boundaries",
+    "summary": "**Last Updated:** 2025-11-16  \r **Purpose:** Clarify what HF (Hugging Face) Data Engine does and does NOT do"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/ci-cd.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/ci-cd.md",
+    "title": "CI/CD Pipeline Guide",
+    "summary": "This document describes the Continuous Integration and Continuous Deployment (CI/CD) pipeline for the DreammakerCryptoSignalAndTrader project.\r The project uses **GitHub Actions** for automated testin"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/DATA_POLICY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/DATA_POLICY.md",
+    "title": "Data Policy Documentation",
+    "summary": "This document describes the strict data policy enforced across the DreammakerCryptoSignalAndTrader application. The policy ensures clear separation between production (real data), demo (mock fixtures)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/API_OPTIMIZATION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/API_OPTIMIZATION.md",
+    "title": "بهینه‌سازی درخواست‌های API",
+    "summary": "پروژه دارای مشکلات جدی در تعداد درخواست‌های API بود: 1. **6 interval همپوشان 30 ثانیه‌ای**:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/ARCHITECTURE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/ARCHITECTURE.md",
+    "title": "docs/markdown_archive/20251122_090758/docs/ARCHITECTURE",
+    "summary": "- `src/server.ts` – single Express entrypoint exposing REST + WebSocket interfaces and wiring all singleton services. - `src/services/` – domain services (Binance integration, ingestion, Redis bridge,"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/assimilation/01_doc_code_alignment.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/assimilation/01_doc_code_alignment.md",
+    "title": "Doc-Code Alignment Report",
+    "summary": "**Document Version:** 1.0   **Date:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/assimilation/KUCOIN_API_FIXES.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/assimilation/KUCOIN_API_FIXES.md",
+    "title": "KuCoin API Fixes Applied",
+    "summary": "**Date:** 2025-11-06   **Status:** ✅ **FIXES APPLIED**"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/assimilation/03_capability_matrix.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/assimilation/03_capability_matrix.md",
+    "title": "Capability Matrix & Unification Plan",
+    "summary": "**Document Version:** 1.0   **Date:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/assimilation/VERIFICATION_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/assimilation/VERIFICATION_SUMMARY.md",
+    "title": "KuCoin API Fixes - Verification Summary",
+    "summary": "**Date:** 2025-11-06   **Branch:** `feature/futures-integration`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/assimilation/00_report.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/assimilation/00_report.md",
+    "title": "Assimilation Report - Stage 0",
+    "summary": "**Document Version:** 1.0   **Date:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/assimilation/INTEGRATION_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/assimilation/INTEGRATION_SUMMARY.md",
+    "title": "Futures Integration - Final Summary",
+    "summary": "**Date:** 2025-11-06   **Branch:** `feature/futures-integration`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/assimilation/FINAL_COMPLETION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/assimilation/FINAL_COMPLETION_REPORT.md",
+    "title": "Final Integration Report",
+    "summary": "**Date:** 2025-11-06   **Branch:** `feature/futures-integration`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/assimilation/02_inventory_A.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/assimilation/02_inventory_A.md",
+    "title": "Inventory Report - Project A (Donor)",
+    "summary": "**Document Version:** 1.0   **Date:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/runtime-profiles.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/runtime-profiles.md",
+    "title": "Runtime Profiles",
+    "summary": "This document explains the different runtime profiles available in the DreammakerCryptoSignalAndTrader application and how to use them.\r The application supports multiple runtime profiles to handle di"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/routes.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/routes.md",
+    "title": "API Routes Inventory",
+    "summary": "**Last Updated:** 2025-11-16  \r **Status:** Accurate for current build"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/LOGIC_OVERVIEW.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/LOGIC_OVERVIEW.md",
+    "title": "docs/markdown_archive/20251122_090758/docs/LOGIC_OVERVIEW",
+    "summary": "- **Market ingestion**: `MarketDataIngestionService` (`src/services/MarketDataIngestionService.ts:24-198`) subscribes to Binance streams and cron tasks, normalises candles, validates them, persists vi"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/API_FIXES_AND_IMPROVEMENTS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/API_FIXES_AND_IMPROVEMENTS.md",
+    "title": "API Fixes and Improvements",
+    "summary": "This document describes the comprehensive fixes applied to resolve CORS, rate limiting, and API reliability issues. **Problem:** Browser-based fetch calls to CoinGecko API were blocked due to CORS pol"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/logging-and-observability.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/logging-and-observability.md",
+    "title": "Logging and Observability",
+    "summary": "**Last Updated:** 2025-11-16  \r **Purpose:** Document logging practices and observability guidelines for production"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/WINDOWS_SETUP.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/WINDOWS_SETUP.md",
+    "title": "Windows Setup & Fix Guide",
+    "summary": "Complete guide to fix common Windows development issues including `patch-package not found (exit code 127)` and native bindings for `better-sqlite3`. - [Prerequisites](#prerequisites)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/OPS_NOTES.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/OPS_NOTES.md",
+    "title": "Operational Notes - Feature Flags & Metrics",
+    "summary": "| Flag | Default | Description | How to Toggle | |------|---------|-------------|---------------|"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/CHECKLIST_USAGE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/CHECKLIST_USAGE.md",
+    "title": "Production Checklist Usage Guide",
+    "summary": "This document explains how to use the production checklist system for the DreammakerCryptoSignalAndTrader project.\r The production checklist system provides two complementary views:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/data-flow.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/data-flow.md",
+    "title": "Data Flow Architecture",
+    "summary": "**Last Updated:** 2025-11-16  \r **Type:** Reality Check (What Actually Runs, Not Vision)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/VERIFICATION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/VERIFICATION.md",
+    "title": "End-to-End Verification Script",
+    "summary": "This verification script (`scripts/verify_full.mjs`) performs a complete end-to-end functional verification of the crypto trading console application.\r 1. **Checks Node.js version** (requires 18+)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/PROJECT_AUDIT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/PROJECT_AUDIT.md",
+    "title": "docs/markdown_archive/20251122_090758/docs/PROJECT_AUDIT",
+    "summary": "BOLT AI runs an Express server (`src/server.ts`) that fronts a bundle of singleton services for market ingestion, analytics, and AI-assisted trading. Cron jobs and Binance websockets collect OHLCV dat"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/PLAYWRIGHT_TROUBLESHOOTING.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/PLAYWRIGHT_TROUBLESHOOTING.md",
+    "title": "راهنمای رفع مشکلات Playwright",
+    "summary": "این خطا زمانی رخ می‌دهد که Playwright نمی‌تواند به سرور محلی متصل شود. دلایل احتمالی:\r 1. **مشکل IPv6**: ویندوز سعی می‌کند از IPv6 (`::1`) استفاده کند که ممکن است مسدود باشد"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/API_TESTING_GUIDE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/API_TESTING_GUIDE.md",
+    "title": "راهنمای جامع تست API",
+    "summary": "این راهنما شامل اطلاعات کامل برای استفاده از ماژول تست API است.\r 1. [معرفی](#معرفی)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/UI_VERIFICATION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/UI_VERIFICATION.md",
+    "title": "UI Coherence Verification",
+    "summary": "This verification system uses Playwright and Axe to audit the UI for:\r - RTL (Right-to-Left) direction enforcement"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/New folder/QUICKSTART.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/New folder/QUICKSTART.md",
+    "title": "Quick Start Guide",
+    "summary": "**Document Version:** 1.0   **Last Updated:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/New folder/REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/New folder/REPORT.md",
+    "title": "Repository Reconnaissance Report",
+    "summary": "**Project:** BOLT AI - Advanced Cryptocurrency Neural AI Agent System   **Repository:** bolt-ai-crypto-agent"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/New folder/FEATURES.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/New folder/FEATURES.md",
+    "title": "Feature Inventory",
+    "summary": "**Document Version:** 1.0   **Last Updated:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/New folder/ARCHITECTURE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/New folder/ARCHITECTURE.md",
+    "title": "Architecture Deep Dive",
+    "summary": "**Document Version:** 1.0   **Last Updated:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/New folder/DATA_MODEL.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/New folder/DATA_MODEL.md",
+    "title": "Data Model & Schema Documentation",
+    "summary": "**Document Version:** 1.0   **Last Updated:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/New folder/TODO_FINDINGS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/New folder/TODO_FINDINGS.md",
+    "title": "Technical Debt & TODO Findings",
+    "summary": "**Document Version:** 1.0   **Last Updated:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/New folder/ENDPOINTS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/New folder/ENDPOINTS.md",
+    "title": "API Endpoint Documentation",
+    "summary": "**Document Version:** 1.0   **Last Updated:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/New folder/RISK_NOTES.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/New folder/RISK_NOTES.md",
+    "title": "Security & Risk Analysis",
+    "summary": "**Document Version:** 1.0   **Last Updated:** 2025-11-06"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/STARTUP.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/STARTUP.md",
+    "title": "One-Command Setup & Run",
+    "summary": "This script provides a single command to install dependencies, configure environment, and start both backend and frontend servers.\r From the repository root:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/production-env-config.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/production-env-config.md",
+    "title": "Production Environment Configuration",
+    "summary": "**Last Updated:** 2025-11-16  \r **Purpose:** Define required environment variables for production deployment"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/docker-deployment.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/docker-deployment.md",
+    "title": "Docker Deployment Guide",
+    "summary": "This guide covers building and deploying the DreammakerCryptoSignalAndTrader application using Docker containers.\r The application provides separate Dockerfiles for backend and frontend, optimized for"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/docs/HUGGINGFACE_SETUP.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/docs/HUGGINGFACE_SETUP.md",
+    "title": "Hugging Face Integration Setup",
+    "summary": "This guide explains how to configure Hugging Face API tokens for the DreammakerCryptoSignalAndTrader project. Hugging Face tokens provide:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/API_SETUP_GUIDE_FA.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/API_SETUP_GUIDE_FA.md",
+    "title": "🔑 راهنمای کامل پیکربندی API Keys",
+    "summary": "این راهنما به شما کمک می‌کند تا تمام کلیدهای API مورد نیاز را برای فعال‌سازی کامل پروژه DreammakerCryptoSignalAndTrader پیکربندی کنید. ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/REAL_DATA_IMPLEMENTATION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/REAL_DATA_IMPLEMENTATION.md",
+    "title": "✅ Real Market Data Implementation - COMPLETED",
+    "summary": "Your project is now **FULLY CONFIGURED** to fetch real cryptocurrency market data from multiple free sources. The 403 errors in the test environment are due to network restrictions in the sandbox, **N"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/RUNTIME_HARDENING_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/RUNTIME_HARDENING_SUMMARY.md",
+    "title": "Runtime Hardening Summary",
+    "summary": "**Date:** 2025-11-16  \r **Mission:** Move from \"architecture ready\" to \"runtime hardened and testable for production\""
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/cursor_reports/pr_description.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/cursor_reports/pr_description.md",
+    "title": "Frontend & Integration Verification - Comprehensive Error Handling",
+    "summary": "This PR implements comprehensive error handling and standardization across the entire frontend and integration layer. All API responses now follow a standard envelope format, all error conditions are"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/cursor_reports/COMPLETION_VERIFICATION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/cursor_reports/COMPLETION_VERIFICATION.md",
+    "title": "✅ Full Frontend Remediation - COMPLETED",
+    "summary": "**Completion Date:** 2025-11-22  \r **Status:** All objectives achieved"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/cursor_reports/summary.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/cursor_reports/summary.md",
+    "title": "Frontend Remediation Summary - No Mock Data Policy",
+    "summary": "**Report Date:** 2025-11-22  \r **Status:** ✅ Completed"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/cursor_reports/views_test_cases.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/cursor_reports/views_test_cases.md",
+    "title": "Test Cases for Views Scored ≤7",
+    "summary": "**Generated**: 2025-11-22  \r **Purpose**: Minimal reproducible test cases demonstrating missing functionality, failing interactions, or incomplete data paths for each view scored ≤7."
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/cursor_reports/views_assessment_summary.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/cursor_reports/views_assessment_summary.md",
+    "title": "Views Assessment Summary",
+    "summary": "**Assessment Date:** 2025-11-22  \r **Total Views Assessed:** 26"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/cursor_reports/backend_followups.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/cursor_reports/backend_followups.md",
+    "title": "Backend Integration Follow-ups",
+    "summary": "This document describes backend changes required to fully support the no-mock-data frontend implementation.\r The frontend now implements strict no-mock-data policy with proper fallback states. To comp"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/cursor_reports/EXECUTION_LOG.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/cursor_reports/EXECUTION_LOG.md",
+    "title": "Execution Log - Frontend & Integration Verification",
+    "summary": "**Start Time:** 2025-11-22T00:00:00Z  \r **End Time:** 2025-11-22T00:30:00Z"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FIXES_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FIXES_SUMMARY.md",
+    "title": "✅ DATA FETCH & WEBSOCKET FIXES APPLIED",
+    "summary": "**Date**: 2025-11-16  \r **Status**: ✅ COMPLETE"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/patches/views-ui-improvements.patch.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/patches/views-ui-improvements.patch.md",
+    "title": "Views UI Improvements Patch",
+    "summary": "این patch شامل اصلاحات UI/UX برای همه view های نیازمند بهبود است.\r ✅ رفع conflict در error variable"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/ARCHITECTURE_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/ARCHITECTURE_REPORT.md",
+    "title": "Complete Architecture Report",
+    "summary": "**Generated:** Based on direct code inspection (no assumptions)  \r **Date:** 2025-11-16"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/خلاصه_نهایی_راه_حل - Copy.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/خلاصه_نهایی_راه_حل - Copy.md",
+    "title": "✅ خلاصه نهایی راه‌حل",
+    "summary": "```\r ❌ WebSocket connection to 'ws://localhost:3001/ws/ws' failed"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/خلاصه_نهایی_راه_حل.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/خلاصه_نهایی_راه_حل.md",
+    "title": "✅ خلاصه نهایی راه‌حل",
+    "summary": "```\r ❌ WebSocket connection to 'ws://localhost:3001/ws/ws' failed"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/REAL_DATA_SETUP.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/REAL_DATA_SETUP.md",
+    "title": "راهنمای استفاده از داده‌های واقعی",
+    "summary": "فایل `.env.local` با تنظیمات زیر ایجاد شده است:\r ```env"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FIXES_APPLIED.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FIXES_APPLIED.md",
+    "title": "تمام اصلاحات انجام شده",
+    "summary": "- اضافه شدن loading states به تمام views - اضافه شدن error boundaries"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/TRUTH_AUDIT_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/TRUTH_AUDIT_REPORT.md",
+    "title": "🔍 TRUTH AUDIT REPORT",
+    "summary": "**Date:** 2025-11-22  \r **Role:** Senior Backend/AI Engineer & Quality Assurance Lead"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/LIVE_INTEGRATION_TEST_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/LIVE_INTEGRATION_TEST_REPORT.md",
+    "title": "🔗 LIVE INTEGRATION TEST REPORT",
+    "summary": "**Test Date:** 2025-11-22  \r **Backend URL:** http://localhost:8001"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FINAL_FIXES_APPLIED.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FINAL_FIXES_APPLIED.md",
+    "title": "✅ FINAL VERIFICATION FIXES APPLIED",
+    "summary": "**Date:** 2025-11-16\r **Branch:** cursor/final-verification-and-self-correction-prompt-91d9"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/UI_REVIEW_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/UI_REVIEW_REPORT.md",
+    "title": "UI/UX Quality Review Report",
+    "summary": "**Branch:** `claude/ui-ux-quality-review-polish-01UPavdR9uJjsQnrf8JAdyvz`\r **Review Date:** 2025-11-14"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/CODE_CHANGES_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/CODE_CHANGES_SUMMARY.md",
+    "title": "CODE CHANGES SUMMARY - Frontend Synchronization",
+    "summary": "```bash\r PRIMARY_DATA_SOURCE=huggingface"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FINAL_IMPLEMENTATION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FINAL_IMPLEMENTATION_REPORT.md",
+    "title": "✅ FINAL IMPLEMENTATION REPORT",
+    "summary": "**Date**: 2025-11-16  \r **Agent**: Cursor/Claude Code"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DEBUGGING_COMPLETE_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DEBUGGING_COMPLETE_SUMMARY.md",
+    "title": "✅ DEBUGGING COMPLETE - Spot/Futures Realtime Sync Fixed",
+    "summary": "**Date**: 2025-11-16  \r **Status**: ✅ **ALL TASKS COMPLETED**"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/OPTIMIZATION_GUIDE_FA.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/OPTIMIZATION_GUIDE_FA.md",
+    "title": "راهنمای بهینه‌سازی استفاده از API های رایگان",
+    "summary": "این پروژه از چندین API رایگان استفاده می‌کند که محدودیت تعداد درخواست دارند. برای جلوگیری از مسدود شدن و استفاده بهینه از منابع، تنظیمات زیر را انجام دهید.\r در حالت پیش‌فرض، برنامه:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/setup-github-pages.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/setup-github-pages.md",
+    "title": "راهنمای فعال‌سازی GitHub Pages",
+    "summary": "1. به آدرس زیر بروید:    ```"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DIAGNOSTICS_SYSTEM.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DIAGNOSTICS_SYSTEM.md",
+    "title": "Provider Diagnostics System",
+    "summary": "This document describes the Provider Diagnostics System implemented as part of the HuggingFace Integration Completion phase.\r The Provider Diagnostics System provides comprehensive monitoring and diag"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DIAGNOSTIC_REPORT_FULL.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DIAGNOSTIC_REPORT_FULL.md",
+    "title": "🔴 COMPREHENSIVE DIAGNOSTIC REPORT",
+    "summary": "**Generated**: 2025-11-16  \r **Project**: React + TypeScript Crypto Dashboard (Vite + FastAPI Backend)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/VERIFICATION_COMPLETE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/VERIFICATION_COMPLETE.md",
+    "title": "✅ FINAL VERIFICATION COMPLETE",
+    "summary": "**Date:** 2025-11-16  \r **Status:** ✅ **COMPLETE** - 2 Critical Fixes Applied"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/CHANGELOG.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/CHANGELOG.md",
+    "title": "CHANGELOG - Audit & Hardening (2025-11-08)",
+    "summary": "Complete audit and hardening of DreammakerCryptoSignalAndTrader to eliminate accidental synthetic data on production paths, fix API/WebSocket inconsistencies, normalize scoring weights, and enforce da"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/QUICK_TEST_VALIDATION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/QUICK_TEST_VALIDATION.md",
+    "title": "⚡ QUICK TEST & VALIDATION GUIDE",
+    "summary": "**Purpose**: Rapidly verify all fixes are working correctly  \r **Time Required**: 5-10 minutes"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/ROOT_CAUSE_ANALYSIS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/ROOT_CAUSE_ANALYSIS.md",
+    "title": "🔍 ROOT CAUSE ANALYSIS - Realtime Data Sync & WebSocket Issues",
+    "summary": "**Date**: 2025-11-16  \r **System**: Trading Dashboard (Express.js + React + TypeScript)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/QUICK_START_CHECKLIST.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/QUICK_START_CHECKLIST.md",
+    "title": "Quick Start - Production Checklist",
+    "summary": "📄 **`docs/production_checklist.v1.json`** (7.3 KB)\r - Complete task breakdown with IDs, status, priorities"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/TRADING_HUB_QUICKSTART.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/TRADING_HUB_QUICKSTART.md",
+    "title": "🚀 Trading Hub - Quick Start Guide",
+    "summary": "A unified **Trading Hub** that combines three powerful trading features into one beautiful interface:\r 1. **Live Futures Trading** - Real-time order execution with KuCoin integration"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/دستورات_تست_نهایی.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/دستورات_تست_نهایی.md",
+    "title": "دستورات تست نهایی",
+    "summary": "- ✅ سرور در حال اجرا است (Process ID: 9868)\r - ✅ پورت 3001 در حالت LISTENING"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FINAL_VIEWS_AUDIT_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FINAL_VIEWS_AUDIT_REPORT.md",
+    "title": "📊 گزارش نهایی بررسی جامع Views",
+    "summary": "**تاریخ:** 2025-11-10  \r **مدت زمان بررسی:** 2 ساعت"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/START_GUIDE_FA.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/START_GUIDE_FA.md",
+    "title": "🚀 راهنمای سریع شروع کار",
+    "summary": "تنظیمات برای استفاده از **داده‌های واقعی** با بهینه‌سازی مصرف API:\r ```"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/PORT_MIGRATION_COMPLETE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/PORT_MIGRATION_COMPLETE.md",
+    "title": "PORT MIGRATION: 3001 → 8001 - COMPLETE RCA SOLUTION",
+    "summary": "The frontend issued requests to `http://localhost:3001` and `ws://localhost:3001`, while the backend runs on port **8001**. Mixed URL construction across modules (manual strings, conditional `/api`, d"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FRONTEND_SYNCHRONIZATION_COMPLETE.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FRONTEND_SYNCHRONIZATION_COMPLETE.md",
+    "title": "FRONTEND SYNCHRONIZATION & VERIFICATION COMPLETE ✅",
+    "summary": "**Date:** 2025-11-21  \r **Objective:** Complete Frontend Synchronization to Hub-and-Spoke Architecture"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/TASK_12_FINAL_UI_VERIFICATION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/TASK_12_FINAL_UI_VERIFICATION_REPORT.md",
+    "title": "🧪 TASK 12 – FULL UI FUNCTIONAL VERIFICATION & BUGFIX REPORT",
+    "summary": "**Project:** Dreammaker Crypto Trading Platform (HTS + Spot/Futures)  \r **Date:** 2025-11-16"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/گزارش_نهایی_اصلاحات.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/گزارش_نهایی_اصلاحات.md",
+    "title": "🎉 گزارش نهایی اصلاحات",
+    "summary": "**قبل:**\r ```"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/گزارش_نهایی_اصلاحات - Copy.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/گزارش_نهایی_اصلاحات - Copy.md",
+    "title": "🎉 گزارش نهایی اصلاحات",
+    "summary": "**قبل:**\r ```"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FINAL_COMPLETE_TEST_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FINAL_COMPLETE_TEST_REPORT.md",
+    "title": "گزارش نهایی تست جامع پروژه",
+    "summary": "📅 تاریخ: 2025-11-09 🏷️ نسخه: 1.0.0"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/API_KEYS_STATUS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/API_KEYS_STATUS.md",
+    "title": "🔑 API Keys Status and Replacement Guide",
+    "summary": "Last Updated: 2025-11-09 - **Status:** ✅ Working"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/RUNTIME_QA_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/RUNTIME_QA_REPORT.md",
+    "title": "Runtime / E2E Test QA Report",
+    "summary": "**Test Date:** 2025-11-14\r **Branch:** `claude/runtime-e2e-test-qa-019vzcSrqowy2ioBmTXommi4`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/خلاصه_تغییرات - Copy.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/خلاصه_تغییرات - Copy.md",
+    "title": "خلاصه تغییرات و راه‌اندازی پروژه",
+    "summary": "- **فایل**: `src/config/env.ts`\r - **تغییرات**:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/COMPREHENSIVE_TEST_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/COMPREHENSIVE_TEST_REPORT.md",
+    "title": "گزارش تست جامع پروژه",
+    "summary": "تاریخ: 2025-11-09 نسخه: 1.0.0"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DATA_FETCH_WEBSOCKET_AUDIT_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DATA_FETCH_WEBSOCKET_AUDIT_REPORT.md",
+    "title": "🔍 FULL DATA PATH DIAGNOSTIC REPORT",
+    "summary": "**Date**: 2025-11-16  \r **Scope**: Complete audit of REST API + WebSocket data paths"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FREE_RESOURCES_TEST_README.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FREE_RESOURCES_TEST_README.md",
+    "title": "Free Resources Self-Test",
+    "summary": "این مجموعه تست‌ها برای بررسی سلامت و در دسترس بودن APIهای رایگان خارجی و endpoint های محلی backend طراحی شده است.\r - ✅ تست APIهای رایگان خارجی (CoinGecko, Binance, Alternative.me و غیره)"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/OFFLINE_CASCADE_README.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/OFFLINE_CASCADE_README.md",
+    "title": "Never-Stall Data Cascade + One-Click 15m Test",
+    "summary": "This update adds a resilient data cascade system that ensures trading signals can be generated even when network is unavailable or external APIs fail. The cascade follows this priority order: 1. **Mem"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/IMPLEMENTATION_NOTES.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/IMPLEMENTATION_NOTES.md",
+    "title": "Implementation Notes - Audit Recommendations",
+    "summary": "**Date:** 2025-11-14\r **Branch:** `claude/implement-audit-recommendations-01PCsYAhSVTUmj6jYhwm1rFB`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DEBUGGING_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DEBUGGING_REPORT.md",
+    "title": "Comprehensive Debugging Report",
+    "summary": "**Date**: 2025-11-09 **Session**: claude/debugging-session-011CUyCW8estqwCn7uH7uXaf"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/NAVIGATION_AND_UI_AUDIT_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/NAVIGATION_AND_UI_AUDIT_REPORT.md",
+    "title": "Navigation and UI Audit Report",
+    "summary": "**Date:** 2025-11-16  \r **Project:** DreammakerCryptoSignalAndTrader"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/README_WARMUP_CI.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/README_WARMUP_CI.md",
+    "title": "CI & Warmup Notes",
+    "summary": "- **CI** runs on every push/PR: typecheck, lint, build (client+server), unit tests. - **Nightly Warmup** builds, starts server on PORT 8000, and curls:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/TESTING_MODULE_READY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/TESTING_MODULE_READY.md",
+    "title": "✅ ماژول تست API - آماده و ذخیره شده",
+    "summary": "✅ `src/testing/api-test-framework.ts`\r ✅ `src/testing/request-validator.ts`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/PROXY_AND_DATA_FIXES.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/PROXY_AND_DATA_FIXES.md",
+    "title": "🔧 گزارش کامل اصلاحات پروکسی و دریافت داده‌ها",
+    "summary": "تاریخ: 2025-11-11\r نسخه: 2.0"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/گزارش_کامل_اصلاحات_۱۱_نوامبر.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/گزارش_کامل_اصلاحات_۱۱_نوامبر.md",
+    "title": "🎉 گزارش کامل اصلاحات - ۱۱ نوامبر ۲۰۲۵",
+    "summary": "**تاریخ:** ۱۱ نوامبر ۲۰۲۵  \r **نسخه:** ۲.۰"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/PR_DESCRIPTION.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/PR_DESCRIPTION.md",
+    "title": "Fix: JSX Build Errors - Application Now Fully Operational",
+    "summary": "This PR resolves all critical JSX syntax errors that prevented the frontend from compiling. The application now builds and runs successfully end-to-end.\r **Branch:** `claude/fix-jsx-build-error-01A1tj"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/UI_NULL_GUARD_FIXES_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/UI_NULL_GUARD_FIXES_REPORT.md",
+    "title": "UI Null-Guard Fixes Report",
+    "summary": "**Date:** 2025-11-16  \r **Branch:** `cursor/fix-ui-view-null-guard-issues-3cd3`"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/RELEASE_READINESS_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/RELEASE_READINESS_REPORT.md",
+    "title": "RELEASE READINESS REPORT",
+    "summary": "**Project**: Crypto Trading Dashboard **Report Date**: 2025-11-14"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/QUICK_START_API_TESTING.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/QUICK_START_API_TESTING.md",
+    "title": "🚀 شروع سریع - ماژول تست API",
+    "summary": "```bash\r npm install"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/PRODUCTION_READINESS_CHECKLIST.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/PRODUCTION_READINESS_CHECKLIST.md",
+    "title": "Production Readiness Checklist v1.0",
+    "summary": "**DreammakerCryptoSignalAndTrader**  \r Generated: 2025-11-16"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/HUGGINGFACE_SPACE_REQUIREMENTS.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/HUGGINGFACE_SPACE_REQUIREMENTS.md",
+    "title": "HuggingFace Data Engine - Enhancement Requirements",
+    "summary": "This document outlines requirements for enhancing the **HuggingFace Cryptocurrency Data Engine** (Space: `Really-amin/Datasourceforcryptocurrency`) to serve as a reliable, comprehensive data provider"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/IMPLEMENTATION_PROMPT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/IMPLEMENTATION_PROMPT.md",
+    "title": "Implementation Prompt: Fix Data Providers & Enable Live Signal Generation",
+    "summary": "The Dreammaker Crypto Signal & Trader application is fully operational (backend on port 8001, frontend on port 5173) but cannot generate trading signals because ALL data providers are failing to fetch"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DEPLOYMENT_IMPLEMENTATION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DEPLOYMENT_IMPLEMENTATION_REPORT.md",
+    "title": "Deployment Implementation Report",
+    "summary": "**Date**: 2025-11-16  \r **Status**: ✅ **COMPLETE**"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/ML_TRAINING_SETUP.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/ML_TRAINING_SETUP.md",
+    "title": "ML Training & Backtesting Setup",
+    "summary": "**Real AI Training Pipeline with Hugging Face Datasets & Walk-Forward Optimization** This implementation adds a production-ready ML training pipeline that:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/IMPLEMENTATION_SUMMARY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/IMPLEMENTATION_SUMMARY.md",
+    "title": "Implementation Summary - Production Readiness Initiative",
+    "summary": "**Date:** 2025-11-16  \r **Objective:** Transform architectural analysis into concrete, production-ready deliverables"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/DATA_REQUIREMENTS_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/DATA_REQUIREMENTS_REPORT.md",
+    "title": "گزارش نیازمندی‌های داده برنامه",
+    "summary": "برنامه Dreammaker برای تولید سیگنال‌های معاملاتی به این داده‌ها نیاز دارد: ```"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/FIXES_APPLIED_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/FIXES_APPLIED_REPORT.md",
+    "title": "🎯 FIXES APPLIED REPORT - Realtime Data Sync & WebSocket Issues",
+    "summary": "**Date**: 2025-11-16  \r **Agent**: Cursor Background Agent"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/HUGGINGFACE_DEPLOYMENT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/HUGGINGFACE_DEPLOYMENT.md",
+    "title": "🚀 راهنمای استقرار در Hugging Face Spaces",
+    "summary": "[فارسی](#راهنمای-فارسی) | [English](#english-guide) ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/راهنمای_راه_اندازی_سرور.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/راهنمای_راه_اندازی_سرور.md",
+    "title": "راهنمای راه‌اندازی سرور WebSocket",
+    "summary": "سرور WebSocket در حال اجرا نیست، به همین دلیل قابلیت‌های real-time پروژه کار نمی‌کنند.\r این دستور هم سرور و هم کلاینت را به‌صورت همزمان اجرا می‌کند:"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/AUDIT_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/AUDIT_REPORT.md",
+    "title": "🔍 DEEP CODEBASE AUDIT REPORT",
+    "summary": "**Generated:** 2025-11-14\r **Project:** Dreammaker Legal Agent - Crypto/AI Dashboard"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/COMPLETION_REPORT.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/COMPLETION_REPORT.md",
+    "title": "🎯 Complete Implementation & Testing Report",
+    "summary": "**Project:** DreammakerCryptoSignalAndTrader **Date:** 2025-11-09"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/PERFORMANCE_MONITORING.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/PERFORMANCE_MONITORING.md",
+    "title": "Performance Monitoring & UX Enhancements",
+    "summary": "This document describes the performance monitoring, caching, and UX enhancements added to the Dreammaker Legal Agent application.\r - **Purpose**: Prevents duplicate simultaneous requests to the same e"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/INTERACTION_VALIDATION_MAP.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/INTERACTION_VALIDATION_MAP.md",
+    "title": "Frontend Interaction Validation Map",
+    "summary": "**Comprehensive UI Element Testing Report**\r ---"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/STRATEGY_DASHBOARD_FEATURES.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/STRATEGY_DASHBOARD_FEATURES.md",
+    "title": "Interactive Strategy Dashboard with Real-Time Animation",
+    "summary": "This update introduces a fully interactive strategy dashboard with real-time animation and live feedback. Users can now see immediate visual responses to parameter adjustments, making strategy optimiz"
+  },
+  {
+    "orig_path": "docs/markdown_archive/20251122_090758/README_FUTURES_ONLY.md",
+    "archive_path": "docs/markdown_archive/20251122_090758/docs/markdown_archive/20251122_090758/README_FUTURES_ONLY.md",
+    "title": "Futures-Only Build Notice",
+    "summary": "**Build Version:** 1.0 (Futures-Only Release)  \r **Last Updated:** 2025-11-16"
+  }
+]
