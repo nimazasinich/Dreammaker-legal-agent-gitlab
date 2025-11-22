@@ -1,0 +1,762 @@
+{
+  "files": [
+    {
+      "path": "src/contexts/DataContext.tsx",
+      "name": "DataContext",
+      "scores": {
+        "functionality": 8,
+        "usefulness": 10,
+        "completeness": 8,
+        "visual_consistency": 9,
+        "logical_consistency": 8,
+        "overall_score": 8.3
+      },
+      "category": "Needs Minor Fixes",
+      "one_line_summary": "Critical shared data context with good error handling and progressive loading but has complex lifecycle logic",
+      "missing_features": [
+        "Unit tests for context provider",
+        "TypeScript strict null checks on context consumer",
+        "Envelope validation on DatasourceClient responses"
+      ],
+      "common_errors": [
+        "useData hook returns non-null type but logs error instead of throwing",
+        "No validation of API envelope structure before setting state",
+        "Bootstrap orchestration may cause race conditions with multiple providers"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add null-safety check to useData hook - throw error instead of console.error",
+          "priority": "High",
+          "estimate": "1 test file + hook modification"
+        },
+        {
+          "action": "Wrap DatasourceClient calls with envelope validation using normalizeApiResult from integrationGuards",
+          "priority": "Critical",
+          "estimate": "Add validation layer in loadAllData and loadOHLCVData"
+        },
+        {
+          "action": "Add unit tests for DataProvider with mocked DatasourceClient",
+          "priority": "High",
+          "estimate": "Create DataContext.test.tsx with React Testing Library"
+        }
+      ],
+      "related_views": ["Dashboard", "Market", "Trading", "ALL"]
+    },
+    {
+      "path": "src/contexts/TradingContext.tsx",
+      "name": "TradingContext",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 9,
+        "completeness": 8,
+        "visual_consistency": 10,
+        "logical_consistency": 9,
+        "overall_score": 8.8
+      },
+      "category": "Needs Minor Fixes",
+      "one_line_summary": "Well-structured trading state management with proper fallback to virtual mode",
+      "missing_features": [
+        "Error envelope validation from KuCoin responses",
+        "Unit tests for mode switching and order placement"
+      ],
+      "common_errors": [
+        "useTrading hook logs error instead of throwing when used outside provider",
+        "No envelope structure validation on API responses"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Fix useTrading to throw error with proper context value check: if (!context) throw new Error(...)",
+          "priority": "Medium",
+          "estimate": "1 line change"
+        },
+        {
+          "action": "Add unit tests for TradingProvider covering virtual/real mode switches",
+          "priority": "High",
+          "estimate": "Create TradingContext.test.tsx"
+        }
+      ],
+      "related_views": ["Trading", "Futures", "EnhancedTrading", "UnifiedTrading"]
+    },
+    {
+      "path": "src/contexts/ModeContext.tsx",
+      "name": "ModeContext",
+      "scores": {
+        "functionality": 10,
+        "usefulness": 8,
+        "completeness": 10,
+        "visual_consistency": 10,
+        "logical_consistency": 10,
+        "overall_score": 9.6
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Clean, minimal mode management context with localStorage persistence",
+      "missing_features": [],
+      "common_errors": [
+        "useMode hook logs error instead of throwing when context unavailable"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Change useMode to throw error instead of console.error for better debugging",
+          "priority": "Low",
+          "estimate": "1 line change"
+        }
+      ],
+      "related_views": ["Settings", "ALL"]
+    },
+    {
+      "path": "src/contexts/RefreshSettingsContext.tsx",
+      "name": "RefreshSettingsContext",
+      "scores": {
+        "functionality": 10,
+        "usefulness": 7,
+        "completeness": 10,
+        "visual_consistency": 10,
+        "logical_consistency": 10,
+        "overall_score": 9.4
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Well-designed refresh settings with proper validation and storage",
+      "missing_features": [],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [],
+      "related_views": ["Settings", "Dashboard"]
+    },
+    {
+      "path": "src/contexts/BacktestContext.tsx",
+      "name": "BacktestContext",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 7,
+        "completeness": 9,
+        "visual_consistency": 10,
+        "logical_consistency": 9,
+        "overall_score": 8.7
+      },
+      "category": "Needs Minor Fixes",
+      "one_line_summary": "Simple backtest parameter context with good structure",
+      "missing_features": [
+        "Persistence to localStorage for backtest parameters"
+      ],
+      "common_errors": [
+        "useBacktestContext logs error instead of throwing"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add localStorage persistence like RefreshSettingsContext",
+          "priority": "Low",
+          "estimate": "Add useEffect for persistence"
+        }
+      ],
+      "related_views": ["Backtest"]
+    },
+    {
+      "path": "src/hooks/useSafeAsync.ts",
+      "name": "useSafeAsync",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 9,
+        "completeness": 8,
+        "visual_consistency": 10,
+        "logical_consistency": 9,
+        "overall_score": 9.0
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Clean async lifecycle management hook preventing memory leaks",
+      "missing_features": [
+        "Unit tests demonstrating unmounted component safety"
+      ],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add unit tests to verify cleanup on unmount",
+          "priority": "Medium",
+          "estimate": "Create useSafeAsync.test.ts"
+        }
+      ],
+      "related_views": ["ALL"]
+    },
+    {
+      "path": "src/hooks/useWebSocket.ts",
+      "name": "useWebSocket",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 9,
+        "completeness": 9,
+        "visual_consistency": 10,
+        "logical_consistency": 9,
+        "overall_score": 9.1
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Well-designed WebSocket hook with proper cleanup and state management",
+      "missing_features": [
+        "Unit tests for WebSocket lifecycle"
+      ],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add unit tests mocking WebSocketManager",
+          "priority": "Medium",
+          "estimate": "Create useWebSocket.test.ts"
+        }
+      ],
+      "related_views": ["TradingHub", "Monitoring", "Futures"]
+    },
+    {
+      "path": "src/hooks/useSignalWebSocket.ts",
+      "name": "useSignalWebSocket",
+      "scores": {
+        "functionality": 8,
+        "usefulness": 9,
+        "completeness": 8,
+        "visual_consistency": 9,
+        "logical_consistency": 8,
+        "overall_score": 8.2
+      },
+      "category": "Needs Minor Fixes",
+      "one_line_summary": "Feature-rich signal WebSocket with fallback polling but complex message validation",
+      "missing_features": [
+        "Better envelope validation for WebSocket messages",
+        "Unit tests for message transformation logic"
+      ],
+      "common_errors": [
+        "Complex nested optional chaining (data?.stages?.stage1) could fail silently",
+        "No envelope structure validation on WebSocket messages"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add envelope validation helper for WebSocket messages using normalizeApiResult pattern",
+          "priority": "High",
+          "estimate": "Create validateSignalMessage helper function"
+        },
+        {
+          "action": "Add unit tests for message transformation and error cases",
+          "priority": "High",
+          "estimate": "Create useSignalWebSocket.test.ts"
+        }
+      ],
+      "related_views": ["SignalVisualization", "StrategyBuilder"]
+    },
+    {
+      "path": "src/services/apiService.ts",
+      "name": "apiService",
+      "scores": {
+        "functionality": 7,
+        "usefulness": 6,
+        "completeness": 7,
+        "visual_consistency": 9,
+        "logical_consistency": 6,
+        "overall_score": 6.8
+      },
+      "category": "Needs Major Fixes",
+      "one_line_summary": "Basic API service that returns custom response type instead of standard envelope",
+      "missing_features": [
+        "Standard envelope { status, code, message, data } not used",
+        "No integration with CentralizedAPIManager",
+        "Missing retry logic"
+      ],
+      "common_errors": [
+        "Returns ApiResponse<T> instead of standard envelope",
+        "Inconsistent with project's envelope standard",
+        "Not used consistently across project (DatasourceClient used instead)"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Deprecate or refactor to return standard envelope format { status: 'ok'|'error', code?, message?, data? }",
+          "priority": "Critical",
+          "estimate": "Refactor all usages or create adapter layer"
+        },
+        {
+          "action": "Add integration tests showing envelope consistency",
+          "priority": "High",
+          "estimate": "Create apiService.test.ts"
+        }
+      ],
+      "related_views": ["POTENTIALLY_UNUSED"]
+    },
+    {
+      "path": "src/services/CentralizedAPIManager.ts",
+      "name": "CentralizedAPIManager",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 8,
+        "completeness": 9,
+        "visual_consistency": 9,
+        "logical_consistency": 9,
+        "overall_score": 8.9
+      },
+      "category": "Needs Minor Fixes",
+      "one_line_summary": "Sophisticated API manager with fallback chains, rate limiting, and caching",
+      "missing_features": [
+        "Standard envelope format not enforced",
+        "Unit tests for fallback logic"
+      ],
+      "common_errors": [
+        "Returns custom APIResponse instead of standard envelope",
+        "Complex proxy logic may fail silently"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Standardize APIResponse to match { status, code?, message?, data? } envelope",
+          "priority": "High",
+          "estimate": "Modify APIResponse interface and update all consumers"
+        },
+        {
+          "action": "Add comprehensive unit tests for fallback chain and rate limiting",
+          "priority": "High",
+          "estimate": "Create CentralizedAPIManager.test.ts"
+        }
+      ],
+      "related_views": ["Market", "News", "Sentiment"]
+    },
+    {
+      "path": "src/services/WebSocketManager.ts",
+      "name": "WebSocketManager",
+      "scores": {
+        "functionality": 10,
+        "usefulness": 10,
+        "completeness": 10,
+        "visual_consistency": 10,
+        "logical_consistency": 10,
+        "overall_score": 10.0
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Excellent singleton WebSocket manager with automatic reconnection and message routing",
+      "missing_features": [],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add unit tests for reconnection logic and message routing",
+          "priority": "Medium",
+          "estimate": "Create WebSocketManager.test.ts with mock WebSocket"
+        }
+      ],
+      "related_views": ["TradingHub", "Monitoring", "Futures", "ALL"]
+    },
+    {
+      "path": "src/services/UnifiedDataService.ts",
+      "name": "UnifiedDataService",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 9,
+        "completeness": 8,
+        "visual_consistency": 9,
+        "logical_consistency": 8,
+        "overall_score": 8.6
+      },
+      "category": "Needs Minor Fixes",
+      "one_line_summary": "Comprehensive unified data service with multi-source support",
+      "missing_features": [
+        "Standard envelope format not used",
+        "Some methods return undefined instead of null on error",
+        "Unit tests for price aggregation logic"
+      ],
+      "common_errors": [
+        "Inconsistent error handling - some throw, some return null/empty array",
+        "console.error instead of throwing with proper envelope"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Standardize error handling to always return envelope { status: 'error', code: '...', message, data: null }",
+          "priority": "High",
+          "estimate": "Refactor all methods to return standard envelope"
+        },
+        {
+          "action": "Add unit tests for each data source fallback scenario",
+          "priority": "High",
+          "estimate": "Create UnifiedDataService.test.ts"
+        }
+      ],
+      "related_views": ["Market", "Dashboard", "Trading"]
+    },
+    {
+      "path": "src/services/DatasourceClient.ts",
+      "name": "DatasourceClient",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 10,
+        "completeness": 9,
+        "visual_consistency": 9,
+        "logical_consistency": 8,
+        "overall_score": 8.9
+      },
+      "category": "Needs Minor Fixes",
+      "one_line_summary": "Universal data source client with comprehensive error handling and structured logging",
+      "missing_features": [
+        "No envelope validation on responses",
+        "Returns raw data instead of envelope structure",
+        "Unit tests for error scenarios"
+      ],
+      "common_errors": [
+        "Returns arrays/null directly instead of envelope { status, data }",
+        "No normalizeApiResult validation on fetched data"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Wrap all fetch responses with normalizeApiResult to ensure envelope structure",
+          "priority": "Critical",
+          "estimate": "Modify fetchJSON to validate and wrap responses"
+        },
+        {
+          "action": "Add unit tests for all public methods with mock fetch",
+          "priority": "High",
+          "estimate": "Create DatasourceClient.test.ts"
+        }
+      ],
+      "related_views": ["Dashboard", "Market", "Trading", "ALL"]
+    },
+    {
+      "path": "src/services/marketData.ts",
+      "name": "marketData (getOHLCV)",
+      "scores": {
+        "functionality": 6,
+        "usefulness": 7,
+        "completeness": 5,
+        "visual_consistency": 8,
+        "logical_consistency": 5,
+        "overall_score": 6.0
+      },
+      "category": "Needs Major Fixes",
+      "one_line_summary": "Simple OHLCV fetcher with no error handling or envelope validation",
+      "missing_features": [
+        "No try/catch error handling",
+        "No envelope validation",
+        "No retry logic",
+        "Throws raw error instead of structured response"
+      ],
+      "common_errors": [
+        "console.error instead of throwing structured error",
+        "Returns raw JSON without envelope validation",
+        "No type guards on response data"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add try/catch with normalizeApiResult envelope validation",
+          "priority": "Critical",
+          "estimate": "Wrap fetch call and validate response"
+        },
+        {
+          "action": "Add retry logic using backoffRetry from utils/retry.ts",
+          "priority": "High",
+          "estimate": "Integrate retry wrapper"
+        },
+        {
+          "action": "Add unit tests for success and error cases",
+          "priority": "High",
+          "estimate": "Create marketData.test.ts"
+        }
+      ],
+      "related_views": ["Market", "TechnicalAnalysis"]
+    },
+    {
+      "path": "src/utils/errorResponse.ts",
+      "name": "errorResponse",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 8,
+        "completeness": 9,
+        "visual_consistency": 10,
+        "logical_consistency": 9,
+        "overall_score": 9.0
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Well-designed structured error response utility for consistent error handling",
+      "missing_features": [
+        "Not using standard envelope { status, code, message, data }",
+        "Returns custom StructuredErrorResponse instead"
+      ],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Align StructuredErrorResponse with standard envelope format",
+          "priority": "Medium",
+          "estimate": "Change 'ok' to 'status', map to standard envelope"
+        }
+      ],
+      "related_views": ["Backend API responses"]
+    },
+    {
+      "path": "src/utils/validation.ts",
+      "name": "validation",
+      "scores": {
+        "functionality": 10,
+        "usefulness": 8,
+        "completeness": 10,
+        "visual_consistency": 10,
+        "logical_consistency": 10,
+        "overall_score": 9.6
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Comprehensive form validation utility with composable rules",
+      "missing_features": [],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add unit tests for all validation rules",
+          "priority": "Medium",
+          "estimate": "Create validation.test.ts"
+        }
+      ],
+      "related_views": ["Settings", "ExchangeSettings", "Forms"]
+    },
+    {
+      "path": "src/utils/integrationGuards.ts",
+      "name": "integrationGuards",
+      "scores": {
+        "functionality": 10,
+        "usefulness": 10,
+        "completeness": 10,
+        "visual_consistency": 10,
+        "logical_consistency": 10,
+        "overall_score": 10.0
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Perfect implementation of envelope validation and guard utilities",
+      "missing_features": [],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add unit tests demonstrating all guard scenarios",
+          "priority": "Low",
+          "estimate": "Create integrationGuards.test.ts"
+        }
+      ],
+      "related_views": ["ALL"]
+    },
+    {
+      "path": "src/utils/retry.ts",
+      "name": "retry (backoffRetry)",
+      "scores": {
+        "functionality": 10,
+        "usefulness": 9,
+        "completeness": 10,
+        "visual_consistency": 10,
+        "logical_consistency": 10,
+        "overall_score": 9.8
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Excellent retry utility with exponential backoff and jitter",
+      "missing_features": [],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add unit tests for retry behavior and shouldRetry logic",
+          "priority": "Medium",
+          "estimate": "Create retry.test.ts"
+        }
+      ],
+      "related_views": ["ALL"]
+    },
+    {
+      "path": "src/lib/storage.ts",
+      "name": "storage",
+      "scores": {
+        "functionality": 10,
+        "usefulness": 8,
+        "completeness": 10,
+        "visual_consistency": 10,
+        "logical_consistency": 10,
+        "overall_score": 9.6
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Clean localStorage wrapper with proper error handling",
+      "missing_features": [],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [],
+      "related_views": ["ALL"]
+    },
+    {
+      "path": "src/core/Logger.ts",
+      "name": "Logger",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 10,
+        "completeness": 9,
+        "visual_consistency": 10,
+        "logical_consistency": 9,
+        "overall_score": 9.3
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Robust browser-compatible logger with structured JSON logging",
+      "missing_features": [
+        "Log aggregation to backend (optional feature)"
+      ],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add unit tests for log buffering and level filtering",
+          "priority": "Low",
+          "estimate": "Create Logger.test.ts"
+        }
+      ],
+      "related_views": ["ALL"]
+    },
+    {
+      "path": "src/components/ui/ResponseHandler.tsx",
+      "name": "ResponseHandler",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 9,
+        "completeness": 9,
+        "visual_consistency": 8,
+        "logical_consistency": 9,
+        "overall_score": 8.9
+      },
+      "category": "Needs Minor Fixes",
+      "one_line_summary": "Flexible response handler component with custom render props",
+      "missing_features": [
+        "No data-testid attributes for testing",
+        "Missing RTL text direction support"
+      ],
+      "common_errors": [],
+      "visual_issues": [
+        "Hardcoded gradient colors not using CSS variables for theming"
+      ],
+      "remediation": [
+        {
+          "action": "Add data-testid attributes to all conditional renders",
+          "priority": "Medium",
+          "estimate": "Add data-testid to loading/error/empty states"
+        },
+        {
+          "action": "Add RTL support with dir='auto' on text elements",
+          "priority": "Low",
+          "estimate": "Add dir attribute to text containers"
+        }
+      ],
+      "related_views": ["ALL"]
+    },
+    {
+      "path": "src/components/ui/ErrorStateCard.tsx",
+      "name": "ErrorStateCard",
+      "scores": {
+        "functionality": 10,
+        "usefulness": 9,
+        "completeness": 10,
+        "visual_consistency": 10,
+        "logical_consistency": 10,
+        "overall_score": 9.8
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Excellent error UI component with accessibility and RTL support",
+      "missing_features": [],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add unit tests with React Testing Library",
+          "priority": "Medium",
+          "estimate": "Create ErrorStateCard.test.tsx"
+        }
+      ],
+      "related_views": ["ALL"]
+    },
+    {
+      "path": "src/components/ui/LoadingSpinner.tsx",
+      "name": "LoadingSpinner",
+      "scores": {
+        "functionality": 10,
+        "usefulness": 9,
+        "completeness": 10,
+        "visual_consistency": 9,
+        "logical_consistency": 10,
+        "overall_score": 9.6
+      },
+      "category": "Production-Ready",
+      "one_line_summary": "Clean loading spinner with multiple size and color variants",
+      "missing_features": [],
+      "common_errors": [],
+      "visual_issues": [],
+      "remediation": [
+        {
+          "action": "Add data-testid for easier testing",
+          "priority": "Low",
+          "estimate": "Add data-testid attribute"
+        }
+      ],
+      "related_views": ["ALL"]
+    }
+  ],
+  "summary": {
+    "most_urgent_files": [
+      {
+        "path": "src/services/marketData.ts",
+        "reason": "No error handling, no envelope validation, throws raw errors - critical data path"
+      },
+      {
+        "path": "src/services/apiService.ts",
+        "reason": "Uses custom response format instead of standard envelope - inconsistent with project"
+      },
+      {
+        "path": "src/services/DatasourceClient.ts",
+        "reason": "Returns raw data without envelope validation - used by critical DataContext"
+      },
+      {
+        "path": "src/contexts/DataContext.tsx",
+        "reason": "Core data provider lacking envelope validation on all API responses"
+      },
+      {
+        "path": "src/hooks/useSignalWebSocket.ts",
+        "reason": "Complex message parsing without envelope validation - signal pipeline dependency"
+      }
+    ],
+    "top_value_files": [
+      {
+        "path": "src/utils/integrationGuards.ts",
+        "reason": "Perfect envelope validation utilities - foundation for data consistency"
+      },
+      {
+        "path": "src/services/WebSocketManager.ts",
+        "reason": "Excellent singleton WebSocket manager - prevents connection storms"
+      },
+      {
+        "path": "src/utils/retry.ts",
+        "reason": "Production-grade retry logic with backoff - improves reliability"
+      },
+      {
+        "path": "src/utils/validation.ts",
+        "reason": "Comprehensive validation system - ensures data integrity"
+      },
+      {
+        "path": "src/contexts/DataContext.tsx",
+        "reason": "Critical shared state for all market data - high usage across views"
+      }
+    ],
+    "aggregate_metrics": {
+      "avg_overall_score": 8.9,
+      "percent_production_ready": 43.5,
+      "total_files_evaluated": 23,
+      "production_ready": 10,
+      "needs_minor_fixes": 10,
+      "needs_major_fixes": 3,
+      "deprecated": 0
+    },
+    "next_steps": [
+      "CRITICAL: Implement envelope validation across all API response paths using normalizeApiResult",
+      "HIGH: Add unit tests for all contexts, hooks, and service layers (currently 53 test files, need ~30 more)",
+      "HIGH: Standardize all API services to return { status, code?, message?, data? } envelope",
+      "MEDIUM: Fix all context hooks to throw errors instead of console.error when used outside provider",
+      "MEDIUM: Add data-testid attributes to all interactive UI components for E2E testing",
+      "LOW: Add RTL support to remaining UI components"
+    ]
+  }
+}
