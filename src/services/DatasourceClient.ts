@@ -168,21 +168,45 @@ export class DatasourceClient {
   // Helper method for fetch requests with error handling
   private async fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
     try {
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      
       const response = await fetch(url, {
         ...options,
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           ...options?.headers
         }
       });
       
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorLabel = `DATASOURCE_HTTP_${response.status}`;
+        console.error(errorLabel, `HTTP error for ${url}: ${response.status}`);
+        throw new Error(`HTTP ${response.status}`);
       }
       
-      return await response.json();
-    } catch (error) {
-      console.error('DatasourceClient fetch error:', error);
+      const data = await response.json();
+      
+      // Validate response
+      if (data === null || data === undefined) {
+        console.error('DATASOURCE_EMPTY_RESPONSE', `Empty response from ${url}`);
+        throw new Error('Empty response');
+      }
+      
+      return data;
+    } catch (error: any) {
+      // Structured error handling
+      if (error.name === 'AbortError') {
+        console.error('DATASOURCE_TIMEOUT', `Request timeout for ${url}`);
+      } else if (error.message?.includes('fetch')) {
+        console.error('DATASOURCE_NETWORK_ERROR', `Network error for ${url}: ${error.message}`);
+      } else {
+        console.error('DATASOURCE_FETCH_ERROR', `Fetch error for ${url}: ${error.message}`);
+      }
       throw error;
     }
   }
@@ -196,22 +220,40 @@ export class DatasourceClient {
       }
       
       const data = await this.fetchJSON<MarketPrice[]>(url);
-      return Array.isArray(data) ? data : [];
-    } catch (error) {
-      console.error('getTopCoins error:', error);
-      return [];
+      
+      if (!Array.isArray(data)) {
+        console.error('DATASOURCE_INVALID_COINS_DATA', 'Invalid data format for top coins');
+        return [];
+      }
+      
+      return data;
+    } catch (error: any) {
+      console.error('DATASOURCE_GET_COINS_FAILED', `Failed to get top coins: ${error.message}`);
+      return []; // Always return empty array, never undefined
     }
   }
 
   // Get price chart data (OHLCV)
   async getPriceChart(symbol: string, timeframe = '1h', limit = 100): Promise<PriceChart[]> {
     try {
+      // Validate input
+      if (!symbol || typeof symbol !== 'string') {
+        console.error('DATASOURCE_INVALID_SYMBOL', 'Invalid symbol provided');
+        return [];
+      }
+      
       const url = `${this.baseUrl}/api/market/history?symbol=${symbol}&timeframe=${timeframe}&limit=${limit}`;
       const data = await this.fetchJSON<PriceChart[]>(url);
-      return Array.isArray(data) ? data : [];
-    } catch (error) {
-      console.error('getPriceChart error:', error);
-      return [];
+      
+      if (!Array.isArray(data)) {
+        console.error('DATASOURCE_INVALID_CHART_DATA', `Invalid chart data for ${symbol}`);
+        return [];
+      }
+      
+      return data;
+    } catch (error: any) {
+      console.error('DATASOURCE_GET_CHART_FAILED', `Failed to get chart for ${symbol}: ${error.message}`);
+      return []; // Always return empty array, never undefined
     }
   }
 
@@ -219,10 +261,18 @@ export class DatasourceClient {
   async getMarketStats(): Promise<MarketStats | null> {
     try {
       const url = `${this.baseUrl}/api/stats`;
-      return await this.fetchJSON<MarketStats>(url);
-    } catch (error) {
-      console.error('getMarketStats error:', error);
-      return null;
+      const data = await this.fetchJSON<MarketStats>(url);
+      
+      // Validate data structure
+      if (!data || typeof data !== 'object') {
+        console.error('DATASOURCE_INVALID_STATS_DATA', 'Invalid market stats data');
+        return null;
+      }
+      
+      return data;
+    } catch (error: any) {
+      console.error('DATASOURCE_GET_STATS_FAILED', `Failed to get market stats: ${error.message}`);
+      return null; // Return null on error
     }
   }
 
@@ -231,10 +281,22 @@ export class DatasourceClient {
     try {
       const url = `${this.baseUrl}/api/news/latest?limit=${limit}`;
       const response = await this.fetchJSON<{ success: boolean; news: NewsItem[] }>(url);
-      return response?.news || [];
-    } catch (error) {
-      console.error('getLatestNews error:', error);
-      return [];
+      
+      // Validate response structure
+      if (!response || typeof response !== 'object') {
+        console.error('DATASOURCE_INVALID_NEWS_RESPONSE', 'Invalid news response');
+        return [];
+      }
+      
+      if (!Array.isArray(response.news)) {
+        console.error('DATASOURCE_INVALID_NEWS_DATA', 'News data is not an array');
+        return [];
+      }
+      
+      return response.news;
+    } catch (error: any) {
+      console.error('DATASOURCE_GET_NEWS_FAILED', `Failed to get news: ${error.message}`);
+      return []; // Always return empty array, never undefined
     }
   }
 
@@ -242,10 +304,23 @@ export class DatasourceClient {
   async getMarketSentiment(): Promise<MarketSentiment | null> {
     try {
       const url = `${this.baseUrl}/api/sentiment`;
-      return await this.fetchJSON<MarketSentiment>(url);
-    } catch (error) {
-      console.error('getMarketSentiment error:', error);
-      return null;
+      const data = await this.fetchJSON<MarketSentiment>(url);
+      
+      // Validate data structure
+      if (!data || typeof data !== 'object') {
+        console.error('DATASOURCE_INVALID_SENTIMENT_DATA', 'Invalid sentiment data');
+        return null;
+      }
+      
+      if (typeof data.fearGreedIndex !== 'number') {
+        console.error('DATASOURCE_INVALID_SENTIMENT_STRUCTURE', 'Missing fearGreedIndex in sentiment data');
+        return null;
+      }
+      
+      return data;
+    } catch (error: any) {
+      console.error('DATASOURCE_GET_SENTIMENT_FAILED', `Failed to get sentiment: ${error.message}`);
+      return null; // Return null on error
     }
   }
 

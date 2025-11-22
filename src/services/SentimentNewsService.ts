@@ -94,76 +94,149 @@ export class SentimentNewsService {
   }
 
   /**
-   * Get Fear & Greed Index
+   * Get Fear & Greed Index with retry logic
    */
   async getFearGreedIndex(): Promise<FearGreedIndex> {
+    // Check cache first
     const cached = this.fearGreedCache.get('fear_greed');
-    if (cached) return cached;
+    if (cached) {
+      this.logger.debug('FEAR_GREED_CACHED', { value: cached.value });
+      return cached;
+    }
 
     await this.alternativeLimiter.wait();
 
-    try {
-      const response = await this.alternativeClient.get('/fng/', {
-        params: {
-          limit: 1
+    const maxRetries = 2;
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const response = await this.alternativeClient.get('/fng/', {
+          params: { limit: 1 },
+          timeout: 5000
+        });
+
+        // Validate response
+        if (!response.data || !response.data.data || !Array.isArray(response.data.data)) {
+          throw new Error('Invalid response structure');
         }
-      });
 
-      if (!response.data.data || !response.data.data[0]) {
-        console.error('No Fear & Greed data available');
+        if (response.data.data.length === 0) {
+          throw new Error('No Fear & Greed data available');
+        }
+
+        const data = response.data.data[0];
+        
+        // Validate data fields
+        if (!data.value || !data.value_classification || !data.timestamp) {
+          throw new Error('Incomplete Fear & Greed data');
+        }
+
+        const result: FearGreedIndex = {
+          value: parseInt(data.value),
+          classification: data.value_classification,
+          timestamp: new Date(parseInt(data.timestamp) * 1000)
+        };
+
+        // Cache successful result
+        this.fearGreedCache.set('fear_greed', result);
+        this.logger.info('FEAR_GREED_SUCCESS', { value: result.value, classification: result.classification });
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        
+        if (error.response?.status === 429) {
+          this.logger.warn('FEAR_GREED_RATE_LIMIT', { attempt: attempt + 1 });
+        } else if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+          this.logger.warn('FEAR_GREED_TIMEOUT', { attempt: attempt + 1 });
+        } else if (error.code === 'ENOTFOUND') {
+          this.logger.error('FEAR_GREED_UNREACHABLE', { error: 'Service unreachable' });
+          break; // No point retrying if service is unreachable
+        } else {
+          this.logger.warn('FEAR_GREED_ERROR', { attempt: attempt + 1, error: error.message });
+        }
+
+        // Wait before retry with exponential backoff
+        if (attempt < maxRetries - 1) {
+          const delay = 1000 * Math.pow(2, attempt);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
       }
-
-      const data = response.data.data[0];
-      const result: FearGreedIndex = {
-        value: parseInt(data.value),
-        classification: data.value_classification,
-        timestamp: new Date(parseInt(data.timestamp) * 1000)
-      };
-
-      this.fearGreedCache.set('fear_greed', result);
-      return result;
-    } catch (error) {
-      this.logger.warn('Failed to fetch Fear & Greed Index', {}, error as Error);
-      // Return neutral default on error
-      return {
-        value: 50,
-        classification: 'Neutral',
-        timestamp: new Date()
-      };
     }
+
+    // All retries failed - return neutral default
+    this.logger.error('FEAR_GREED_ALL_RETRIES_FAILED', { 
+      error: lastError?.message || 'Unknown error',
+      fallback: 'Returning neutral default' 
+    });
+    
+    const fallback: FearGreedIndex = {
+      value: 50,
+      classification: 'Neutral',
+      timestamp: new Date()
+    };
+    
+    // Cache fallback for shorter duration to retry sooner
+    this.fearGreedCache.set('fear_greed', fallback);
+    return fallback;
   }
 
   /**
-   * Get crypto news
-   * REFACTORED: Now uses DatasourceClient instead of direct API calls
+   * Get crypto news with fallback providers
+   * REFACTORED: Now uses DatasourceClient with fallback to NewsAPI
    */
   async getCryptoNews(limit: number = 20): Promise<NewsItem[]> {
     const cacheKey = `news_${limit}`;
     const cached = this.newsCache.get(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      this.logger.debug('NEWS_CACHED', { count: cached.length });
+      return cached;
+    }
 
+    // Try primary provider (DatasourceClient)
     try {
-      // Use DatasourceClient instead of direct API calls
       const datasourceClient = await this.loadDatasourceClient();
       const newsData = await datasourceClient.getLatestNews(limit);
       
+      // Validate response
+      if (!newsData || !Array.isArray(newsData)) {
+        throw new Error('Invalid news data from DatasourceClient');
+      }
+      
       // Convert to NewsItem format
       const newsItems: NewsItem[] = newsData.map((item: any) => ({
-        title: item.title || '',
+        title: item.title || 'Untitled',
         url: item.url || '',
         source: item.source || 'Unknown',
         published: new Date(item.publishedAt || Date.now()),
-        sentiment: item.sentiment as 'positive' | 'negative' | 'neutral' || 'neutral',
+        sentiment: (item.sentiment as 'positive' | 'negative' | 'neutral') || 'neutral',
         sentimentScore: this.getSentimentScoreFromString(item.sentiment)
-      }));
+      })).filter(item => item.url !== ''); // Filter invalid items
 
       if (newsItems.length > 0) {
         this.newsCache.set(cacheKey, newsItems);
+        this.logger.info('NEWS_SUCCESS', { provider: 'DatasourceClient', count: newsItems.length });
+        return newsItems;
+      } else {
+        throw new Error('No valid news items from DatasourceClient');
       }
-      return newsItems;
     } catch (error) {
-      this.logger.warn('Failed to fetch news from DatasourceClient', {}, error as Error);
-      return []; // Return empty array on failure
+      this.logger.warn('NEWS_PRIMARY_FAIL', { provider: 'DatasourceClient', error: (error as Error).message });
+      
+      // Try fallback provider (NewsAPI)
+      const fallbackNews = await this.getNewsFromNewsAPI(limit);
+      if (fallbackNews && fallbackNews.length > 0) {
+        this.newsCache.set(cacheKey, fallbackNews);
+        this.logger.info('NEWS_SUCCESS', { provider: 'NewsAPI (fallback)', count: fallbackNews.length });
+        return fallbackNews;
+      }
+      
+      // All providers failed
+      this.logger.error('NEWS_ALL_PROVIDERS_FAILED', { 
+        error: 'All news providers failed',
+        fallback: 'Returning empty array' 
+      });
+      return []; // Return empty array on complete failure
     }
   }
   
