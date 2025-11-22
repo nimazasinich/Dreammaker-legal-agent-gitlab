@@ -41,6 +41,8 @@ const NAV_ITEMS: NavigationItem[] = [
   { id: 'positions', label: 'Positions', icon: ListOrdered },
   { id: 'futures', label: t('navigation.futures'), icon: DollarSign },
   { id: 'portfolio', label: 'Portfolio', icon: Wallet },
+  { id: 'technical-analysis', label: 'Technical Analysis', icon: Activity },
+  { id: 'risk-management', label: 'Risk Management', icon: Shield },
   { id: 'training', label: t('navigation.training'), icon: Brain },
   { id: 'risk', label: t('navigation.risk'), icon: Shield },
   { id: 'professional-risk', label: '🔥 Pro Risk', icon: AlertTriangle },
