@@ -181,18 +181,11 @@ export function DataProvider({
       }
 
       // PHASE 2: Load secondary data (Portfolio, Positions, Signals)
-      // For now, use static/mock data since these require backend implementation
-      // TODO: Implement these endpoints in the HuggingFace Hub or local backend
-      const portfolio = {
-        totalValue: 10000,
-        totalChangePercent: 5.2,
-        dayPnL: 520,
-        dayPnLPercent: 5.2,
-        activePositions: 3,
-        totalPositions: 5
-      };
+      // NO MOCK DATA: Return null if real data is unavailable
+      // UI will display appropriate fallback states
+      const portfolio = null; // Will be loaded from real API when available
 
-      const positions: any[] = [];
+      const positions: any[] = []; // Empty = no positions, not mock data
 
       // Fetch signals from the backend (if available)
       const signals = await DatasourceClient.getAIPrediction(corePriceSymbols[0], '1h')

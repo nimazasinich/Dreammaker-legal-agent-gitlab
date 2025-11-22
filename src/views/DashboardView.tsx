@@ -321,18 +321,19 @@ export const DashboardView: React.FC = () => {
 
     const portfolioChangeAmount = portfolioValue !== undefined ? (portfolioValue * portfolioChange) / 100 : 0;
 
+    // NO MOCK DATA: Show clear fallback states when data unavailable
     const statCards: StatCard[] = [
         {
             label: 'Total Portfolio',
             value: portfolioData && portfolioValue !== undefined && portfolioValue !== null
                 ? `$${portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
-                : (loading ? '—' : '$0.00'),
+                : (loading ? '—' : 'DATA_UNAVAILABLE'),
             change: portfolioData && portfolioChange !== undefined && portfolioChange !== null
                 ? `${portfolioChange >= 0 ? '+' : ''}${portfolioChange.toFixed(2)}%` 
-                : (loading ? '—' : '0.00%'),
+                : (loading ? '—' : 'N/A'),
             subValue: portfolioData && portfolioChangeAmount !== undefined && portfolioChangeAmount !== null
                 ? `${portfolioChange >= 0 ? '+' : ''}$${Math.abs(portfolioChangeAmount).toLocaleString('en-US', { minimumFractionDigits: 2 })}` 
-                : (loading ? '—' : '$0.00'),
+                : (loading ? '—' : 'Connect exchange to view portfolio'),
             positive: portfolioChange >= 0,
             icon: Wallet,
             gradient: 'from-blue-500/20 via-blue-600/10 to-cyan-500/20',
