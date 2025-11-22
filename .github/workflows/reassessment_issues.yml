@@ -1,0 +1,44 @@
+name: "Reassessment → Auto-Issue Generator"
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Target GitHub repository (e.g. username/repo)"
+        required: true
+        type: string
+      max:
+        description: "Max number of issues"
+        required: false
+        default: "50"
+        type: string
+      dry_run:
+        description: "Run without creating issues"
+        required: false
+        default: "true"
+        type: boolean
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install @octokit/rest minimist dotenv
+
+      - name: Run issue generator
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node tools/create_issues_from_reassessment.cjs \
+            --repo="${{ github.event.inputs.repo }}" \
+            --max="${{ github.event.inputs.max }}" \
+            $( [ "${{ github.event.inputs.dry_run }}" = "true" ] && echo --dry )
