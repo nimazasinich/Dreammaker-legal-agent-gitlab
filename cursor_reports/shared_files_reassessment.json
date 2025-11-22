@@ -1,0 +1,135 @@
+{
+  "files": [
+    {
+      "path": "src/utils/api.ts",
+      "name": "API Service Wrapper",
+      "scores": {
+        "functionality": 7,
+        "usefulness": 9,
+        "completeness": 6,
+        "visual_consistency": 8,
+        "logical_consistency": 5,
+        "overall_score": 6.9
+      },
+      "category": "Needs Major Fixes",
+      "one_line_summary": "Central API wrapper is useful but missing envelope normalization and retry logic; returns raw responses in some code paths.",
+      "missing_features": [
+        "Envelope normalization (normalizeApiResult)",
+        "Retry with exponential backoff",
+        "Structured logging integration"
+      ],
+      "common_errors": [
+        "Unwrapped fetch calls (no try/catch)",
+        "Returns raw JSON to UI without status envelope"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {"action":"Add normalizeApiResult, wrap all fetch/axios calls, add unit tests","priority":"Critical","estimate":"2 dev tasks, 1 test file"},
+        {"action":"Implement retry/backoff for 429/5xx","priority":"High","estimate":"1 dev task"}
+      ],
+      "related_views": ["DashboardView","FuturesTradingView","PositionsView"]
+    },
+    {
+      "path": "src/contexts/DataContext.tsx",
+      "name": "DataContext",
+      "scores": {
+        "functionality": 8,
+        "usefulness": 10,
+        "completeness": 7,
+        "visual_consistency": 9,
+        "logical_consistency": 6,
+        "overall_score": 7.7
+      },
+      "category": "Needs Minor Fixes",
+      "one_line_summary": "Provides data to many views but lacks robust error envelopes and fallback caching TTL control.",
+      "missing_features": [
+        "Cache TTL configuration",
+        "Explicit error envelope handling when provider fails"
+      ],
+      "common_errors": [
+        "Context re-throws raw errors to consumers",
+        "No metrics for data freshness"
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {"action":"Add envelope guards, caching TTL, and a 'data stale' flag","priority":"High","estimate":"1 dev + 1 integration test"},
+        {"action":"Add unit tests for failure modes","priority":"Medium","estimate":"1 test file"}
+      ],
+      "related_views": ["DashboardView","PortfolioPage","ChartingView"]
+    },
+    {
+      "path": "src/components/Chart.tsx",
+      "name": "Chart Component",
+      "scores": {
+        "functionality": 5,
+        "usefulness": 8,
+        "completeness": 4,
+        "visual_consistency": 6,
+        "logical_consistency": 4,
+        "overall_score": 4.9
+      },
+      "category": "Needs Major Fixes",
+      "one_line_summary": "Chart renders but crashes on empty or corrupted datasets; lacking empty-data fallbacks and accessibility attributes.",
+      "missing_features": [
+        "Empty-data fallback panel",
+        "Tooltip accessibility labels",
+        "Graceful handling for corrupted series"
+      ],
+      "common_errors": [
+        "Uncaught exceptions when data array length === 0",
+        "Direct DOM manipulation breaks SSR/jsdom tests"
+      ],
+      "visual_issues": [
+        "No data-testid on canvas",
+        "RTL overflow on small screens"
+      ],
+      "remediation": [
+        {"action":"Add empty-data fallback view and guards against invalid series","priority":"Critical","estimate":"2 dev tasks, 1 unit test"},
+        {"action":"Add data-testid and aria labels","priority":"High","estimate":"small change"}
+      ],
+      "related_views": ["ChartingView","StrategyInsightsView"]
+    },
+    {
+      "path": "src/components/ErrorBanner.tsx",
+      "name": "ErrorBanner",
+      "scores": {
+        "functionality": 9,
+        "usefulness": 9,
+        "completeness": 8,
+        "visual_consistency": 9,
+        "logical_consistency": 9,
+        "overall_score": 8.9
+      },
+      "category": "Needs Minor Fixes",
+      "one_line_summary": "Reusable error banner component — visually consistent and helpful; needs minor props validation and tests for edge cases.",
+      "missing_features": [
+        "Prop type checks for extended metadata",
+        "Unit tests for diverse error labels"
+      ],
+      "common_errors": [
+      ],
+      "visual_issues": [],
+      "remediation": [
+        {"action":"Add Vitest unit tests covering different labels and metadata","priority":"Medium","estimate":"1 test file"}
+      ],
+      "related_views": ["All views"]
+    }
+  ],
+  "summary": {
+    "most_urgent_files": [
+      {"path":"src/utils/api.ts","reason":"Core API wrapper missing envelope guards — affects many views"}
+    ],
+    "top_value_files":[
+      {"path":"src/contexts/DataContext.tsx","reason":"Central data provider, high impact when fixed"}
+    ],
+    "aggregate_metrics": {
+      "avg_overall_score": 7.1,
+      "percent_production_ready": 0
+    },
+    "next_steps": [
+      "Install Node deps and dry-run issue creation",
+      "Triage Critical remediation items and create issues",
+      "Implement normalizeApiResult in src/utils and add unit tests"
+    ]
+  }
+}
