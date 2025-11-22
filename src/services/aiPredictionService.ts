@@ -50,41 +50,154 @@ class AIPredictionService {
 
   private async generatePrediction(symbol: string): Promise<PredictionData> {
     try {
+      // Validate input
+      if (!symbol || typeof symbol !== 'string') {
+        logger.error('AI_PREDICTION_INVALID_INPUT', { error: 'Invalid symbol provided' });
+        return this.getSafeFallbackPrediction(symbol || 'UNKNOWN', 'INVALID_INPUT');
+      }
+
       // Use real AI prediction from backend
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
       const response = await fetch('/api/ai/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol })
+        body: JSON.stringify({ symbol }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         const data = await response.json();
+        
+        // Validate response structure
+        if (!data || typeof data !== 'object') {
+          logger.error('AI_PREDICTION_INVALID_RESPONSE', { error: 'Invalid response format', symbol });
+          return this.getSafeFallbackPrediction(symbol, 'INVALID_RESPONSE');
+        }
+
         if (data.success && data.prediction) {
+          // Validate prediction data
+          const prediction = data.prediction;
+          const isValid = this.validatePredictionData(prediction);
+          
+          if (!isValid) {
+            logger.error('AI_PREDICTION_DATA_VALIDATION_FAILED', { 
+              error: 'Prediction data validation failed', 
+              symbol,
+              prediction 
+            });
+            return this.getSafeFallbackPrediction(symbol, 'VALIDATION_FAILED');
+          }
+
           return {
             symbol,
-            bullishProbability: data.prediction.bullishProbability || data.prediction.probabilities?.bull || 0.33,
-            bearishProbability: data.prediction.bearishProbability || data.prediction.probabilities?.bear || 0.33,
-            neutralProbability: data.prediction.neutralProbability || data.prediction.probabilities?.hold || 0.34,
-            confidence: data.prediction.confidence || 0.5,
-            prediction: data.prediction.direction || 'NEUTRAL',
-            riskScore: data.prediction.riskScore || 0.3,
-            timestamp: data.prediction.timestamp || Date.now()
+            bullishProbability: prediction.bullishProbability ?? prediction.probabilities?.bull ?? 0.33,
+            bearishProbability: prediction.bearishProbability ?? prediction.probabilities?.bear ?? 0.33,
+            neutralProbability: prediction.neutralProbability ?? prediction.probabilities?.hold ?? 0.34,
+            confidence: prediction.confidence ?? 0.5,
+            prediction: prediction.direction ?? 'NEUTRAL',
+            riskScore: prediction.riskScore ?? 0.3,
+            timestamp: prediction.timestamp ?? Date.now()
           };
+        } else {
+          // Check if insufficient data error
+          if (data.error?.includes('insufficient data') || data.error?.includes('not enough data')) {
+            logger.warn('AI_DATA_TOO_SMALL', { 
+              error: 'Insufficient historical data for prediction', 
+              symbol,
+              suggestion: 'Consider fetching more historical data' 
+            });
+            // Attempt to fetch more data
+            await this.attemptDataFetch(symbol);
+          } else {
+            logger.error('AI_PREDICTION_API_ERROR', { error: data.error || 'Unknown error', symbol });
+          }
+          return this.getSafeFallbackPrediction(symbol, 'API_ERROR');
         }
+      } else {
+        logger.error('AI_PREDICTION_HTTP_ERROR', { 
+          error: `HTTP ${response.status}`, 
+          symbol,
+          statusText: response.statusText 
+        });
+        return this.getSafeFallbackPrediction(symbol, `HTTP_${response.status}`);
+      }
+    } catch (error: any) {
+      // Structured error handling
+      if (error.name === 'AbortError') {
+        logger.error('AI_PREDICTION_TIMEOUT', { error: 'Request timeout after 10s', symbol });
+        return this.getSafeFallbackPrediction(symbol, 'TIMEOUT');
+      } else if (error.message?.includes('fetch')) {
+        logger.error('AI_PREDICTION_NETWORK_ERROR', { error: error.message, symbol });
+        return this.getSafeFallbackPrediction(symbol, 'NETWORK_ERROR');
+      } else {
+        logger.error('AI_PREDICTION_UNKNOWN_ERROR', { error: error.message, symbol }, error);
+        return this.getSafeFallbackPrediction(symbol, 'UNKNOWN_ERROR');
+      }
+    }
+  }
+
+  /**
+   * Validate prediction data structure
+   */
+  private validatePredictionData(prediction: any): boolean {
+    if (!prediction || typeof prediction !== 'object') return false;
+    
+    // Check for required fields or valid probability fields
+    const hasValidProbs = 
+      (typeof prediction.bullishProbability === 'number' && 
+       typeof prediction.bearishProbability === 'number') ||
+      (prediction.probabilities && 
+       typeof prediction.probabilities.bull === 'number');
+    
+    return hasValidProbs;
+  }
+
+  /**
+   * Attempt to fetch additional historical data for better predictions
+   */
+  private async attemptDataFetch(symbol: string): Promise<void> {
+    try {
+      logger.info('AI_DATA_FETCH_ATTEMPT', { symbol, message: 'Attempting to fetch additional historical data' });
+      
+      // Trigger data ingestion endpoint if available
+      const response = await fetch('/api/data/ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          symbol, 
+          intervals: ['1h', '4h', '1d'],
+          limit: 500 // Fetch more data
+        })
+      }).catch(() => null);
+
+      if (response?.ok) {
+        logger.info('AI_DATA_FETCH_SUCCESS', { symbol });
+      } else {
+        logger.warn('AI_DATA_FETCH_FAILED', { symbol, message: 'Could not fetch additional data' });
       }
     } catch (error) {
-      logger.error('Failed to fetch real AI prediction:', {}, error);
+      logger.warn('AI_DATA_FETCH_ERROR', { symbol }, error as Error);
     }
+  }
+
+  /**
+   * Get a safe fallback prediction - NEVER returns undefined/null
+   */
+  private getSafeFallbackPrediction(symbol: string, reason: string): PredictionData {
+    logger.info('AI_PREDICTION_FALLBACK', { symbol, reason });
     
-    // Fallback: return neutral prediction if API fails (don't simulate)
     return {
       symbol,
       bullishProbability: 0.33,
       bearishProbability: 0.33,
       neutralProbability: 0.34,
-      confidence: 0.5,
+      confidence: 0.0, // Zero confidence indicates fallback
       prediction: 'NEUTRAL',
-      riskScore: 0.3,
+      riskScore: 0.5, // Medium risk for unknown state
       timestamp: Date.now()
     };
   }
