@@ -1,0 +1,26 @@
+Branch naming:
+- cursor/fix/futures-guards
+- cursor/test/futures-unit
+- cursor/test/futures-e2e
+
+Commit message format:
+cursor/fix: FuturesTradingView - add integration guards & deterministic fallbacks (#<issue-id>)
+
+PR description template:
+- Summary: (what changed)
+- Files changed: (list)
+- How to verify locally:
+  1. npm ci
+  2. npm run dev (or npm run start)
+  3. npx vitest run tests/unit/FuturesTradingView.test.tsx
+  4. npx playwright test e2e/press_every_button.Futures.spec.ts
+- Notes: This change avoids displaying mock data in UI; tests use MSW for mocking only.
+
+Run commands:
+- Install test deps:
+  npm ci
+  npx playwright install --with-deps
+- Run unit tests:
+  npx vitest run
+- Run e2e headless:
+  npx playwright test --project=chromium
