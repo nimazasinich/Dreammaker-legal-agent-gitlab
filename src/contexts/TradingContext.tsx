@@ -184,6 +184,8 @@ export const TradingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
 export const useTrading = () => {
   const context = useContext(TradingContext);
-  if (!context) console.error('useTrading must be used within TradingProvider');
+  if (!context) {
+    throw new Error('useTrading must be used within TradingProvider');
+  }
   return context;
 };

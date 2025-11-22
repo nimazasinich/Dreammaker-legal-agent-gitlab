@@ -2,6 +2,8 @@
 // UNIVERSAL DATA SOURCE CLIENT - THE SINGLE SOURCE OF TRUTH
 // All data flows through this client to the local server proxy
 
+import { normalizeApiResult, type ApiEnvelope } from '../utils/integrationGuards';
+
 interface MarketPrice {
   symbol: string;
   price: number;
@@ -165,7 +167,7 @@ export class DatasourceClient {
     return DatasourceClient.instance;
   }
 
-  // Helper method for fetch requests with error handling
+  // Helper method for fetch requests with error handling and envelope validation
   private async fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
     try {
       // Add timeout to prevent hanging
@@ -189,15 +191,29 @@ export class DatasourceClient {
         throw new Error(`HTTP ${response.status}`);
       }
       
-      const data = await response.json();
+      const raw = await response.json();
       
-      // Validate response
-      if (data === null || data === undefined) {
+      // Validate response is not empty
+      if (raw === null || raw === undefined) {
         console.error('DATASOURCE_EMPTY_RESPONSE', `Empty response from ${url}`);
         throw new Error('Empty response');
       }
       
-      return data;
+      // Validate envelope structure
+      const envelope = normalizeApiResult(raw);
+      
+      // Check envelope status
+      if (envelope.status === 'error') {
+        console.error('DATASOURCE_ERROR_ENVELOPE', `API returned error: ${envelope.code || 'UNKNOWN'}`, {
+          url,
+          code: envelope.code,
+          message: envelope.message
+        });
+        throw new Error(envelope.message || 'API returned error');
+      }
+      
+      // Return data from envelope
+      return envelope.data as T;
     } catch (error: any) {
       // Structured error handling
       if (error.name === 'AbortError') {

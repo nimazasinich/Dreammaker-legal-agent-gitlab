@@ -107,12 +107,23 @@ export function DataProvider({
     // Use DatasourceClient to fetch OHLCV data
     try {
       const bars = await DatasourceClient.getPriceChart(s, tf, 200);
+      
+      // Validate response
+      if (!Array.isArray(bars)) {
+        logger.error('Invalid OHLCV response - expected array', { symbol: s, timeframe: tf, data: bars });
+        setError(`داده‌های نمودار برای ${s} در قالب نامعتبر دریافت شد`);
+        setDataSource('unknown');
+        setLoading(false);
+        return;
+      }
+      
       setBars(bars);
       // Set data source to real since we're using the proxy
       setDataSource('real');
       setLoading(false);
     } catch (e) {
       const errorMsg = String(e);
+      logger.error('Failed to load OHLCV data', { symbol: s, timeframe: tf }, e as Error);
       setError(errorMsg);
       setDataSource('unknown');
       setLoading(false);
@@ -161,6 +172,13 @@ export function DataProvider({
       // This is the minimum needed to render the dashboard
       const corePriceSymbols = ['BTC', 'ETH', 'SOL'];
       const corePricesData = await DatasourceClient.getTopCoins(3, corePriceSymbols);
+
+      // Validate response
+      if (!Array.isArray(corePricesData)) {
+        logger.error('Invalid response from getTopCoins - expected array', { data: corePricesData });
+        setError('داده‌های بازار در قالب نامعتبر دریافت شد');
+        return;
+      }
 
       logger.info('✅ Core prices loaded:', { data: corePricesData.length });
       setPrices(corePricesData);
@@ -211,8 +229,13 @@ export function DataProvider({
       const additionalPriceSymbols = ['BNB', 'XRP'];
       const additionalPrices = await DatasourceClient.getTopCoins(2, additionalPriceSymbols).catch(() => []);
 
-      // Merge all prices
-      const allPricesData = [...corePricesData, ...additionalPrices];
+      // Validate additional prices
+      if (!Array.isArray(additionalPrices)) {
+        logger.warn('Invalid additional prices response', { data: additionalPrices });
+      }
+
+      // Merge all prices (only if valid)
+      const allPricesData = [...corePricesData, ...(Array.isArray(additionalPrices) ? additionalPrices : [])];
 
       if (mountedRef.current && !ignoreRef.current) {
         setData({
@@ -405,7 +428,7 @@ export function DataProvider({
 export function useData(): DataContextType {
   const context = useContext(DataContext);
   if (!context) {
-    console.error('useData must be used within DataProvider');
+    throw new Error('useData must be used within DataProvider');
   }
   return context;
 }

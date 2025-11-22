@@ -44,7 +44,7 @@ export const BacktestProvider: React.FC<BacktestProviderProps> = ({ children }) 
 export const useBacktestContext = () => {
   const context = useContext(BacktestContext);
   if (context === undefined) {
-    console.error('useBacktestContext must be used within a BacktestProvider');
+    throw new Error('useBacktestContext must be used within a BacktestProvider');
   }
   return context;
 };

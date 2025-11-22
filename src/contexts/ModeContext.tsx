@@ -58,6 +58,8 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
 
 export function useMode() {
   const ctx = useContext(Ctx);
-  if (!ctx) console.error('ModeContext not available');
+  if (!ctx) {
+    throw new Error('useMode must be used within ModeProvider');
+  }
   return ctx;
 }
