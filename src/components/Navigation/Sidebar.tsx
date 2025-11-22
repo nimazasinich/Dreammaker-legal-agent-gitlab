@@ -36,6 +36,7 @@ const NAV_ITEMS: NavigationItem[] = [
   { id: 'charting', label: t('navigation.charting'), icon: TrendingUp },
   { id: 'market', label: t('navigation.market'), icon: Zap },
   { id: 'scanner', label: t('navigation.scanner'), icon: Search },
+  { id: 'trading-hub', label: '⚡ Trading Hub', icon: Layers },
   { id: 'trading', label: t('navigation.trading'), icon: Sparkles },
   { id: 'enhanced-trading', label: 'Enhanced Trading', icon: Rocket },
   { id: 'positions', label: 'Positions', icon: ListOrdered },
