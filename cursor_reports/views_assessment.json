@@ -1,0 +1,1390 @@
+{
+  "views": [
+    {
+      "name": "DashboardView",
+      "required": true,
+      "score": 8,
+      "score_reason": "Comprehensive implementation with real-time data integration, proper loading states, error handling, and EnhancedSymbolDashboard; lacks unit tests and accessibility tests",
+      "dependencies": [
+        "MarketTicker",
+        "PriceChart",
+        "TopSignalsPanel",
+        "EnhancedSymbolDashboard",
+        "DataContext",
+        "LoadingSpinner",
+        "ErrorBoundary"
+      ],
+      "missing_features": [
+        "Historical 7-day PnL tracking (currently approximated)",
+        "Position entry date tracking for 'new positions today'",
+        "Accessibility keyboard navigation",
+        "Export dashboard data functionality",
+        "Customizable dashboard widgets"
+      ],
+      "tests_needed": [
+        "unit: Test portfolio value calculations and formatting",
+        "unit: Test signal data transformation and filtering",
+        "unit: Test market price updates and position price sync",
+        "integration: Test DataContext integration and data flow",
+        "integration: Test auto-refresh behavior",
+        "runtime: Test dashboard loads with empty data",
+        "runtime: Test dashboard handles API failures gracefully",
+        "accessibility: Test screen reader compatibility"
+      ],
+      "remediation": [
+        {
+          "action": "Add comprehensive unit tests for all data transformation logic",
+          "priority": "High"
+        },
+        {
+          "action": "Implement proper 7-day PnL tracking with historical portfolio snapshots",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add keyboard navigation and ARIA labels for accessibility",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add integration tests for DataContext and LiveDataContext",
+          "priority": "High"
+        }
+      ]
+    },
+    {
+      "name": "ChartingView",
+      "required": true,
+      "score": 7,
+      "score_reason": "Good OHLC chart implementation with custom rendering and indicators; missing TradingView integration, no tests, limited indicator implementation (only MA displayed)",
+      "dependencies": [
+        "useOHLC",
+        "ChartFrame",
+        "ErrorBoundary",
+        "BacktestButton",
+        "dataManager"
+      ],
+      "missing_features": [
+        "TradingView widget integration (mentioned but not implemented)",
+        "Actual indicator calculations (RSI, MACD, Bollinger Bands)",
+        "Drawing tools (trendlines, rectangles)",
+        "Chart annotations and alerts",
+        "Multiple chart layouts",
+        "Export chart as image",
+        "Advanced order types on chart"
+      ],
+      "tests_needed": [
+        "unit: Test OHLC data transformation and scaling",
+        "unit: Test candlestick rendering logic",
+        "unit: Test indicator toggle functionality",
+        "integration: Test useOHLC hook with real data",
+        "runtime: Test chart renders with various data sizes",
+        "runtime: Test chart handles symbol/timeframe switching",
+        "visual: Verify chart visual accuracy against known data"
+      ],
+      "remediation": [
+        {
+          "action": "Implement actual indicator calculations (RSI, MACD, BB) instead of stub",
+          "priority": "High"
+        },
+        {
+          "action": "Add comprehensive unit tests for chart rendering logic",
+          "priority": "High"
+        },
+        {
+          "action": "Consider integrating TradingView Charting Library for professional features",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add chart export functionality",
+          "priority": "Low"
+        }
+      ]
+    },
+    {
+      "name": "MarketView",
+      "required": true,
+      "score": 7,
+      "score_reason": "Functional market overview with top gainers/losers, real-time data, and multiple components; lacks tests, relies on API endpoints that may not be fully implemented (SMC, Elliott, Harmonic analysis)",
+      "dependencies": [
+        "PriceChart",
+        "AIPredictor",
+        "NewsFeed",
+        "ExchangeSelector",
+        "BacktestButton",
+        "LiveDataContext",
+        "DatasourceClient",
+        "marketUniverse"
+      ],
+      "missing_features": [
+        "Market depth visualization",
+        "Volume profile analysis",
+        "Market correlation matrix",
+        "Sector performance breakdown",
+        "Market breadth indicators",
+        "Watchlist management",
+        "Price alerts configuration"
+      ],
+      "tests_needed": [
+        "unit: Test top gainers/losers calculation logic",
+        "unit: Test market data transformation",
+        "unit: Test analysis data fetching and fallback",
+        "integration: Test DatasourceClient integration",
+        "integration: Test LiveDataContext subscription",
+        "runtime: Test view handles missing analysis data gracefully",
+        "runtime: Test real-time price updates",
+        "e2e: Test full market view workflow with live data"
+      ],
+      "remediation": [
+        {
+          "action": "Add unit tests for gainers/losers computation and data transformation",
+          "priority": "High"
+        },
+        {
+          "action": "Verify and document analysis endpoints (SMC, Elliott, Harmonic) availability",
+          "priority": "High"
+        },
+        {
+          "action": "Add error boundaries for individual components (PriceChart, AIPredictor)",
+          "priority": "Medium"
+        },
+        {
+          "action": "Implement watchlist management functionality",
+          "priority": "Low"
+        }
+      ]
+    },
+    {
+      "name": "ScannerView",
+      "required": true,
+      "score": 8,
+      "score_reason": "Well-designed scanner with tabs, filters, pagination, sorting, and WebSocket integration; excellent architecture with multiple specialized scanners; lacks tests",
+      "dependencies": [
+        "AISignalsScanner",
+        "TechnicalPatternsScanner",
+        "SmartMoneyScanner",
+        "NewsSentimentScanner",
+        "WhaleActivityScanner",
+        "ScannerFeedPanel",
+        "DataContext",
+        "useWebSocket",
+        "dataManager"
+      ],
+      "missing_features": [
+        "Custom scanner criteria builder",
+        "Scanner result export (CSV/JSON)",
+        "Scanner alerts/notifications",
+        "Scanner result history",
+        "Performance optimization for large datasets (100+ symbols)",
+        "Scanner presets (save/load filter configurations)"
+      ],
+      "tests_needed": [
+        "unit: Test filtering logic (volume, change range, symbol query)",
+        "unit: Test sorting algorithms for each column",
+        "unit: Test pagination calculations",
+        "integration: Test WebSocket integration for live updates",
+        "integration: Test specialized scanner components",
+        "runtime: Test scanner with 100+ symbols",
+        "runtime: Test filter combinations edge cases",
+        "e2e: Test full scanner workflow from filter to action"
+      ],
+      "remediation": [
+        {
+          "action": "Add comprehensive unit tests for filter, sort, and pagination logic",
+          "priority": "High"
+        },
+        {
+          "action": "Add performance tests with large datasets (300+ symbols)",
+          "priority": "High"
+        },
+        {
+          "action": "Implement scanner result export functionality",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add integration tests for all specialized scanner components",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "TrainingView",
+      "required": false,
+      "score": 6,
+      "score_reason": "Simulated training interface with UI polish; actual ML training delegated to MLTrainingPanel; simulation is deterministic but not real training; lacks backend integration tests",
+      "dependencies": [
+        "MLTrainingPanel",
+        "ErrorBoundary"
+      ],
+      "missing_features": [
+        "Real neural network training integration (currently simulated)",
+        "Training job queue management",
+        "Model versioning and comparison",
+        "Hyperparameter auto-tuning",
+        "Training data validation and quality metrics",
+        "Distributed training support",
+        "Model deployment workflow",
+        "Training interruption and resume"
+      ],
+      "tests_needed": [
+        "unit: Test training configuration validation",
+        "unit: Test metrics calculation logic",
+        "integration: Test MLTrainingPanel component integration",
+        "integration: Test backend ML training API",
+        "runtime: Test training simulation progress",
+        "runtime: Test training interruption handling",
+        "e2e: Test full training workflow (configure -> train -> save -> deploy)"
+      ],
+      "remediation": [
+        {
+          "action": "Replace simulation with real ML training backend integration",
+          "priority": "High"
+        },
+        {
+          "action": "Add unit tests for configuration validation",
+          "priority": "High"
+        },
+        {
+          "action": "Document distinction between demo simulation and real training",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for MLTrainingPanel",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "RiskView",
+      "required": true,
+      "score": 5,
+      "score_reason": "Basic risk metrics display with mock data; lacks real portfolio risk calculation, no connection to actual positions, missing critical risk management features",
+      "dependencies": [
+        "TradingDashboard",
+        "Portfolio",
+        "RealPortfolioConnector",
+        "ThemeProvider",
+        "DatasourceClient",
+        "LiveDataContext"
+      ],
+      "missing_features": [
+        "Real VaR calculation from portfolio data",
+        "Position-level risk aggregation",
+        "Correlation risk analysis",
+        "Portfolio optimization recommendations",
+        "Risk limit alerts and notifications",
+        "Historical risk metrics tracking",
+        "Scenario analysis with custom parameters",
+        "Risk reporting and export"
+      ],
+      "tests_needed": [
+        "unit: Test VaR calculation algorithms",
+        "unit: Test drawdown computation",
+        "unit: Test Sharpe ratio calculation",
+        "integration: Test portfolio data integration",
+        "integration: Test real-time risk updates",
+        "runtime: Test risk view with actual positions",
+        "runtime: Test stress test scenarios",
+        "e2e: Test risk alerts trigger correctly"
+      ],
+      "remediation": [
+        {
+          "action": "Replace mock data with real portfolio-based risk calculations",
+          "priority": "High"
+        },
+        {
+          "action": "Implement actual VaR and risk metric calculations using position data",
+          "priority": "High"
+        },
+        {
+          "action": "Add unit tests for all risk calculation algorithms",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration with TradingContext for real position data",
+          "priority": "High"
+        },
+        {
+          "action": "Implement risk alerts and notification system",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "ProfessionalRiskView",
+      "required": false,
+      "score": 7,
+      "score_reason": "Professional risk UI with liquidation monitoring and advanced metrics; API endpoint returns empty data gracefully; components exist but lack real risk calculations; good error handling",
+      "dependencies": [
+        "RiskGauge",
+        "LiquidationBar",
+        "StressTestCard",
+        "RiskAlertCard"
+      ],
+      "missing_features": [
+        "Real liquidation price calculations from live positions",
+        "Funding rate impact analysis",
+        "Cross-margining support",
+        "Real-time liquidation alerts",
+        "Historical liquidation near-misses tracking",
+        "Risk dashboard customization",
+        "Multi-account aggregation"
+      ],
+      "tests_needed": [
+        "unit: Test risk score calculation algorithm",
+        "unit: Test liquidation distance calculations",
+        "integration: Test API integration with /api/professional-risk/metrics",
+        "integration: Test risk component rendering with various data scenarios",
+        "runtime: Test view with actual leveraged positions",
+        "runtime: Test stress test accuracy",
+        "e2e: Test liquidation alert triggering"
+      ],
+      "remediation": [
+        {
+          "action": "Implement backend /api/professional-risk/metrics endpoint with real calculations",
+          "priority": "High"
+        },
+        {
+          "action": "Add unit tests for risk calculation components",
+          "priority": "High"
+        },
+        {
+          "action": "Test with actual KuCoin futures positions",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for all risk components",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "BacktestView",
+      "required": true,
+      "score": 7,
+      "score_reason": "Dual-mode backtest (demo simulation + real BacktestPanel); demo mode clearly labeled as synthetic; real backtest integration exists; lacks validation of real backtest results",
+      "dependencies": [
+        "BacktestPanel",
+        "BacktestContext",
+        "ErrorBoundary"
+      ],
+      "missing_features": [
+        "Walk-forward analysis visualization",
+        "Parameter optimization results",
+        "Out-of-sample testing",
+        "Monte Carlo simulation",
+        "Backtest comparison (multiple strategies)",
+        "Performance attribution analysis",
+        "Slippage and commission modeling validation",
+        "Trade-by-trade drill-down"
+      ],
+      "tests_needed": [
+        "unit: Test demo mode result generation",
+        "unit: Test configuration validation",
+        "unit: Test metrics calculation algorithms",
+        "integration: Test BacktestPanel integration",
+        "integration: Test real backtest API",
+        "runtime: Test demo mode deterministic results",
+        "runtime: Test real mode with historical data",
+        "e2e: Test full backtest workflow (configure -> run -> analyze -> save)"
+      ],
+      "remediation": [
+        {
+          "action": "Add unit tests for demo mode calculations and validation logic",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for BacktestPanel component",
+          "priority": "High"
+        },
+        {
+          "action": "Validate real backtest results against known historical trades",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add visual comparison tools for backtest results",
+          "priority": "Low"
+        }
+      ]
+    },
+    {
+      "name": "HealthView",
+      "required": false,
+      "score": 6,
+      "score_reason": "System monitoring with HealthCheckService, MetricsCollector, PerformanceMonitor integration; UI implemented but monitoring services may return default values; lacks comprehensive tests",
+      "dependencies": [
+        "HealthCheckService",
+        "MetricsCollector",
+        "PerformanceMonitor",
+        "LiveDataContext",
+        "dataManager"
+      ],
+      "missing_features": [
+        "Detailed service health breakdown",
+        "Historical metrics charts",
+        "Alert threshold configuration",
+        "Service restart controls",
+        "Log viewer integration",
+        "Network diagnostic tools",
+        "Database query performance metrics"
+      ],
+      "tests_needed": [
+        "unit: Test metrics formatting functions",
+        "unit: Test status color logic",
+        "integration: Test monitoring service integrations",
+        "integration: Test real-time health updates",
+        "runtime: Test view with various health states (healthy, degraded, down)",
+        "runtime: Test auto-refresh behavior",
+        "e2e: Test health view reflects actual service status"
+      ],
+      "remediation": [
+        {
+          "action": "Verify monitoring services return accurate real-time data",
+          "priority": "High"
+        },
+        {
+          "action": "Add unit tests for all formatting and calculation functions",
+          "priority": "High"
+        },
+        {
+          "action": "Add historical metrics tracking and visualization",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add integration tests for all monitoring services",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "SettingsView",
+      "required": true,
+      "score": 7,
+      "score_reason": "Comprehensive settings management with detector weights, thresholds, risk config, and integrations (Exchange, Telegram, Scanner Agent); settings save to localStorage but backend persistence unclear; lacks tests",
+      "dependencies": [
+        "ExchangeSettings",
+        "TelegramSettingsCard",
+        "ExchangeSelector",
+        "DataSourceSelector",
+        "RefreshSettingsContext"
+      ],
+      "missing_features": [
+        "Settings import/export",
+        "Settings versioning and history",
+        "Settings validation feedback",
+        "Settings presets",
+        "Settings backup and restore",
+        "Settings synchronization across devices",
+        "Advanced validation for detector weights",
+        "Settings conflict detection"
+      ],
+      "tests_needed": [
+        "unit: Test weight normalization logic",
+        "unit: Test configuration validation",
+        "unit: Test settings persistence",
+        "integration: Test all settings component integration",
+        "integration: Test settings API endpoints",
+        "runtime: Test settings save and load workflow",
+        "runtime: Test scanner agent start/stop",
+        "e2e: Test settings changes reflect across application"
+      ],
+      "remediation": [
+        {
+          "action": "Add backend API for settings persistence (currently localStorage only)",
+          "priority": "High"
+        },
+        {
+          "action": "Add comprehensive unit tests for validation and normalization",
+          "priority": "High"
+        },
+        {
+          "action": "Implement settings import/export functionality",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add integration tests for all sub-components",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "FuturesTradingView",
+      "required": true,
+      "score": 8,
+      "score_reason": "Production-ready futures trading with KuCoin testnet integration, signal-based and manual trading modes, entry plan display, order management; excellent implementation; needs comprehensive tests",
+      "dependencies": [
+        "KuCoinFuturesService",
+        "useConfirmModal",
+        "Toast"
+      ],
+      "missing_features": [
+        "Order history and analytics",
+        "Position editing (adjust SL/TP)",
+        "One-click trading",
+        "Bracket orders",
+        "OCO (One-Cancels-Other) orders",
+        "Position scaling ladder execution",
+        "Trade journal integration",
+        "Performance analytics per symbol"
+      ],
+      "tests_needed": [
+        "unit: Test order form validation",
+        "unit: Test leverage setting logic",
+        "unit: Test entry plan parsing",
+        "integration: Test KuCoinFuturesService integration",
+        "integration: Test signal-based auto-trade logic",
+        "runtime: Test manual order placement",
+        "runtime: Test position close workflow",
+        "e2e: Test full trading lifecycle (signal -> order -> position -> close)"
+      ],
+      "remediation": [
+        {
+          "action": "Add comprehensive unit tests for order validation and execution logic",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests with KuCoinFuturesService mock",
+          "priority": "High"
+        },
+        {
+          "action": "Add e2e tests for critical trading workflows",
+          "priority": "High"
+        },
+        {
+          "action": "Implement order history and trade journal",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "TradingView",
+      "required": false,
+      "score": 3,
+      "score_reason": "EXPLICITLY DISABLED for SPOT trading (not implemented); shows warning banner; only futures trading is available; essentially a stub view pointing users to FuturesTradingView",
+      "dependencies": [
+        "TradingContext",
+        "ModeContext",
+        "useConfirmModal"
+      ],
+      "missing_features": [
+        "SPOT trading implementation (entire feature missing)",
+        "Order book integration",
+        "Limit order placement for SPOT",
+        "SPOT market data",
+        "SPOT wallet management",
+        "SPOT trade history"
+      ],
+      "tests_needed": [
+        "unit: Test disabled state rendering",
+        "runtime: Test warning banner displays correctly",
+        "e2e: Test users are redirected to FuturesTradingView"
+      ],
+      "remediation": [
+        {
+          "action": "Implement SPOT trading functionality or remove view entirely",
+          "priority": "High"
+        },
+        {
+          "action": "Document architectural decision to not support SPOT trading",
+          "priority": "High"
+        },
+        {
+          "action": "Consider removing this view and consolidating to FuturesTradingView only",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "UnifiedTradingView",
+      "required": true,
+      "score": 8,
+      "score_reason": "Futures-only unified interface wrapping FuturesTradingView; clean delegation pattern; production-ready as thin wrapper; inherits FuturesTradingView quality",
+      "dependencies": [
+        "FuturesTradingView",
+        "ExchangeSelector"
+      ],
+      "missing_features": [
+        "Advanced layout options",
+        "Multi-window trading",
+        "Customizable widget placement",
+        "Quick action shortcuts",
+        "Trade templates"
+      ],
+      "tests_needed": [
+        "unit: Test component renders FuturesTradingView correctly",
+        "integration: Test ExchangeSelector integration",
+        "runtime: Test view switching and navigation",
+        "e2e: Test unified interface provides same functionality as FuturesTradingView"
+      ],
+      "remediation": [
+        {
+          "action": "Add unit tests for wrapper component",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add integration tests with FuturesTradingView",
+          "priority": "Medium"
+        },
+        {
+          "action": "Consider merging with FuturesTradingView to reduce indirection",
+          "priority": "Low"
+        }
+      ]
+    },
+    {
+      "name": "EnhancedTradingView",
+      "required": false,
+      "score": 6,
+      "score_reason": "Enhanced trading with signal insight display and strategy execution toggle; fetches scoring snapshot but trading execution unclear; lacks comprehensive order management; needs tests",
+      "dependencies": [
+        "useConfirmModal",
+        "Toast"
+      ],
+      "missing_features": [
+        "Complete order management UI",
+        "Position tracking display",
+        "Real-time P&L updates",
+        "Strategy performance metrics",
+        "Order execution confirmation",
+        "Detailed trade history",
+        "Strategy backtesting integration"
+      ],
+      "tests_needed": [
+        "unit: Test signal insight rendering",
+        "unit: Test strategy toggle logic",
+        "unit: Test order placement validation",
+        "integration: Test scoring snapshot API integration",
+        "runtime: Test view with various signal states",
+        "runtime: Test strategy execution workflow",
+        "e2e: Test end-to-end trading with strategy enabled"
+      ],
+      "remediation": [
+        {
+          "action": "Clarify relationship with FuturesTradingView and UnifiedTradingView",
+          "priority": "High"
+        },
+        {
+          "action": "Add comprehensive order management and position tracking",
+          "priority": "High"
+        },
+        {
+          "action": "Add unit tests for signal processing and order logic",
+          "priority": "High"
+        },
+        {
+          "action": "Document when to use EnhancedTradingView vs FuturesTradingView",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "PositionsView",
+      "required": true,
+      "score": 7,
+      "score_reason": "Good positions and orders management with WebSocket updates, position actions (close, reduce, reverse); clean UI; lacks comprehensive tests and history implementation",
+      "dependencies": [
+        "useWebSocket",
+        "useConfirmModal",
+        "Toast"
+      ],
+      "missing_features": [
+        "Position editing (modify SL/TP)",
+        "Position notes and tags",
+        "Position performance analytics",
+        "Trade history with filters",
+        "Position search and filtering",
+        "Bulk position operations",
+        "Position export",
+        "Advanced position analytics (holding time, best/worst)"
+      ],
+      "tests_needed": [
+        "unit: Test position P&L calculations",
+        "unit: Test position action validations",
+        "integration: Test WebSocket integration",
+        "integration: Test API endpoints (close, reduce, reverse)",
+        "runtime: Test position close workflow",
+        "runtime: Test position reduce workflow",
+        "runtime: Test position reverse workflow",
+        "e2e: Test full position lifecycle"
+      ],
+      "remediation": [
+        {
+          "action": "Add unit tests for position calculations and validations",
+          "priority": "High"
+        },
+        {
+          "action": "Implement trade history tab with real data",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for WebSocket and API",
+          "priority": "High"
+        },
+        {
+          "action": "Add position editing functionality (modify SL/TP)",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "PortfolioPage",
+      "required": true,
+      "score": 7,
+      "score_reason": "Portfolio overview with RealPortfolioConnector and RiskCenterPro integration; good component composition; missing advanced portfolio analytics; lacks tests",
+      "dependencies": [
+        "RealPortfolioConnector",
+        "RiskCenterPro",
+        "DatasourceClient",
+        "useConfirmModal"
+      ],
+      "missing_features": [
+        "Portfolio performance charts (equity curve)",
+        "Asset allocation visualization",
+        "Diversification analysis",
+        "Portfolio rebalancing tools",
+        "Tax reporting",
+        "Performance attribution",
+        "Historical portfolio snapshots",
+        "Portfolio comparison"
+      ],
+      "tests_needed": [
+        "unit: Test portfolio data aggregation",
+        "unit: Test position P&L calculations",
+        "integration: Test RealPortfolioConnector integration",
+        "integration: Test RiskCenterPro integration",
+        "runtime: Test portfolio view with various position counts",
+        "runtime: Test position close from portfolio view",
+        "e2e: Test portfolio reflects trading activity"
+      ],
+      "remediation": [
+        {
+          "action": "Add unit tests for portfolio calculations",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for connector components",
+          "priority": "High"
+        },
+        {
+          "action": "Implement portfolio performance charts and analytics",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add asset allocation and diversification analysis",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "StrategyLabView",
+      "required": false,
+      "score": 8,
+      "score_reason": "Interactive strategy builder with live preview, templates, saved strategies, simulation animation, before/after comparison; excellent UX; complex feature set working well; needs tests",
+      "dependencies": [
+        "PerformanceChart",
+        "useConfirmModal"
+      ],
+      "missing_features": [
+        "Strategy version control",
+        "Strategy sharing/marketplace",
+        "Strategy optimization algorithms",
+        "A/B testing framework",
+        "Strategy performance forecasting",
+        "Advanced parameter sweep",
+        "Strategy risk analysis",
+        "Genetic algorithm optimization"
+      ],
+      "tests_needed": [
+        "unit: Test weight calculation and normalization",
+        "unit: Test strategy parameter validation",
+        "unit: Test metrics calculation logic",
+        "unit: Test template save/load logic",
+        "integration: Test simulation API integration",
+        "runtime: Test live preview updates",
+        "runtime: Test strategy save and restore",
+        "e2e: Test full strategy workflow (create -> simulate -> save -> load)"
+      ],
+      "remediation": [
+        {
+          "action": "Add comprehensive unit tests for weight and parameter logic",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for API interactions",
+          "priority": "High"
+        },
+        {
+          "action": "Add performance tests for live preview debouncing",
+          "priority": "Medium"
+        },
+        {
+          "action": "Document strategy configuration format and limits",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "StrategyBuilderView",
+      "required": false,
+      "score": 5,
+      "score_reason": "Two-phase builder (logic simulation + real backtest) with StrategyTemplateEditor; minimal UI; lacks comprehensive implementation; template editor not fully integrated; needs significant work",
+      "dependencies": [
+        "StrategyTemplateEditor",
+        "ScoreGauge"
+      ],
+      "missing_features": [
+        "Visual strategy builder (drag-drop)",
+        "Strategy validation with feedback",
+        "Real-time strategy testing",
+        "Strategy debugging tools",
+        "Strategy dependency management",
+        "Strategy documentation generator",
+        "Strategy marketplace integration",
+        "Advanced conditional logic builder"
+      ],
+      "tests_needed": [
+        "unit: Test score estimation logic",
+        "unit: Test template validation",
+        "integration: Test StrategyTemplateEditor integration",
+        "integration: Test backtest API integration",
+        "runtime: Test strategy apply workflow",
+        "runtime: Test backtest run workflow",
+        "e2e: Test full builder workflow"
+      ],
+      "remediation": [
+        {
+          "action": "Complete StrategyTemplateEditor integration",
+          "priority": "High"
+        },
+        {
+          "action": "Add comprehensive validation and feedback",
+          "priority": "High"
+        },
+        {
+          "action": "Add unit tests for all builder logic",
+          "priority": "High"
+        },
+        {
+          "action": "Improve UX with visual builder interface",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "StrategyInsightsView",
+      "required": false,
+      "score": 7,
+      "score_reason": "Strategy pipeline (1→2→3) visualization with smart scoring, adaptive weights, live scoring, system status; comprehensive dashboard; API integration present; lacks tests",
+      "dependencies": [
+        "useStrategyPipeline",
+        "LoadingSpinner",
+        "ErrorBoundary"
+      ],
+      "missing_features": [
+        "Strategy comparison tools",
+        "Historical performance tracking",
+        "Strategy alerts and notifications",
+        "Custom pipeline configuration",
+        "Pipeline performance optimization",
+        "Strategy correlation analysis",
+        "Export insights reports",
+        "Strategy recommendation engine"
+      ],
+      "tests_needed": [
+        "unit: Test data transformation and formatting",
+        "unit: Test score color logic",
+        "unit: Test table sorting and filtering",
+        "integration: Test useStrategyPipeline hook",
+        "integration: Test strategy pipeline API",
+        "runtime: Test pipeline execution and results display",
+        "runtime: Test live scoring updates",
+        "e2e: Test full pipeline workflow"
+      ],
+      "remediation": [
+        {
+          "action": "Add unit tests for data transformation and scoring logic",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for pipeline hook and API",
+          "priority": "High"
+        },
+        {
+          "action": "Implement strategy comparison and historical tracking",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add export functionality for insights",
+          "priority": "Low"
+        }
+      ]
+    },
+    {
+      "name": "ExchangeSettingsView",
+      "required": true,
+      "score": 7,
+      "score_reason": "Exchange credentials management with clear capability indicators; supports multiple exchanges; API key security handled; lacks backend validation and encryption; needs tests",
+      "dependencies": [
+        "useConfirmModal"
+      ],
+      "missing_features": [
+        "API key encryption",
+        "API key validation before save",
+        "Exchange connection testing",
+        "API key permissions checking",
+        "Multiple API key profiles per exchange",
+        "API key rotation workflow",
+        "Webhook configuration",
+        "Exchange feature discovery"
+      ],
+      "tests_needed": [
+        "unit: Test exchange add/remove logic",
+        "unit: Test default exchange setting",
+        "unit: Test credential validation",
+        "integration: Test settings API endpoints",
+        "security: Test API keys are not exposed in logs or client",
+        "runtime: Test exchange configuration workflow",
+        "runtime: Test KuCoin credentials work for testnet",
+        "e2e: Test save -> load -> use credentials workflow"
+      ],
+      "remediation": [
+        {
+          "action": "Implement API key encryption for storage",
+          "priority": "High"
+        },
+        {
+          "action": "Add API key validation and connection testing",
+          "priority": "High"
+        },
+        {
+          "action": "Add comprehensive security tests",
+          "priority": "High"
+        },
+        {
+          "action": "Add unit tests for credential management",
+          "priority": "High"
+        }
+      ]
+    },
+    {
+      "name": "MonitoringView",
+      "required": false,
+      "score": 7,
+      "score_reason": "Comprehensive monitoring dashboard with error tracking, performance metrics, deduplication stats; good visualization; uses monitoring libraries; lacks backend integration tests",
+      "dependencies": [
+        "errorTracker",
+        "performanceMonitor",
+        "requestDeduplication"
+      ],
+      "missing_features": [
+        "Real-time alerting",
+        "Metric threshold configuration",
+        "Custom dashboards",
+        "Metric correlation analysis",
+        "Anomaly detection",
+        "Log aggregation and search",
+        "Distributed tracing",
+        "Service dependency graph"
+      ],
+      "tests_needed": [
+        "unit: Test stats calculation and formatting",
+        "unit: Test error filtering logic",
+        "integration: Test monitoring library integrations",
+        "runtime: Test auto-refresh behavior",
+        "runtime: Test export functionality",
+        "runtime: Test clear functionality",
+        "e2e: Test monitoring reflects actual errors and performance"
+      ],
+      "remediation": [
+        {
+          "action": "Add unit tests for all stats calculations",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for monitoring libraries",
+          "priority": "Medium"
+        },
+        {
+          "action": "Implement alerting for critical errors",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add historical metrics visualization",
+          "priority": "Low"
+        }
+      ]
+    },
+    {
+      "name": "DiagnosticsView",
+      "required": false,
+      "score": 6,
+      "score_reason": "Provider diagnostics (HuggingFace, Binance, KuCoin) with latency, uptime, errors; clean UI with shadcn components; API endpoint may not be fully implemented; lacks tests",
+      "dependencies": [
+        "Card",
+        "Button",
+        "Badge"
+      ],
+      "missing_features": [
+        "Real-time diagnostic streaming",
+        "Historical diagnostic trends",
+        "Provider comparison tools",
+        "Diagnostic alerts",
+        "Provider failover testing",
+        "Network path analysis",
+        "API rate limit monitoring",
+        "Custom diagnostic checks"
+      ],
+      "tests_needed": [
+        "unit: Test diagnostic data formatting",
+        "unit: Test health badge logic",
+        "integration: Test /diagnostics API endpoint",
+        "runtime: Test view with various provider states",
+        "runtime: Test refresh functionality",
+        "e2e: Test diagnostics reflect actual provider health"
+      ],
+      "remediation": [
+        {
+          "action": "Verify /diagnostics endpoint returns real data",
+          "priority": "High"
+        },
+        {
+          "action": "Add unit tests for formatting functions",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for API",
+          "priority": "High"
+        },
+        {
+          "action": "Add historical trend visualization",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "TechnicalAnalysisView",
+      "required": false,
+      "score": 7,
+      "score_reason": "Comprehensive technical analysis dashboard integrating multiple analyzers (SMC, Elliott, Fibonacci, Harmonic, SAR, Regime); good architecture; needs validation of analyzer accuracy and tests",
+      "dependencies": [
+        "DatasourceClient",
+        "SMCAnalyzer",
+        "ElliottWaveAnalyzer",
+        "FibonacciDetector",
+        "HarmonicPatternDetector",
+        "ParabolicSARDetector",
+        "RegimeDetector"
+      ],
+      "missing_features": [
+        "Pattern accuracy tracking",
+        "Pattern backtesting",
+        "Custom pattern creation",
+        "Pattern alerts",
+        "Pattern probability scoring",
+        "Pattern confluence analysis",
+        "Historical pattern database",
+        "Pattern recognition API"
+      ],
+      "tests_needed": [
+        "unit: Test data transformation logic",
+        "unit: Test analyzer integration logic",
+        "integration: Test all analyzer services",
+        "integration: Test DatasourceClient integration",
+        "validation: Verify analyzer accuracy against known patterns",
+        "runtime: Test view with various market conditions",
+        "e2e: Test full analysis workflow"
+      ],
+      "remediation": [
+        {
+          "action": "Validate all analyzer implementations against known market patterns",
+          "priority": "High"
+        },
+        {
+          "action": "Add comprehensive unit tests for each analyzer",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for analyzer orchestration",
+          "priority": "High"
+        },
+        {
+          "action": "Implement pattern accuracy tracking and validation",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "RiskManagementView",
+      "required": false,
+      "score": 7,
+      "score_reason": "Professional risk calculator with liquidation price, position sizing, stress testing; uses ProfessionalRiskEngine; good interactive calculator; needs validation of risk calculations and tests",
+      "dependencies": [
+        "DatasourceClient",
+        "ProfessionalRiskEngine"
+      ],
+      "missing_features": [
+        "Portfolio-level risk aggregation",
+        "Multi-position stress testing",
+        "Custom stress scenarios",
+        "Risk limit monitoring",
+        "Historical risk analysis",
+        "Risk reporting",
+        "Risk-adjusted return metrics",
+        "Correlation risk"
+      ],
+      "tests_needed": [
+        "unit: Test liquidation price calculations",
+        "unit: Test position size optimization",
+        "unit: Test stress test scenario calculations",
+        "unit: Test risk/reward ratio logic",
+        "integration: Test ProfessionalRiskEngine integration",
+        "validation: Verify risk calculations against known scenarios",
+        "runtime: Test calculator with edge cases (extreme leverage, etc.)",
+        "e2e: Test full risk analysis workflow"
+      ],
+      "remediation": [
+        {
+          "action": "Validate risk calculation accuracy with real market scenarios",
+          "priority": "High"
+        },
+        {
+          "action": "Add comprehensive unit tests for all calculations",
+          "priority": "High"
+        },
+        {
+          "action": "Add integration tests for risk engine",
+          "priority": "High"
+        },
+        {
+          "action": "Implement portfolio-level risk aggregation",
+          "priority": "Medium"
+        }
+      ]
+    },
+    {
+      "name": "TradingHubView",
+      "required": true,
+      "score": 8,
+      "score_reason": "Excellent unified hub interface combining Futures Trading, Technical Analysis, and Risk Management; keyboard shortcuts; beautiful tabbed design; production-ready wrapper; needs minimal tests",
+      "dependencies": [
+        "FuturesTradingView",
+        "TechnicalAnalysisView",
+        "RiskManagementView"
+      ],
+      "missing_features": [
+        "Layout customization",
+        "Widget pinning",
+        "Multi-monitor support",
+        "Workspace presets",
+        "Quick action toolbar",
+        "Cross-tab data sharing",
+        "Tab state persistence"
+      ],
+      "tests_needed": [
+        "unit: Test tab switching logic",
+        "unit: Test keyboard shortcuts",
+        "integration: Test child view integration",
+        "runtime: Test tab navigation",
+        "runtime: Test keyboard shortcuts work correctly",
+        "accessibility: Test tab navigation with screen readers",
+        "e2e: Test hub provides access to all sub-features"
+      ],
+      "remediation": [
+        {
+          "action": "Add unit tests for navigation and shortcuts",
+          "priority": "Medium"
+        },
+        {
+          "action": "Add accessibility tests for tab navigation",
+          "priority": "Medium"
+        },
+        {
+          "action": "Implement tab state persistence",
+          "priority": "Low"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "most_complete_views": [
+      "DashboardView",
+      "ScannerView",
+      "FuturesTradingView",
+      "UnifiedTradingView",
+      "TradingHubView",
+      "StrategyLabView"
+    ],
+    "least_complete_views": [
+      "TradingView",
+      "RiskView",
+      "StrategyBuilderView",
+      "TrainingView",
+      "HealthView",
+      "DiagnosticsView"
+    ],
+    "critical_dependencies": [
+      {
+        "from": "DashboardView",
+        "to": "DataContext",
+        "reason": "Primary data provider for portfolio, positions, prices, signals - core functionality depends on this context"
+      },
+      {
+        "from": "FuturesTradingView",
+        "to": "KuCoinFuturesService",
+        "reason": "Only trading provider with real execution capability - entire trading flow depends on this service"
+      },
+      {
+        "from": "UnifiedTradingView",
+        "to": "FuturesTradingView",
+        "reason": "Wrapper view that delegates all functionality - tight coupling by design"
+      },
+      {
+        "from": "TradingHubView",
+        "to": "FuturesTradingView,TechnicalAnalysisView,RiskManagementView",
+        "reason": "Hub aggregates three critical views - navigation and composition dependency"
+      },
+      {
+        "from": "MarketView",
+        "to": "LiveDataContext",
+        "reason": "Real-time market updates essential for accurate market analysis"
+      },
+      {
+        "from": "ScannerView",
+        "to": "useWebSocket",
+        "reason": "Live scanner updates require WebSocket connection for real-time signal feeds"
+      },
+      {
+        "from": "BacktestView",
+        "to": "BacktestContext",
+        "reason": "Backtest parameters shared across application for consistent analysis"
+      },
+      {
+        "from": "StrategyLabView",
+        "to": "Backend API /api/scoring/snapshot",
+        "reason": "Strategy simulation and live preview entirely dependent on scoring API"
+      },
+      {
+        "from": "PositionsView",
+        "to": "API /api/positions",
+        "reason": "Position management requires backend API for close, reduce, reverse operations"
+      },
+      {
+        "from": "PortfolioPage",
+        "to": "RealPortfolioConnector,RiskCenterPro",
+        "reason": "Portfolio functionality delegated to specialized components"
+      }
+    ],
+    "overall_recommendation": "The application has a solid foundation with 6 high-scoring views (8/10) ready for production. Critical path: Dashboard → Market Analysis → Scanner → Futures Trading → Positions → Portfolio works well. Key issues: (1) ZERO unit tests across all views - critical gap for production readiness, (2) TradingView is disabled/stub (SPOT not implemented), (3) Several views use mock or default data (RiskView, TrainingView simulation), (4) Some advanced features incomplete (StrategyBuilderView). IMMEDIATE ACTION: Add comprehensive test coverage (currently at ~0%, needs 80%+), validate all risk/analysis calculations, implement or remove disabled views. Recommended focus: Keep high-quality views (Dashboard, Scanner, FuturesTradingView, TradingHubView), improve mid-tier views (ChartingView, MarketView), and decide on low-scoring views (TradingView - remove?, StrategyBuilderView - complete or deprecate?)."
+  },
+  "testing_summary": {
+    "total_views": 20,
+    "views_with_unit_tests": 0,
+    "views_with_integration_tests": 0,
+    "views_with_e2e_tests": 1,
+    "test_coverage_estimate": "5%",
+    "critical_testing_gaps": [
+      "No unit tests for any view components",
+      "No integration tests for context providers",
+      "No component-level integration tests",
+      "Only 1 basic e2e smoke test exists",
+      "No accessibility tests",
+      "No visual regression tests",
+      "No performance tests",
+      "No security tests for trading views"
+    ]
+  },
+  "architecture_concerns": {
+    "duplicated_functionality": [
+      {
+        "views": ["TradingView", "FuturesTradingView", "UnifiedTradingView", "EnhancedTradingView"],
+        "issue": "Four trading views with overlapping functionality; TradingView is disabled, FuturesTradingView is production-ready, UnifiedTradingView wraps it, EnhancedTradingView adds signal insight - consolidation needed"
+      },
+      {
+        "views": ["RiskView", "ProfessionalRiskView", "RiskManagementView"],
+        "issue": "Three risk views with different scopes but overlapping features - needs clear separation or consolidation"
+      },
+      {
+        "views": ["StrategyLabView", "StrategyBuilderView", "StrategyInsightsView"],
+        "issue": "Three strategy views with unclear boundaries - StrategyLabView is feature-rich, StrategyBuilderView is minimal, StrategyInsightsView shows pipeline results"
+      }
+    ],
+    "circular_dependencies": [],
+    "architecture_violations": [
+      {
+        "view": "TradingView",
+        "issue": "Disabled view still in routing table - should be removed or fully implemented"
+      },
+      {
+        "view": "RiskView",
+        "issue": "Uses hardcoded mock data instead of integrating with portfolio/positions context"
+      },
+      {
+        "view": "TrainingView",
+        "issue": "Simulation logic in view layer should be in service layer; view contains business logic"
+      }
+    ]
+  },
+  "data_flow_analysis": {
+    "primary_data_sources": [
+      "DataContext (portfolio, positions, prices, signals)",
+      "LiveDataContext (WebSocket updates)",
+      "TradingContext (trading operations, balance, orders)",
+      "BacktestContext (backtest parameters)",
+      "RefreshSettingsContext (auto-refresh config)"
+    ],
+    "api_dependencies": {
+      "critical": [
+        "/api/positions",
+        "/api/orders",
+        "/api/market/prices",
+        "/api/signals",
+        "/api/scoring/snapshot"
+      ],
+      "important": [
+        "/api/portfolio",
+        "/api/professional-risk/metrics",
+        "/api/futures/positions",
+        "/api/futures/orders",
+        "/api/strategy/templates"
+      ],
+      "optional": [
+        "/api/analysis/smc",
+        "/api/analysis/elliott",
+        "/api/analysis/harmonic",
+        "/diagnostics",
+        "/api/system/status"
+      ]
+    },
+    "websocket_dependencies": [
+      "ScannerView (price_update, signal_update)",
+      "PositionsView (positions_update)",
+      "MarketView (market_data)"
+    ]
+  },
+  "production_readiness": {
+    "ready_for_production": [
+      "DashboardView",
+      "FuturesTradingView",
+      "UnifiedTradingView",
+      "TradingHubView",
+      "ScannerView"
+    ],
+    "needs_minor_fixes": [
+      "ChartingView",
+      "MarketView",
+      "PositionsView",
+      "PortfolioPage",
+      "ExchangeSettingsView",
+      "MonitoringView",
+      "StrategyLabView"
+    ],
+    "needs_major_work": [
+      "TradingView",
+      "RiskView",
+      "StrategyBuilderView",
+      "TrainingView"
+    ],
+    "consider_deprecating": [
+      "TradingView (disabled, SPOT not implemented)",
+      "EnhancedTradingView (overlaps with FuturesTradingView)"
+    ]
+  }
+}
