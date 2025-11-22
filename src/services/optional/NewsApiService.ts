@@ -56,53 +56,110 @@ export class NewsApiService {
         validateStatus: () => true
       });
 
-      // Handle various error states
+      // Handle various error states with structured logging
       if (response.status === 401 || response.status === 403) {
-        console.error("INVALID_NEWS_API_KEY", "NewsAPI authentication failed - invalid API key");
+        console.error(JSON.stringify({
+          timestamp: new Date().toISOString(),
+          component: "NewsApiService",
+          severity: "ERROR",
+          code: "INVALID_NEWS_API_KEY",
+          message: "NewsAPI authentication failed - invalid API key",
+          metadata: { statusCode: response.status }
+        }));
         return [];
       }
 
       if (response.status === 429) {
-        console.error("NEWS_API_RATE_LIMIT", "NewsAPI rate limit exceeded");
+        console.error(JSON.stringify({
+          timestamp: new Date().toISOString(),
+          component: "NewsApiService",
+          severity: "ERROR",
+          code: "NEWS_API_FAIL:newsapi",
+          message: "NewsAPI rate limit exceeded",
+          metadata: { statusCode: 429 }
+        }));
         return [];
       }
 
       if (response.status === 500 || response.status === 502 || response.status === 503) {
-        console.error("NEWS_API_SERVER_ERROR", `NewsAPI server error: ${response.status}`);
+        console.error(JSON.stringify({
+          timestamp: new Date().toISOString(),
+          component: "NewsApiService",
+          severity: "ERROR",
+          code: "NEWS_API_FAIL:newsapi",
+          message: `NewsAPI server error: ${response.status}`,
+          metadata: { statusCode: response.status }
+        }));
         return [];
       }
 
       if (response.status !== 200) {
-        console.error(
-          "NEWS_API_HTTP_ERROR",
-          `NewsAPI error ${response.status}: ${response.data?.message || "unknown error"}`
-        );
+        console.error(JSON.stringify({
+          timestamp: new Date().toISOString(),
+          component: "NewsApiService",
+          severity: "ERROR",
+          code: "NEWS_API_FAIL:newsapi",
+          message: `NewsAPI error ${response.status}: ${response.data?.message || "unknown error"}`,
+          metadata: { statusCode: response.status, details: response.data?.message }
+        }));
         return [];
       }
 
       if (response.data?.status !== "ok") {
-        console.error(
-          "NEWS_API_FAIL",
-          `NewsAPI returned non-ok status: ${response.data?.message || "unknown error"}`
-        );
+        console.error(JSON.stringify({
+          timestamp: new Date().toISOString(),
+          component: "NewsApiService",
+          severity: "ERROR",
+          code: "NEWS_API_FAIL:newsapi",
+          message: `NewsAPI returned non-ok status: ${response.data?.message || "unknown error"}`,
+          metadata: { status: response.data?.status, details: response.data?.message }
+        }));
         return [];
       }
 
       // Validate response structure
       if (!response.data.articles || !Array.isArray(response.data.articles)) {
-        console.error("NEWS_API_INVALID_RESPONSE", "NewsAPI returned invalid response format");
+        console.error(JSON.stringify({
+          timestamp: new Date().toISOString(),
+          component: "NewsApiService",
+          severity: "ERROR",
+          code: "NEWS_API_FAIL:newsapi",
+          message: "NewsAPI returned invalid response format",
+          metadata: { hasArticles: !!response.data.articles, isArray: Array.isArray(response.data.articles) }
+        }));
         return [];
       }
 
       return response.data.articles as NewsArticle[];
     } catch (error: any) {
-      // Handle network errors
+      // Handle network errors with structured logging
       if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-        console.error("NEWS_API_TIMEOUT", "NewsAPI request timeout");
+        console.error(JSON.stringify({
+          timestamp: new Date().toISOString(),
+          component: "NewsApiService",
+          severity: "ERROR",
+          code: "NEWS_API_FAIL:newsapi",
+          message: "NewsAPI request timeout",
+          metadata: { errorCode: error.code }
+        }));
       } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-        console.error("NEWS_API_UNREACHABLE", "NewsAPI service unreachable");
+        console.error(JSON.stringify({
+          timestamp: new Date().toISOString(),
+          component: "NewsApiService",
+          severity: "ERROR",
+          code: "NEWS_API_FAIL:newsapi",
+          message: "NewsAPI service unreachable",
+          metadata: { errorCode: error.code }
+        }));
       } else {
-        console.error("NEWS_API_ERROR", error.message || "Unknown NewsAPI error");
+        console.error(JSON.stringify({
+          timestamp: new Date().toISOString(),
+          component: "NewsApiService",
+          severity: "ERROR",
+          code: "NEWS_API_FAIL:newsapi",
+          message: error.message || "Unknown NewsAPI error",
+          metadata: { error: error.toString() }
+        }));
       }
       return []; // Always return empty array on error, never undefined/null
     }
