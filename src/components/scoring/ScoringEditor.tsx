@@ -93,9 +93,15 @@ export const ScoringEditor: React.FC = () => {
 
   const loadWeights = async () => {
     try {
-      // NOTE: Scoring weights API is not yet implemented in DatasourceClient
-      // Using default weights for now
-      logger.info('Using default scoring weights (API not yet implemented)');
+      // Load scoring weights from backend via DatasourceClient
+      const weights = await DatasourceClient.getScoringWeights();
+      if (weights) {
+        setDetectorWeights({
+          technical_analysis: weights.detector_weights.technical_analysis as any,
+          fundamental_analysis: weights.detector_weights.fundamental_analysis as any
+        });
+        setTimeframeWeights(weights.timeframe_weights);
+      }
     } catch (err) {
       if (import.meta.env.DEV) logger.error('Failed to load weights', {}, err);
     }
@@ -105,9 +111,14 @@ export const ScoringEditor: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // NOTE: Scoring snapshot API is not yet implemented in DatasourceClient
-      // This feature requires backend scoring system integration
-      setError('Scoring snapshot feature is not yet implemented. This will be available when the scoring API is integrated.');
+      // Load scoring snapshot from backend via DatasourceClient
+      const snapshotData = await DatasourceClient.getScoringSnapshot(symbol);
+      if (snapshotData) {
+        setSnapshot(snapshotData);
+        setError(null);
+      } else {
+        setError('No scoring data available for this symbol. The backend may still be processing data.');
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load snapshot');
     } finally {
@@ -119,9 +130,21 @@ export const ScoringEditor: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // NOTE: Scoring weights update API is not yet implemented
-      showToast('warning', 'Not Implemented', 'Scoring weights update will be available when the backend scoring API is integrated.');
-      await loadWeights();
+      // Update scoring weights on backend via DatasourceClient
+      const weights = {
+        detector_weights: {
+          technical_analysis: detectorWeights.technical_analysis as any,
+          fundamental_analysis: detectorWeights.fundamental_analysis as any
+        },
+        timeframe_weights: timeframeWeights
+      };
+      const success = await DatasourceClient.updateScoringWeights(weights);
+      if (success) {
+        showToast('success', 'Success', 'Scoring weights updated successfully');
+        await loadWeights();
+      } else {
+        showToast('error', 'Failed', 'Failed to update scoring weights on backend');
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to update weights');
     } finally {
@@ -139,30 +162,14 @@ export const ScoringEditor: React.FC = () => {
 
     setLoading(true);
     try {
-      // NOTE: Reset to default in-memory weights
-      setDetectorWeights({
-        technical_analysis: {
-          harmonic: 0.15,
-          elliott: 0.15,
-          fibonacci: 0.10,
-          price_action: 0.15,
-          smc: 0.20,
-          sar: 0.10
-        },
-        fundamental_analysis: {
-          sentiment: 0.10,
-          news: 0.03,
-          whales: 0.02
-        }
-      });
-      setTimeframeWeights({
-        '5m': 0.15,
-        '15m': 0.25,
-        '1h': 0.30,
-        '4h': 0.20,
-        '1d': 0.10
-      });
-      showToast('success', 'Reset Complete', 'Weights reset to defaults (local only)');
+      // Reset scoring weights on backend via DatasourceClient
+      const success = await DatasourceClient.resetScoringWeights();
+      if (success) {
+        await loadWeights(); // Reload weights from backend
+        showToast('success', 'Reset Complete', 'Weights reset to defaults on backend');
+      } else {
+        showToast('error', 'Failed', 'Failed to reset weights on backend');
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to reset weights');
     } finally {

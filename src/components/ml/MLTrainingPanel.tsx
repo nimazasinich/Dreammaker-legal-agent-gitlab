@@ -4,6 +4,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Play, BarChart3, Database, TrendingUp, Download, AlertCircle } from 'lucide-react';
+import DatasourceClient from '../../services/DatasourceClient';
 
 interface TrainConfig {
   dataset: string;
@@ -83,48 +84,124 @@ export const MLTrainingPanel: React.FC = () => {
 
   const loadModels = async () => {
     try {
-      // NOTE: ML model management API is not yet implemented in DatasourceClient
-      // This feature requires backend ML training system integration
-      setModels([]);
-      console.warn('ML model loading not yet implemented');
+      // Load training metrics from backend to show model history
+      const metrics = await DatasourceClient.getTrainingMetrics();
+      if (metrics && metrics.length > 0) {
+        const modelList = metrics.map((m: any) => ({
+          model_id: m.model_id || `model_${m.timestamp}`,
+          model_type: m.model_type || 'neural_network',
+          task: m.task || 'classification',
+          created_at: new Date(m.timestamp).toISOString(),
+          training: {
+            metrics: m
+          }
+        }));
+        setModels(modelList);
+      } else {
+        setModels([]);
+      }
     } catch (err: any) {
       console.error('Failed to load models:', err);
+      setModels([]);
     }
   };
 
   const handleStartTraining = async () => {
     setLoading(true);
     setError('');
-    setStatus('ML Training API not yet implemented');
+    setStatus('Starting AI training on backend...');
 
     try {
-      // NOTE: ML training API is not yet implemented
-      // This feature requires backend ML training system integration
-      setError('ML training feature is not yet implemented. This will be available when the ML training API is integrated with the backend.');
-      setLoading(false);
+      // Start training via DatasourceClient (connects to backend)
+      const response = await DatasourceClient.startTraining({
+        dataset: trainConfig.dataset,
+        symbols: trainConfig.symbols,
+        timeframe: trainConfig.timeframe,
+        task: trainConfig.task,
+        model: trainConfig.model
+      });
+
+      if (response && response.job_id) {
+        setStatus(`Training started! Job ID: ${response.job_id}`);
+        // Poll for training status
+        pollTrainingStatus(response.job_id);
+      } else {
+        setError('Failed to start training. Backend may not be ready or dataset not configured.');
+        setLoading(false);
+      }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to start training');
       setLoading(false);
     }
   };
 
   const pollTrainingStatus = async (jobId: string) => {
-    // NOTE: Training status polling not yet implemented
-    console.warn('Training status polling not yet implemented');
+    const pollInterval = setInterval(async () => {
+      try {
+        const statusData = await DatasourceClient.getTrainingStatus(jobId);
+        if (statusData) {
+          if (statusData.status === 'completed') {
+            setStatus('Training completed successfully!');
+            setLoading(false);
+            clearInterval(pollInterval);
+            await loadModels(); // Reload models list
+          } else if (statusData.status === 'failed') {
+            setError('Training failed. Check backend logs for details.');
+            setLoading(false);
+            clearInterval(pollInterval);
+          } else {
+            setStatus(`Training in progress... ${statusData.progress || 0}% complete`);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to poll training status:', err);
+      }
+    }, 3000); // Poll every 3 seconds
+
+    // Stop polling after 10 minutes
+    setTimeout(() => {
+      clearInterval(pollInterval);
+      if (loading) {
+        setStatus('Training is taking longer than expected. Check backend status.');
+        setLoading(false);
+      }
+    }, 600000);
   };
 
   const handleRunBacktest = async () => {
     setLoading(true);
     setError('');
-    setStatus('Backtest API not yet implemented');
+    setStatus('Starting backtest on backend...');
 
     try {
-      // NOTE: Backtest API is not yet implemented
-      // This feature requires backend backtesting system integration
-      setError('Backtesting feature is not yet implemented. This will be available when the backtesting API is integrated with the backend.');
+      // Run backtest via backend API
+      const response = await fetch(`${DatasourceClient['baseUrl']}/api/ai/backtest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model_id: backtestConfig.model_id,
+          symbols: backtestConfig.symbols,
+          timeframe: backtestConfig.timeframe,
+          train_window: backtestConfig.train_window,
+          test_window: backtestConfig.test_window,
+          fees_bps: backtestConfig.fees_bps,
+          slippage_bps: backtestConfig.slippage_bps,
+          online: backtestConfig.online,
+          save_updates: backtestConfig.save_updates,
+          buy_threshold: backtestConfig.buy_threshold,
+          sell_threshold: backtestConfig.sell_threshold
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setStatus(`Backtest completed! Return: ${result.total_return || 'N/A'}%`);
+      } else {
+        setError('Backtest failed. Backend may not have the model or data ready.');
+      }
       setLoading(false);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to run backtest');
       setLoading(false);
     }
   };

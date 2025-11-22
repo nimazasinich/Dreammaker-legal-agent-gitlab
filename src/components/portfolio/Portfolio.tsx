@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
 import { PortfolioPosition, MarketData } from '../../types';
 import { Wallet, TrendingUp, TrendingDown, DollarSign, PieChart } from 'lucide-react';
+import DatasourceClient from '../../services/DatasourceClient';
 
 interface PortfolioProps {
   marketData: MarketData[];
 }
 
-
+const datasource = DatasourceClient;
 const logger = Logger.getInstance();
 
 export const Portfolio: React.FC<PortfolioProps> = ({ marketData }) => {
@@ -18,57 +19,32 @@ export const Portfolio: React.FC<PortfolioProps> = ({ marketData }) => {
   const [totalPnL, setTotalPnL] = useState(0);
   const [totalPnLPercent, setTotalPnLPercent] = useState(0);
 
-  // Fetch real portfolio data from backend
-  // NOTE: Portfolio data is not yet implemented in DatasourceClient
-  // This component will show empty state until backend portfolio API is ready
+  // Fetch real portfolio data from backend via DatasourceClient
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
-        // TODO: Add portfolio endpoint to DatasourceClient when backend is ready
-        // For now, we show an empty portfolio state
-        const data = { success: false, portfolio: null };
+        // Use DatasourceClient to fetch real portfolio data from backend
+        const portfolioData = await datasource.getPortfolio();
         
-        if (data.success && data.portfolio) {
-          // Convert portfolio response to positions format
-          const portfolioPositions: PortfolioPosition[] = 
-            data.portfolio.positions?.map((pos: any) => ({
-              symbol: pos.symbol || pos.asset || '',
-              quantity: pos.quantity || pos.amount || 0,
-              averagePrice: pos.averagePrice || pos.entryPrice || 0,
-              currentPrice: pos.currentPrice || pos.marketPrice || 
-                           marketData.find(m => m.symbol === pos.symbol)?.price || 0,
-              pnl: pos.pnl || pos.unrealizedPnL || 0,
-              pnlPercent: pos.pnlPercent || pos.unrealizedPnLPercent || 0,
-              allocation: pos.allocation || 0
-            })) || [];
-
-          // Calculate total values
-          const total = data.portfolio.totalValue || portfolioPositions.reduce(
-            (sum, pos) => sum + (pos.quantity * pos.currentPrice), 0
-          );
-          
-          const totalCostBasis = portfolioPositions.reduce(
-            (sum, pos) => sum + (pos.quantity * pos.averagePrice), 0
-          );
-          const totalPnLValue = total - totalCostBasis;
-          const totalPnLPercentValue = totalCostBasis > 0 
-            ? (totalPnLValue / totalCostBasis) * 100 
-            : 0;
-
-          // Recalculate allocations if needed
-          const finalPositions = (portfolioPositions || []).map(position => ({
-            ...position,
-            allocation: total > 0 
-              ? (position.quantity * position.currentPrice / total) * 100 
-              : 0
+        if (portfolioData && portfolioData.positions && portfolioData.positions.length > 0) {
+          // Use the real portfolio data from backend
+          const portfolioPositions = portfolioData.positions.map((pos: any) => ({
+            symbol: pos.symbol || '',
+            quantity: pos.quantity || 0,
+            averagePrice: pos.averagePrice || 0,
+            currentPrice: pos.currentPrice || 
+                         marketData.find(m => m.symbol === pos.symbol)?.close || 0,
+            pnl: pos.pnl || 0,
+            pnlPercent: pos.pnlPercent || 0,
+            allocation: pos.allocation || 0
           }));
 
-          setPositions(finalPositions);
-          setTotalValue(total);
-          setTotalPnL(totalPnLValue);
-          setTotalPnLPercent(totalPnLPercentValue);
+          setPositions(portfolioPositions);
+          setTotalValue(portfolioData.totalValue || 0);
+          setTotalPnL(portfolioData.totalPnL || 0);
+          setTotalPnLPercent(portfolioData.totalPnLPercent || 0);
         } else {
-          // No positions - show empty portfolio
+          // No positions - show empty portfolio (real empty state from backend)
           setPositions([]);
           setTotalValue(0);
           setTotalPnL(0);
@@ -76,7 +52,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ marketData }) => {
         }
       } catch (error) {
         logger.error('Failed to fetch portfolio data:', {}, error);
-        // Show empty state on error instead of mock data
+        // Show empty state on error - NO FAKE DATA
         setPositions([]);
         setTotalValue(0);
         setTotalPnL(0);
