@@ -41,8 +41,6 @@ interface Model {
   };
 }
 
-const API_BASE = '/api/ml';
-
 export const MLTrainingPanel: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'train' | 'backtest' | 'models'>('models');
@@ -85,9 +83,10 @@ export const MLTrainingPanel: React.FC = () => {
 
   const loadModels = async () => {
     try {
-      const response = await fetch(`${API_BASE}/models`, { mode: "cors", headers: { "Content-Type": "application/json" } });
-      const data = await response.json();
-      setModels(data.models || []);
+      // NOTE: ML model management API is not yet implemented in DatasourceClient
+      // This feature requires backend ML training system integration
+      setModels([]);
+      console.warn('ML model loading not yet implemented');
     } catch (err: any) {
       console.error('Failed to load models:', err);
     }
@@ -96,27 +95,13 @@ export const MLTrainingPanel: React.FC = () => {
   const handleStartTraining = async () => {
     setLoading(true);
     setError('');
-    setStatus('Starting training job...');
+    setStatus('ML Training API not yet implemented');
 
     try {
-      const response = await fetch(`${API_BASE}/train/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(trainConfig),
-        credentials: 'include'
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error(data.error || 'Training failed');
-      }
-
-      setStatus(`Training started! Job ID: ${data.job_id}`);
-
-      // Poll for status
-      const jobId = data.job_id;
-      pollTrainingStatus(jobId);
+      // NOTE: ML training API is not yet implemented
+      // This feature requires backend ML training system integration
+      setError('ML training feature is not yet implemented. This will be available when the ML training API is integrated with the backend.');
+      setLoading(false);
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -124,57 +109,19 @@ export const MLTrainingPanel: React.FC = () => {
   };
 
   const pollTrainingStatus = async (jobId: string) => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch(`${API_BASE}/train/status?job_id=${jobId}`, { credentials: 'include' });
-        const data = await response.json();
-
-        setStatus(`Training progress: ${data.progress}%`);
-
-        if (data.status === 'completed') {
-          clearInterval(interval);
-          setStatus(`Training completed! Model: ${data.result?.model_id}`);
-          setLoading(false);
-          loadModels();
-        } else if (data.status === 'failed') {
-          clearInterval(interval);
-          setError(data.error || 'Training failed');
-          setLoading(false);
-        }
-      } catch (err) {
-        clearInterval(interval);
-        setLoading(false);
-      }
-    }, 2000);
+    // NOTE: Training status polling not yet implemented
+    console.warn('Training status polling not yet implemented');
   };
 
   const handleRunBacktest = async () => {
     setLoading(true);
     setError('');
-    setStatus('Running backtest...');
+    setStatus('Backtest API not yet implemented');
 
     try {
-      const response = await fetch(`${API_BASE}/backtest/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(backtestConfig),
-        credentials: 'include'
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error(data.error || 'Backtest failed');
-      }
-
-      const results = data.results;
-      setStatus(
-        `Backtest completed!\n` +
-        `Total Return: ${results.total_return_pct?.toFixed(2)}%\n` +
-        `Sharpe Ratio: ${results.sharpe_ratio?.toFixed(2)}\n` +
-        `Win Rate: ${(results.win_rate * 100)?.toFixed(2)}%\n` +
-        `Max Drawdown: ${results.max_drawdown_pct?.toFixed(2)}%`
-      );
+      // NOTE: Backtest API is not yet implemented
+      // This feature requires backend backtesting system integration
+      setError('Backtesting feature is not yet implemented. This will be available when the backtesting API is integrated with the backend.');
       setLoading(false);
     } catch (err: any) {
       setError(err.message);

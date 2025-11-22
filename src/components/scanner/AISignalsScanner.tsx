@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Logger } from '../../core/Logger.js';
 import { Brain, TrendingUp, TrendingDown, Activity, AlertCircle } from 'lucide-react';
 import { useTheme } from '../Theme/ThemeProvider';
-import { realDataManager } from '../../services/RealDataManager';
-import { Signal } from '../../services/RealDataManager';
+import DatasourceClient from '../../services/DatasourceClient';
 import { PredictionData } from '../../types';
 
 interface AISignal {
@@ -33,56 +32,43 @@ export const AISignalsScanner: React.FC = () => {
       try {
         setIsLoading(true);
         
-        // Try to fetch from real API first
-        const { API_BASE } = await import('../../config/env');
-        const baseURL = API_BASE.replace('/api', '');
+        // Fetch AI predictions using DatasourceClient
+        const datasource = DatasourceClient.getInstance();
         let convertedSignals: AISignal[] = [];
         
         try {
-          // Try fetching from API
+          // Fetch predictions for selected symbols
           const symbolsToFetch = (selectedSymbols || []).map(s => s.replace('USDT', ''));
           const signalPromises = (symbolsToFetch || []).map(async (symbol) => {
             try {
-              const response = await fetch(`${baseURL}/api/signals/analyze`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  symbol: `${symbol}USDT`,
-                  timeframe: '1h',
-                  bars: 100
-                }),
-                signal: abortController.signal
-              });
+              const aiPrediction = await datasource.getAIPrediction(symbol, '1h');
               
-              if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.prediction) {
-                  const pred = data.prediction;
-                  const prediction: PredictionData = {
-                    symbol: symbol,
-                    prediction: pred.direction === 'bullish' ? 'BULL' : 
-                               pred.direction === 'bearish' ? 'BEAR' : 'NEUTRAL',
-                    confidence: pred.confidence || 0.5,
-                    bullishProbability: pred.direction === 'bullish' ? (pred.confidence || 0.5) : 0.33,
-                    bearishProbability: pred.direction === 'bearish' ? (pred.confidence || 0.5) : 0.33,
-                    neutralProbability: pred.direction === 'neutral' ? (pred.confidence || 0.5) : 0.34,
-                    timeframe: '1h',
-                    timestamp: Date.now(),
-                    riskScore: pred.confidence > 0.8 ? 0.2 : pred.confidence > 0.6 ? 0.5 : 0.8,
-                    targetPrice: data.targetPrice || data.priceTarget,
-                    stopLoss: data.stopLoss
-                  };
-                  
-                  return {
-                    symbol: `${symbol}USDT`,
-                    prediction,
-                    confidence: pred.confidence || 0.5,
-                    timestamp: Date.now(),
-                  };
-                }
+              if (aiPrediction && !abortController.signal.aborted) {
+                const prediction: PredictionData = {
+                  symbol: symbol,
+                  prediction: aiPrediction.action === 'BUY' ? 'BULL' : 
+                             aiPrediction.action === 'SELL' ? 'BEAR' : 'NEUTRAL',
+                  confidence: aiPrediction.confidence || 0.5,
+                  bullishProbability: aiPrediction.action === 'BUY' ? (aiPrediction.confidence || 0.5) : 0.33,
+                  bearishProbability: aiPrediction.action === 'SELL' ? (aiPrediction.confidence || 0.5) : 0.33,
+                  neutralProbability: aiPrediction.action === 'HOLD' ? (aiPrediction.confidence || 0.5) : 0.34,
+                  timeframe: aiPrediction.timeframe || '1h',
+                  timestamp: aiPrediction.timestamp || Date.now(),
+                  riskScore: aiPrediction.confidence > 0.8 ? 0.2 : aiPrediction.confidence > 0.6 ? 0.5 : 0.8,
+                  targetPrice: undefined,
+                  stopLoss: undefined
+                };
+                
+                return {
+                  symbol: `${symbol}USDT`,
+                  prediction,
+                  confidence: aiPrediction.confidence || 0.5,
+                  timestamp: aiPrediction.timestamp || Date.now(),
+                };
               }
             } catch (err) {
-              // Skip this symbol if API fails
+              // Skip this symbol if prediction fails
+              logger.warn(`Failed to fetch AI prediction for ${symbol}:`, err);
               return null;
             }
             return null;
@@ -92,45 +78,10 @@ export const AISignalsScanner: React.FC = () => {
           convertedSignals = results.filter((s): s is AISignal => s !== null);
           
           if ((convertedSignals?.length || 0) > 0) {
-            logger.info(`✅ Fetched ${convertedSignals.length} signals from API`);
+            logger.info(`✅ Fetched ${convertedSignals.length} AI predictions from DatasourceClient`);
           }
         } catch (apiError) {
-          logger.warn('API fetch failed, trying RealDataManager:', apiError);
-        }
-        
-        // Fallback to RealDataManager if API fails
-        if (convertedSignals.length === 0 && !abortController.signal.aborted) {
-          const aiSignals = await realDataManager.getAISignals(20);
-          
-          if (!isMounted || abortController.signal.aborted) return;
-          
-          convertedSignals = aiSignals
-            .filter(signal => {
-              const cleanSymbol = signal.symbol.replace('USDT', '').replace('/USDT', '');
-              return selectedSymbols.some(s => s.includes(cleanSymbol));
-            })
-            .map(signal => {
-              const prediction: PredictionData = {
-                symbol: signal.symbol.replace('USDT', '').replace('/USDT', ''),
-                prediction: signal.direction === 'BULLISH' ? 'BULL' :
-                           signal.direction === 'BEARISH' ? 'BEAR' : 'NEUTRAL',
-                confidence: signal.confidence, // Already in 0-1 range from RealDataManager
-                bullishProbability: signal.direction === 'BULLISH' ? signal.confidence : 0.33,
-                bearishProbability: signal.direction === 'BEARISH' ? signal.confidence : 0.33,
-                neutralProbability: signal.direction === 'NEUTRAL' ? signal.confidence : 0.34,
-                timeframe: signal.timeframe || '1h',
-                timestamp: signal.timestamp || Date.now(),
-                riskScore: signal.strength === 'STRONG' ? 0.2 :
-                          signal.strength === 'MODERATE' ? 0.5 : 0.8,
-              };
-
-              return {
-                symbol: signal.symbol,
-                prediction,
-                confidence: signal.confidence, // Already in 0-1 range from RealDataManager
-                timestamp: signal.timestamp,
-              };
-            });
+          logger.warn('Failed to fetch AI predictions:', apiError);
         }
         
         if (isMounted && !abortController.signal.aborted) {

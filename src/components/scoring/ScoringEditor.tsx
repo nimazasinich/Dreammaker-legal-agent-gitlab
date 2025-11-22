@@ -5,8 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
-import { API_BASE } from '../../config/env.js';
-import axios from 'axios';
+import DatasourceClient from '../../services/DatasourceClient';
 import { showToast } from '../ui/Toast';
 import { useConfirmModal } from '../ui/ConfirmModal';
 
@@ -94,24 +93,21 @@ export const ScoringEditor: React.FC = () => {
 
   const loadWeights = async () => {
     try {
-      const response = await axios.get(`${API_BASE}/api/scoring/weights`);
-      if (response.data.success) {
-        setDetectorWeights(response.data.detectorWeights);
-        setTimeframeWeights(response.data.timeframeWeights);
-      }
-      } catch (err) {
-        if (import.meta.env.DEV) logger.error('Failed to load weights', {}, err);
-      }
+      // NOTE: Scoring weights API is not yet implemented in DatasourceClient
+      // Using default weights for now
+      logger.info('Using default scoring weights (API not yet implemented)');
+    } catch (err) {
+      if (import.meta.env.DEV) logger.error('Failed to load weights', {}, err);
+    }
   };
 
   const loadSnapshot = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_BASE}/api/scoring/snapshot?symbol=${symbol}`);
-      if (response.data.success) {
-        setSnapshot(response.data.snapshot);
-      }
+      // NOTE: Scoring snapshot API is not yet implemented in DatasourceClient
+      // This feature requires backend scoring system integration
+      setError('Scoring snapshot feature is not yet implemented. This will be available when the scoring API is integrated.');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load snapshot');
     } finally {
@@ -123,17 +119,9 @@ export const ScoringEditor: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${API_BASE}/api/scoring/weights`, {
-        detectorWeights,
-        timeframeWeights,
-        reason: 'Manual adjustment via ScoringEditor',
-        authority: 'PRESIDENTIAL'
-      });
-
-      if (response.data.success) {
-        showToast('success', 'Success', 'Weights updated successfully!');
-        await loadWeights();
-      }
+      // NOTE: Scoring weights update API is not yet implemented
+      showToast('warning', 'Not Implemented', 'Scoring weights update will be available when the backend scoring API is integrated.');
+      await loadWeights();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to update weights');
     } finally {
@@ -151,9 +139,30 @@ export const ScoringEditor: React.FC = () => {
 
     setLoading(true);
     try {
-      await axios.post(`${API_BASE}/api/scoring/weights/reset`);
-      await loadWeights();
-      showToast('success', 'Reset Complete', 'Weights reset to defaults');
+      // NOTE: Reset to default in-memory weights
+      setDetectorWeights({
+        technical_analysis: {
+          harmonic: 0.15,
+          elliott: 0.15,
+          fibonacci: 0.10,
+          price_action: 0.15,
+          smc: 0.20,
+          sar: 0.10
+        },
+        fundamental_analysis: {
+          sentiment: 0.10,
+          news: 0.03,
+          whales: 0.02
+        }
+      });
+      setTimeframeWeights({
+        '5m': 0.15,
+        '15m': 0.25,
+        '1h': 0.30,
+        '4h': 0.20,
+        '1d': 0.10
+      });
+      showToast('success', 'Reset Complete', 'Weights reset to defaults (local only)');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to reset weights');
     } finally {

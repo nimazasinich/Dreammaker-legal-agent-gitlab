@@ -68,14 +68,24 @@ export const DataSourceSelector: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/config/data-source');
-      if (!response.ok) {
-        throw new Error(`Failed to load data source config: ${response.statusText}`);
-      }
-      const data = await response.json();
+      // NOTE: Data source config API is not yet implemented in DatasourceClient
+      // Using fallback configuration for now
+      const data = {
+        primarySource: 'huggingface' as DataSourceType,
+        availableSources: ['huggingface', 'binance', 'kucoin', 'mixed'] as DataSourceType[],
+        huggingface: {
+          enabled: true,
+          baseUrl: 'http://localhost:8001',
+          timeout: 30000
+        },
+        exchanges: {
+          binance: { enabled: false },
+          kucoin: { enabled: false }
+        }
+      };
       setConfig(data);
       setSelectedSource(data.primarySource);
-      logger.info('Data source config loaded', { primarySource: data.primarySource });
+      logger.info('Data source config loaded (fallback)', { primarySource: data.primarySource });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
@@ -92,20 +102,12 @@ export const DataSourceSelector: React.FC = () => {
     setSuccess(false);
 
     try {
-      const response = await fetch('/api/config/data-source', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ primarySource: source }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || errorData.message || 'Failed to update data source');
+      // NOTE: Data source switching API is not yet implemented
+      // Only HuggingFace/DatasourceClient is currently supported
+      if (source !== 'huggingface') {
+        throw new Error('Only HuggingFace data source is currently implemented. Other sources will be available in future updates.');
       }
 
-      const data = await response.json();
       setSuccess(true);
       logger.info('Data source updated', { newSource: source });
 
