@@ -4162,6 +4162,9 @@ app.post('/api/ai/predict', async (req, res) => {
 });
 
 // Start the server
-startServer();
+startServer().catch((error) => {
+  logger.error('Failed to start server', {}, error as Error);
+  process.exit(1);
+});
 
 export default app;
