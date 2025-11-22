@@ -323,12 +323,29 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      {/* DEPRECATION WARNING */}
+      <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-lg font-bold text-yellow-900 mb-1">⚠️ LEGACY COMPONENT - USES OLD ARCHITECTURE</h3>
+            <p className="text-yellow-800 text-sm mb-2">
+              This component bypasses the DatasourceClient and directly calls <strong>marketDataService</strong> and <strong>aiService</strong>, 
+              which make direct API calls to Binance/CoinGecko and run AI in the browser instead of using the backend Hub.
+            </p>
+            <p className="text-yellow-800 text-sm font-semibold">
+              ⚠️ For production use, please use the <strong>DashboardView</strong> component which properly routes all data through the local server proxy to the Hugging Face Hub.
+            </p>
+          </div>
+        </div>
+      </div>
+      
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              BOLT AI Trading Dashboard
+              BOLT AI Trading Dashboard (LEGACY)
             </h1>
             <p className="text-gray-600">
               Advanced Neural Network Cryptocurrency Analysis System
