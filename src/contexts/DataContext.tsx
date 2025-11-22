@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Logger } from '../core/Logger.js';
-import { DatasourceClient } from '../services/DatasourceClient';
+import DatasourceClient from '../services/DatasourceClient';
 import { useMode } from './ModeContext';
 import type { DataSource } from '../components/ui/DataSourceBadge';
 import { APP_MODE, shouldUseMockFixtures, requiresRealData } from '../config/dataPolicy';
@@ -105,9 +105,8 @@ export function DataProvider({
     }
 
     // Use DatasourceClient to fetch OHLCV data
-    const datasourceClient = DatasourceClient.getInstance();
     try {
-      const bars = await datasourceClient.getPriceChart(s, tf, 200);
+      const bars = await DatasourceClient.getPriceChart(s, tf, 200);
       setBars(bars);
       // Set data source to real since we're using the proxy
       setDataSource('real');
@@ -160,9 +159,8 @@ export function DataProvider({
 
       // PHASE 1: Load core prices using DatasourceClient
       // This is the minimum needed to render the dashboard
-      const datasourceClient = DatasourceClient.getInstance();
       const corePriceSymbols = ['BTC', 'ETH', 'SOL'];
-      const corePricesData = await datasourceClient.getTopCoins(3, corePriceSymbols);
+      const corePricesData = await DatasourceClient.getTopCoins(3, corePriceSymbols);
 
       logger.info('✅ Core prices loaded:', { data: corePricesData.length });
       setPrices(corePricesData);
@@ -197,7 +195,7 @@ export function DataProvider({
       const positions: any[] = [];
 
       // Fetch signals from the backend (if available)
-      const signals = await datasourceClient.getAIPrediction(corePriceSymbols[0], '1h')
+      const signals = await DatasourceClient.getAIPrediction(corePriceSymbols[0], '1h')
         .then(prediction => prediction ? [{
           symbol: prediction.symbol,
           action: prediction.action,
@@ -218,7 +216,7 @@ export function DataProvider({
       if (abortController.signal.aborted || ignoreRef.current) return;
 
       const additionalPriceSymbols = ['BNB', 'XRP'];
-      const additionalPrices = await datasourceClient.getTopCoins(2, additionalPriceSymbols).catch(() => []);
+      const additionalPrices = await DatasourceClient.getTopCoins(2, additionalPriceSymbols).catch(() => []);
 
       // Merge all prices
       const allPricesData = [...corePricesData, ...additionalPrices];
@@ -259,7 +257,7 @@ export function DataProvider({
 
         // Fallback: Load minimal data (just BTC) using DatasourceClient
         try {
-          const fallbackPrices = await datasourceClient.getTopCoins(1, ['BTC']);
+          const fallbackPrices = await DatasourceClient.getTopCoins(1, ['BTC']);
           setPrices(fallbackPrices);
 
           setData((prev) => ({

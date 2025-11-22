@@ -29,7 +29,7 @@ export default function BacktestButton({ symbolUI, timeframe, label = 'Backtest'
   const isOHLCReady = async (sym: string, tf: string): Promise<boolean> => {
     try {
       // Use DatasourceClient to check if historical data is available
-      const datasource = DatasourceClient.getInstance();
+      const datasource = DatasourceClient;
       const data = await datasource.getPriceChart(sym, tf, MIN_BARS);
       return data.length >= MIN_BARS;
     } catch (err) {

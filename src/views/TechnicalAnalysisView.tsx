@@ -93,40 +93,40 @@ export const TechnicalAnalysisView: React.FC = () => {
         // Smart Money Concepts
         Promise.resolve().then(() => {
           const smcAnalyzer = SMCAnalyzer.getInstance();
-          const liquidityZones = smcAnalyzer.detectLiquidityZones(transformedData);
-          const orderBlocks = smcAnalyzer.detectOrderBlocks(transformedData);
-          const fvg = smcAnalyzer.detectFairValueGaps(transformedData);
+          const liquidityZones = smcAnalyzer.detectLiquidityZones(transformedData as any);
+          const orderBlocks = smcAnalyzer.detectOrderBlocks(transformedData as any);
+          const fvg = smcAnalyzer.detectFairValueGaps(transformedData as any);
           return { liquidityZones, orderBlocks, fvg };
         }),
         
         // Elliott Wave Analysis
         Promise.resolve().then(() => {
           const elliottAnalyzer = ElliottWaveAnalyzer.getInstance();
-          return elliottAnalyzer.analyzeElliottWaves(transformedData);
+          return elliottAnalyzer.analyzeElliottWaves(transformedData as any);
         }),
         
         // Fibonacci Retracement
         Promise.resolve().then(() => {
           const fibDetector = FibonacciDetector.getInstance();
-          return fibDetector.detect(transformedData);
+          return fibDetector.detect(transformedData as any);
         }),
         
         // Harmonic Patterns
         Promise.resolve().then(() => {
           const harmonicDetector = HarmonicPatternDetector.getInstance();
-          return harmonicDetector.detectHarmonicPatterns(transformedData);
+          return harmonicDetector.detectHarmonicPatterns(transformedData as any);
         }),
         
         // Parabolic SAR
         Promise.resolve().then(() => {
           const sarDetector = ParabolicSARDetector.getInstance();
-          return sarDetector.detect(transformedData);
+          return sarDetector.detect(transformedData as any);
         }),
         
         // Market Regime
         Promise.resolve().then(() => {
           const regimeDetector = RegimeDetector.getInstance();
-          return regimeDetector.detect(transformedData);
+          return regimeDetector.detect(transformedData as any);
         })
       ]);
 
