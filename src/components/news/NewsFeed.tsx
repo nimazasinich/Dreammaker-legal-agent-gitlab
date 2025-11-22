@@ -27,7 +27,7 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const datasource = DatasourceClient.getInstance();
+      const datasource = DatasourceClient;
       const newsData = await datasource.getLatestNews(20);
       
       if (newsData && newsData.length > 0) {

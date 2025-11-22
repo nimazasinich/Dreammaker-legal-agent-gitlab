@@ -47,7 +47,7 @@ export const RealDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     let isMounted = true;
-    const datasource = DatasourceClient.getInstance();
+    const datasource = DatasourceClient;
     const unsubscribers: Array<() => void> = [];
 
     // Subscribe to all data streams using dataManager (WebSocket-based)

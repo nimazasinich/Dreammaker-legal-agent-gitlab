@@ -45,7 +45,7 @@ export const PortfolioPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const datasource = DatasourceClient.getInstance();
+      const datasource = DatasourceClient;
       
       // Fetch market data and positions in parallel
       const [marketData, positionsRes] = await Promise.allSettled([
