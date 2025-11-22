@@ -497,8 +497,24 @@ export class AIService {
   }
 
   async trainModel(data: MarketData[]): Promise<TrainingMetrics> {
+    // Validate data availability
+    if (!data || !Array.isArray(data)) {
+      this.logger.error('AI_TRAINING_INVALID_INPUT', { 
+        error: 'Invalid data input', 
+        dataType: typeof data 
+      });
+      return this.getDefaultTrainingMetrics('INVALID_INPUT');
+    }
+
+    // Check for insufficient data
     if (data.length < 50) {
-      console.error('Insufficient data for training');
+      this.logger.error('AI_DATA_TOO_SMALL', { 
+        error: 'Insufficient data for training',
+        available: data.length,
+        required: 50,
+        suggestion: 'Fetch more historical data before training'
+      });
+      return this.getDefaultTrainingMetrics('INSUFFICIENT_DATA');
     }
 
     this.isTraining = true;
@@ -507,7 +523,21 @@ export class AIService {
 
     try {
       const features = this.extractFeatures(data);
+      if (!features || features.length === 0) {
+        this.logger.error('AI_FEATURE_EXTRACTION_FAILED', { 
+          error: 'Feature extraction returned no features' 
+        });
+        return this.getDefaultTrainingMetrics('FEATURE_EXTRACTION_FAILED');
+      }
+
       const targets = this.createTargets(data);
+      if (!targets || targets.length === 0) {
+        this.logger.error('AI_TARGET_CREATION_FAILED', { 
+          error: 'Target creation returned no targets' 
+        });
+        return this.getDefaultTrainingMetrics('TARGET_CREATION_FAILED');
+      }
+
       const normalizedTargets = this.normalizeTargets(targets);
 
       const trainingConfig: TrainingConfig = {
@@ -522,6 +552,16 @@ export class AIService {
       };
 
       const metrics = this.network.train(features, normalizedTargets, trainingConfig);
+      
+      // Validate metrics
+      if (!metrics || !this.validateTrainingMetrics(metrics)) {
+        this.logger.error('AI_TRAINING_INVALID_METRICS', { 
+          error: 'Training returned invalid metrics',
+          metrics 
+        });
+        return this.getDefaultTrainingMetrics('INVALID_METRICS');
+      }
+
       this.trainingMetrics.push(metrics);
 
       this.explorationRate = Math.max(
@@ -529,80 +569,117 @@ export class AIService {
         this.explorationRate * this.explorationDecay
       );
 
+      this.logger.info('AI_TRAINING_SUCCESS', { 
+        epochs: metrics.epoch,
+        mse: metrics.mse,
+        r2: metrics.r2 
+      });
+
       return metrics;
+    } catch (error: any) {
+      this.logger.error('AI_TRAINING_ERROR', { 
+        error: error.message,
+        stack: error.stack 
+      }, error);
+      return this.getDefaultTrainingMetrics('TRAINING_ERROR');
     } finally {
       this.isTraining = false;
     }
   }
 
   async predict(data: MarketData[]): Promise<TradingDecision> {
+    // Validate input data
+    if (!data || !Array.isArray(data)) {
+      this.logger.error('AI_PREDICTION_INVALID_INPUT', { 
+        error: 'Invalid data input',
+        dataType: typeof data 
+      });
+      return this.getDefaultDecision('AI_PREDICTION_INVALID_INPUT');
+    }
+
     if (data.length === 0) {
-      return this.getDefaultDecision('Insufficient data');
+      this.logger.warn('AI_DATA_TOO_SMALL', { 
+        error: 'No data available for prediction',
+        suggestion: 'Fetch market data before requesting prediction' 
+      });
+      return this.getDefaultDecision('AI_DATA_TOO_SMALL');
     }
 
-    const features = this.extractFeatures(data.slice(-1));
-    if (features.length === 0) {
-      return this.getDefaultDecision('Feature extraction failed');
-    }
-
-    const predictions: number[][] = [];
-    const numSamples = 20;
-
-    for (let i = 0; i < numSamples; i++) {
-      const prediction = this.network.forward(features[0]);
-      predictions.push(prediction);
-    }
-
-    const meanPrediction = predictions[0].map((_, idx) => 
-      predictions.reduce((sum, pred) => sum + pred[idx], 0) / predictions.length
-    );
-
-    const uncertainty = predictions[0].map((_, idx) => {
-      const mean = meanPrediction[idx];
-      const variance = predictions.reduce((sum, pred) => sum + Math.pow(pred[idx] - mean, 2), 0) / predictions.length;
-      return Math.sqrt(variance);
-    });
-
-    const maxPred = Math.max(...meanPrediction);
-    const expPreds = (meanPrediction || []).map(p => Math.exp(p - maxPred));
-    const sumExp = expPreds.reduce((sum, exp) => sum + exp, 0);
-    const probabilities = (expPreds || []).map(exp => exp / sumExp);
-
-    const [bullProb, bearProb, neutralProb] = probabilities;
-    const confidence = Math.max(...probabilities);
-    const avgUncertainty = uncertainty.reduce((sum, u) => sum + u, 0) / uncertainty.length;
-
-    const volatility = this.calculateVolatility(data.slice(-20));
-    const riskGate = confidence > 0.8 || volatility < 0.02;
-
-    let action: 'LONG' | 'SHORT' | 'FLAT' = 'FLAT';
-
-    if (Math.random() < this.explorationRate) {
-      const actions: ('LONG' | 'SHORT' | 'FLAT')[] = ['LONG', 'SHORT', 'FLAT'];
-      action = actions[Math.floor(Math.random() * actions.length)];
-    } else {
-      if (bullProb > this.config.thresholds.enterLong && bullProb > bearProb && riskGate) {
-        action = 'LONG';
-      } else if (bearProb > this.config.thresholds.enterShort && bearProb > bullProb && riskGate) {
-        action = 'SHORT';
+    try {
+      const features = this.extractFeatures(data.slice(-1));
+      if (!features || features.length === 0) {
+        this.logger.error('AI_FEATURE_EXTRACTION_FAILED', { 
+          error: 'Feature extraction failed',
+          dataLength: data.length 
+        });
+        return this.getDefaultDecision('AI_FEATURE_EXTRACTION_FAILED');
       }
-    }
 
-    return {
-      action,
-      bullProbability: bullProb,
-      bearProbability: bearProb,
-      neutralProbability: neutralProb,
-      confidence,
-      uncertainty: avgUncertainty,
-      riskGate,
-      reasoning: [
-        `Exploration rate: ${this.explorationRate.toFixed(3)}`,
-        `Volatility: ${volatility.toFixed(4)}`,
-        `Uncertainty: ${avgUncertainty.toFixed(3)}`,
-        `Risk gate: ${riskGate ? 'PASS' : 'BLOCK'}`
-      ]
-    };
+      const predictions: number[][] = [];
+      const numSamples = 20;
+
+      for (let i = 0; i < numSamples; i++) {
+        const prediction = this.network.forward(features[0]);
+        predictions.push(prediction);
+      }
+
+      const meanPrediction = predictions[0].map((_, idx) => 
+        predictions.reduce((sum, pred) => sum + pred[idx], 0) / predictions.length
+      );
+
+      const uncertainty = predictions[0].map((_, idx) => {
+        const mean = meanPrediction[idx];
+        const variance = predictions.reduce((sum, pred) => sum + Math.pow(pred[idx] - mean, 2), 0) / predictions.length;
+        return Math.sqrt(variance);
+      });
+
+      const maxPred = Math.max(...meanPrediction);
+      const expPreds = (meanPrediction || []).map(p => Math.exp(p - maxPred));
+      const sumExp = expPreds.reduce((sum, exp) => sum + exp, 0);
+      const probabilities = (expPreds || []).map(exp => exp / sumExp);
+
+      const [bullProb, bearProb, neutralProb] = probabilities;
+      const confidence = Math.max(...probabilities);
+      const avgUncertainty = uncertainty.reduce((sum, u) => sum + u, 0) / uncertainty.length;
+
+      const volatility = this.calculateVolatility(data.slice(-20));
+      const riskGate = confidence > 0.8 || volatility < 0.02;
+
+      let action: 'LONG' | 'SHORT' | 'FLAT' = 'FLAT';
+
+      if (Math.random() < this.explorationRate) {
+        const actions: ('LONG' | 'SHORT' | 'FLAT')[] = ['LONG', 'SHORT', 'FLAT'];
+        action = actions[Math.floor(Math.random() * actions.length)];
+      } else {
+        if (bullProb > this.config.thresholds.enterLong && bullProb > bearProb && riskGate) {
+          action = 'LONG';
+        } else if (bearProb > this.config.thresholds.enterShort && bearProb > bullProb && riskGate) {
+          action = 'SHORT';
+        }
+      }
+
+      return {
+        action,
+        bullProbability: bullProb,
+        bearProbability: bearProb,
+        neutralProbability: neutralProb,
+        confidence,
+        uncertainty: avgUncertainty,
+        riskGate,
+        reasoning: [
+          `Exploration rate: ${this.explorationRate.toFixed(3)}`,
+          `Volatility: ${volatility.toFixed(4)}`,
+          `Uncertainty: ${avgUncertainty.toFixed(3)}`,
+          `Risk gate: ${riskGate ? 'PASS' : 'BLOCK'}`
+        ]
+      };
+    } catch (error: any) {
+      this.logger.error('AI_PREDICTION_ERROR', { 
+        error: error.message,
+        dataLength: data.length 
+      }, error);
+      return this.getDefaultDecision('AI_PREDICTION_ERROR');
+    }
   }
 
   async storeExperience(experience: Experience): Promise<void> {
@@ -699,6 +776,7 @@ export class AIService {
   }
 
   private getDefaultDecision(reason: string): TradingDecision {
+    this.logger.info('AI_PREDICTION_FALLBACK', { reason });
     return {
       action: 'FLAT',
       bullProbability: 0.33,
@@ -707,8 +785,37 @@ export class AIService {
       confidence: 0,
       uncertainty: 1,
       riskGate: false,
-      reasoning: [reason]
+      reasoning: [reason, 'Using safe fallback prediction']
     };
+  }
+
+  /**
+   * Get default training metrics when training fails
+   */
+  private getDefaultTrainingMetrics(reason: string): TrainingMetrics {
+    this.logger.info('AI_TRAINING_FALLBACK', { reason });
+    return {
+      modelVersion: '1.0.0',
+      epoch: 0,
+      mse: 1.0,
+      mae: 1.0,
+      r2: 0,
+      directionalAccuracy: 0,
+      learningRate: this.config.optimizer.lr,
+      resetEvents: 0,
+      seed: 42,
+      timestamp: Date.now()
+    } as TrainingMetrics;
+  }
+
+  /**
+   * Validate training metrics structure
+   */
+  private validateTrainingMetrics(metrics: any): boolean {
+    if (!metrics || typeof metrics !== 'object') return false;
+    return typeof metrics.mse === 'number' && 
+           typeof metrics.mae === 'number' && 
+           typeof metrics.r2 === 'number';
   }
 
   private detectInstability(metrics: TrainingMetrics): boolean {

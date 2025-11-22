@@ -18,6 +18,10 @@ export class SystemController {
   private multiProviderService = MultiProviderMarketDataService.getInstance();
   private binanceService = BinanceService.getInstance(); // Fallback only
   private cache = AdvancedCache.getInstance();
+  
+  // Cache for KuCoin health status
+  private kucoinHealthCache: { status: 'up' | 'degraded' | 'down', timestamp: number } | null = null;
+  private readonly KUCOIN_HEALTH_CACHE_TTL = 60000; // 60 seconds
 
   async getHealth(req: Request, res: Response): Promise<void> {
     try {
@@ -66,22 +70,8 @@ export class SystemController {
 
       // Check KuCoin if needed (for kucoin or mixed mode)
       if (primarySource === 'kucoin' || primarySource === 'mixed') {
-        try {
-          const { KuCoinService } = await import('../services/KuCoinService.js');
-          const kucoinService = KuCoinService.getInstance();
-          await kucoinService.getAccountInfo();
-          providerStatuses.kucoin_sandbox = 'up';
-        } catch (error: any) {
-          // KuCoin sandbox is often down (ENOTFOUND api-sandbox.kucoin.com)
-          // Mark as degraded instead of crashing
-          const message = error.message || String(error);
-          if (message.includes('ENOTFOUND') || message.includes('api-sandbox.kucoin.com')) {
-            this.logger.debug('KuCoin sandbox is unreachable (expected in dev)');
-            providerStatuses.kucoin_sandbox = 'down';
-          } else {
-            providerStatuses.kucoin_sandbox = 'degraded';
-          }
-        }
+        const kucoinStatus = await this.checkKuCoinHealthWithRetry();
+        providerStatuses.kucoin = kucoinStatus;
       }
 
       // Overall backend status: "up" if core services (db, redis) are ok
@@ -103,15 +93,15 @@ export class SystemController {
 
       res.json(health);
     } catch (error) {
-      this.logger.error('Health check failed', {}, error as Error);
-      // Even on error, return valid JSON (not 500)
+      this.logger.error('HEALTH_CHECK_ERROR', { error: (error as Error).message }, error as Error);
+      // FIXED: Never return 'unknown' - always return a known state
       res.json({
         ok: false,
         timestamp: Date.now(),
         services: {
           backend: 'down',
-          database: 'unknown',
-          redis: 'unknown'
+          database: 'down', // Changed from 'unknown' to 'down'
+          redis: 'down' // Changed from 'unknown' to 'down'
         },
         error: (error as Error).message
       });
@@ -217,6 +207,120 @@ export class SystemController {
         message: (error as Error).message
       });
     }
+  }
+
+  /**
+   * Check KuCoin health with retry logic, exponential backoff, and caching
+   */
+  private async checkKuCoinHealthWithRetry(): Promise<'up' | 'degraded' | 'down'> {
+    // Check cache first
+    if (this.kucoinHealthCache && 
+        (Date.now() - this.kucoinHealthCache.timestamp) < this.KUCOIN_HEALTH_CACHE_TTL) {
+      this.logger.debug('KUCOIN_HEALTH_CACHED', { status: this.kucoinHealthCache.status });
+      return this.kucoinHealthCache.status;
+    }
+
+    const maxRetries = 3;
+    const baseDelay = 1000; // 1 second
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        // Check if KuCoin API keys are configured
+        const kucoinConfig = this.config.getKuCoinConfig();
+        if (!kucoinConfig.apiKey || !kucoinConfig.secretKey) {
+          this.logger.info('KUCOIN_DISABLED_BY_CONFIG', { 
+            reason: 'API keys not configured' 
+          });
+          const status = 'down'; // Treat as disabled
+          this.kucoinHealthCache = { status, timestamp: Date.now() };
+          return status;
+        }
+
+        const { KuCoinService } = await import('../services/KuCoinService.js');
+        const kucoinService = KuCoinService.getInstance();
+        
+        // Test connection with timeout
+        const isConnected = await Promise.race([
+          kucoinService.testConnection(),
+          new Promise<boolean>((_, reject) => 
+            setTimeout(() => reject(new Error('TIMEOUT')), 5000)
+          )
+        ]);
+
+        if (isConnected) {
+          this.logger.info('KUCOIN_HEALTH_SUCCESS', { attempt: attempt + 1 });
+          const status = 'up';
+          this.kucoinHealthCache = { status, timestamp: Date.now() };
+          return status;
+        } else {
+          throw new Error('Connection test failed');
+        }
+      } catch (error: any) {
+        const message = error.message || String(error);
+        
+        // Determine error type
+        if (message.includes('ENOTFOUND') || message.includes('api-sandbox.kucoin.com')) {
+          this.logger.warn('KUCOIN_UNAVAILABLE', { 
+            error: 'KuCoin API unreachable',
+            attempt: attempt + 1,
+            maxRetries 
+          });
+          
+          // Last attempt - cache the result
+          if (attempt === maxRetries - 1) {
+            const status = 'down';
+            this.kucoinHealthCache = { status, timestamp: Date.now() };
+            return status;
+          }
+        } else if (message.includes('TIMEOUT')) {
+          this.logger.warn('KUCOIN_TIMEOUT', { 
+            error: 'KuCoin health check timeout',
+            attempt: attempt + 1,
+            maxRetries 
+          });
+          
+          if (attempt === maxRetries - 1) {
+            const status = 'degraded';
+            this.kucoinHealthCache = { status, timestamp: Date.now() };
+            return status;
+          }
+        } else {
+          this.logger.error('KUCOIN_HEALTH_FAIL', { 
+            error: message,
+            attempt: attempt + 1,
+            maxRetries 
+          }, error);
+          
+          if (attempt === maxRetries - 1) {
+            const status = 'degraded';
+            this.kucoinHealthCache = { status, timestamp: Date.now() };
+            return status;
+          }
+        }
+        
+        // Exponential backoff with jitter
+        if (attempt < maxRetries - 1) {
+          const delay = baseDelay * Math.pow(2, attempt);
+          const jitter = Math.random() * 500; // 0-500ms jitter
+          const waitTime = delay + jitter;
+          
+          this.logger.debug('KUCOIN_RETRY_BACKOFF', { 
+            attempt: attempt + 1,
+            waitTime: Math.round(waitTime)
+          });
+          
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+      }
+    }
+    
+    // Fallback - should never reach here
+    this.logger.error('KUCOIN_HEALTH_EXHAUSTED', { 
+      error: 'All retry attempts failed' 
+    });
+    const status = 'down';
+    this.kucoinHealthCache = { status, timestamp: Date.now() };
+    return status;
   }
 }
 
