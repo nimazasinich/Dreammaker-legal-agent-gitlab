@@ -5,7 +5,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Logger } from '../../core/Logger.js';
-import { RealDataManager } from '../../services/RealDataManager';
+import DatasourceClient from '../../services/DatasourceClient';
 import { dataManager } from '../../services/dataManager';
 
 interface RealDataContextType {
@@ -47,7 +47,7 @@ export const RealDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     let isMounted = true;
-    const realDataManager = RealDataManager.getInstance();
+    const datasource = DatasourceClient.getInstance();
     const unsubscribers: Array<() => void> = [];
 
     // Subscribe to all data streams using dataManager (WebSocket-based)
@@ -112,14 +112,19 @@ export const RealDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (!disableInitial) {
       const initializeData = async () => {
         try {
-          // Fetch initial data
+          // Fetch initial data using DatasourceClient
           const symbols = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP'];
-          const priceMap = await realDataManager.getMarketData(symbols);
-          const priceArray = Array.from(priceMap.values());
+          const priceArray = await datasource.getTopCoins(5, symbols);
           
           if (isMounted) {
             if (priceArray.length > 0) {
-              setPrices(priceArray);
+              setPrices(priceArray.map(p => ({
+                symbol: p.symbol,
+                price: p.price,
+                change24h: p.changePercent24h,
+                volume24h: p.volume,
+                lastUpdate: p.timestamp
+              })));
               setIsConnected(true);
               setLastUpdate(Date.now());
               logger.info('✅ Real data initialized - 100% real APIs active');

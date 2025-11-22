@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigation } from '../Navigation/NavigationProvider';
 import { useBacktestContext } from '../../contexts/BacktestContext';
-import { APP_MODE, requiresRealData, API_BASE } from '../../config/env';
+import { APP_MODE, requiresRealData } from '../../config/env';
 import { MIN_BARS } from '../../config/risk';
 import { Logger } from '../../core/Logger';
+import DatasourceClient from '../../services/DatasourceClient';
 
 const logger = Logger.getInstance();
 
@@ -27,9 +28,10 @@ export default function BacktestButton({ symbolUI, timeframe, label = 'Backtest'
   // Check if OHLC data is ready for the given symbol/timeframe
   const isOHLCReady = async (sym: string, tf: string): Promise<boolean> => {
     try {
-      const url = `${API_BASE}/market/ohlcv/ready?symbol=${encodeURIComponent(sym)}&timeframe=${encodeURIComponent(tf)}&min=${MIN_BARS}`;
-      const res = await fetch(url, { method: 'HEAD', credentials: 'include' });
-      return res.ok;
+      // Use DatasourceClient to check if historical data is available
+      const datasource = DatasourceClient.getInstance();
+      const data = await datasource.getPriceChart(sym, tf, MIN_BARS);
+      return data.length >= MIN_BARS;
     } catch (err) {
       logger.warn('OHLC readiness check failed:', { symbol: sym, timeframe: tf }, err);
       return false;

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Logger } from '../../core/Logger.js';
 import { PortfolioPosition, MarketData } from '../../types';
-import { API_BASE } from '../../config/env';
 import { Wallet, TrendingUp, TrendingDown, DollarSign, PieChart } from 'lucide-react';
 
 interface PortfolioProps {
@@ -19,16 +18,15 @@ export const Portfolio: React.FC<PortfolioProps> = ({ marketData }) => {
   const [totalPnL, setTotalPnL] = useState(0);
   const [totalPnLPercent, setTotalPnLPercent] = useState(0);
 
-  // Fetch real portfolio data from API
+  // Fetch real portfolio data from backend
+  // NOTE: Portfolio data is not yet implemented in DatasourceClient
+  // This component will show empty state until backend portfolio API is ready
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
-        const response = await fetch(`${API_BASE}/portfolio`, { credentials: 'include' });
-        if (!response.ok) {
-          console.error('Failed to fetch portfolio');
-        }
-        
-        const data = await response.json();
+        // TODO: Add portfolio endpoint to DatasourceClient when backend is ready
+        // For now, we show an empty portfolio state
+        const data = { success: false, portfolio: null };
         
         if (data.success && data.portfolio) {
           // Convert portfolio response to positions format
