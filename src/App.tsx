@@ -65,6 +65,8 @@ const StrategyInsightsView = lazyLoad(() => import('./views/StrategyInsightsView
 const ExchangeSettingsView = lazyLoad(() => import('./views/ExchangeSettingsView'), 'ExchangeSettingsView');
 const MonitoringView = lazyLoad(() => import('./views/MonitoringView'), 'MonitoringView');
 const DiagnosticsView = lazyLoad(() => import('./views/DiagnosticsView'), 'DiagnosticsView');
+const TechnicalAnalysisView = lazyLoad(() => import('./views/TechnicalAnalysisView'), 'TechnicalAnalysisView');
+const RiskManagementView = lazyLoad(() => import('./views/RiskManagementView'), 'RiskManagementView');
 
 const AppContent: React.FC = () => {
   const { currentView } = useNavigation();
@@ -100,6 +102,8 @@ const AppContent: React.FC = () => {
         case 'futures': return <FuturesTradingView />;
         case 'trading': return <UnifiedTradingView />;
         case 'portfolio': return <PortfolioPage />;
+        case 'technical-analysis': return <TechnicalAnalysisView />;
+        case 'risk-management': return <RiskManagementView />;
         case 'enhanced-trading': return <EnhancedTradingView />;
         case 'positions': return <PositionsView />;
         case 'strategylab': return <StrategyLabView />;
