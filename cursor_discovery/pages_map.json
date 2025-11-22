@@ -1,0 +1,227 @@
+{
+  "timestamp": "2025-11-22T00:00:00Z",
+  "pages": [
+    {
+      "name": "DashboardView",
+      "route": "/dashboard",
+      "file": "src/views/DashboardView.tsx",
+      "endpoints": [
+        "GET /api/portfolio",
+        "GET /api/positions",
+        "GET /api/market/prices",
+        "GET /api/ai/signals",
+        "GET /api/ai/statistics"
+      ],
+      "components": ["MarketTicker", "RealSignalFeedConnector", "PriceChart", "TopSignalsPanel", "EnhancedSymbolDashboard"],
+      "errorHandling": "partial",
+      "notes": "Has error state but needs standardized error labels and response envelopes"
+    },
+    {
+      "name": "ChartingView",
+      "route": "/charting",
+      "file": "src/views/ChartingView.tsx",
+      "endpoints": ["GET /api/market/ohlcv", "GET /api/market/trades"],
+      "components": ["AdvancedChart", "PriceChart"],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "MarketView",
+      "route": "/market",
+      "file": "src/views/MarketView.tsx",
+      "endpoints": ["GET /api/market/prices", "GET /api/market/orderbook"],
+      "components": ["MarketTicker"],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "ScannerView",
+      "route": "/scanner",
+      "file": "src/views/ScannerView.tsx",
+      "endpoints": ["GET /api/scanner/signals", "GET /api/scanner/patterns"],
+      "components": ["AISignalsScanner", "TechnicalPatternsScanner"],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "TrainingView",
+      "route": "/training",
+      "file": "src/views/TrainingView.tsx",
+      "endpoints": ["POST /api/ai/train", "GET /api/ai/metrics"],
+      "components": ["MLTrainingPanel", "TrainingDashboard"],
+      "errorHandling": "unknown",
+      "notes": "Needs AI_DATA_TOO_SMALL check"
+    },
+    {
+      "name": "RiskView",
+      "route": "/risk",
+      "file": "src/views/RiskView.tsx",
+      "endpoints": ["GET /api/risk/assessment"],
+      "components": ["RiskGauge", "RiskAlertCard"],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "ProfessionalRiskView",
+      "route": "/professional-risk",
+      "file": "src/views/ProfessionalRiskView.tsx",
+      "endpoints": ["GET /api/risk/assessment"],
+      "components": ["RiskCenterPro"],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "BacktestView",
+      "route": "/backtest",
+      "file": "src/views/BacktestView.tsx",
+      "endpoints": ["POST /api/backtest/run", "GET /api/backtest/results"],
+      "components": ["BacktestPanel", "BacktestButton"],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "HealthView",
+      "route": "/health",
+      "file": "src/views/HealthView.tsx",
+      "endpoints": ["GET /api/health", "GET /api/diagnostics"],
+      "components": [],
+      "errorHandling": "unknown",
+      "notes": "Needs KUCOIN_HEALTH_FAIL, KUCOIN_UNAVAILABLE labels"
+    },
+    {
+      "name": "SettingsView",
+      "route": "/settings",
+      "file": "src/views/SettingsView.tsx",
+      "endpoints": ["GET /api/config", "POST /api/config"],
+      "components": ["ExchangeSettings", "IntegrationSettings"],
+      "errorHandling": "unknown",
+      "notes": "Needs DISABLED_BY_CONFIG handling"
+    },
+    {
+      "name": "FuturesTradingView",
+      "route": "/futures",
+      "file": "src/views/FuturesTradingView.tsx",
+      "endpoints": ["GET /api/futures/positions", "POST /api/futures/order"],
+      "components": [],
+      "errorHandling": "partial",
+      "notes": "Needs KUCOIN_UNAVAILABLE, DISABLED_BY_CONFIG labels"
+    },
+    {
+      "name": "UnifiedTradingView",
+      "route": "/trading",
+      "file": "src/views/UnifiedTradingView.tsx",
+      "endpoints": ["GET /api/trading/positions", "POST /api/trading/order"],
+      "components": ["TradingDashboard"],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "TradingHubView",
+      "route": "/trading-hub",
+      "file": "src/views/TradingHubView.tsx",
+      "endpoints": ["GET /api/trading/hub"],
+      "components": [],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "PortfolioPage",
+      "route": "/portfolio",
+      "file": "src/views/PortfolioPage.tsx",
+      "endpoints": ["GET /api/portfolio"],
+      "components": ["Portfolio"],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "TechnicalAnalysisView",
+      "route": "/technical-analysis",
+      "file": "src/views/TechnicalAnalysisView.tsx",
+      "endpoints": ["GET /api/analysis/technical"],
+      "components": [],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "RiskManagementView",
+      "route": "/risk-management",
+      "file": "src/views/RiskManagementView.tsx",
+      "endpoints": ["GET /api/risk/management"],
+      "components": [],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "EnhancedTradingView",
+      "route": "/enhanced-trading",
+      "file": "src/views/EnhancedTradingView.tsx",
+      "endpoints": ["GET /api/trading/enhanced"],
+      "components": [],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "PositionsView",
+      "route": "/positions",
+      "file": "src/views/PositionsView.tsx",
+      "endpoints": ["GET /api/positions"],
+      "components": [],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "EnhancedStrategyLabView",
+      "route": "/strategylab",
+      "file": "src/views/EnhancedStrategyLabView.tsx",
+      "endpoints": ["GET /api/strategy/list", "POST /api/strategy/create"],
+      "components": [],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "StrategyInsightsView",
+      "route": "/strategy-insights",
+      "file": "src/views/StrategyInsightsView.tsx",
+      "endpoints": ["GET /api/strategy/insights"],
+      "components": [],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "ExchangeSettingsView",
+      "route": "/exchange-settings",
+      "file": "src/views/ExchangeSettingsView.tsx",
+      "endpoints": ["GET /api/exchange/config", "POST /api/exchange/config"],
+      "components": ["ExchangeSettings"],
+      "errorHandling": "unknown",
+      "notes": "Needs DISABLED_BY_CONFIG, INVALID_API_KEY handling"
+    },
+    {
+      "name": "MonitoringView",
+      "route": "/monitoring",
+      "file": "src/views/MonitoringView.tsx",
+      "endpoints": ["GET /api/monitoring/metrics"],
+      "components": [],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "DiagnosticsView",
+      "route": "/diagnostics",
+      "file": "src/views/DiagnosticsView.tsx",
+      "endpoints": ["GET /api/diagnostics"],
+      "components": [],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    },
+    {
+      "name": "StrategyBuilderView",
+      "route": "/strategyBuilder",
+      "file": "src/views/StrategyBuilderView.tsx",
+      "endpoints": ["POST /api/strategy/build"],
+      "components": ["StrategyTemplateEditor"],
+      "errorHandling": "unknown",
+      "notes": "Needs verification"
+    }
+  ]
+}
