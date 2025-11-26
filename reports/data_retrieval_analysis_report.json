@@ -1,0 +1,552 @@
+{
+  "reportMetadata": {
+    "title": "Cryptocurrency Trading Platform - Data Retrieval Analysis Report",
+    "generatedAt": "2025-11-26T00:00:00Z",
+    "version": "1.0.0",
+    "platform": "BoltAI Crypto Trading Platform"
+  },
+
+  "executiveSummary": {
+    "overview": "This is a comprehensive cryptocurrency trading and signal analysis platform with a multi-provider data architecture. The platform integrates 38+ fallback data sources with intelligent cascading, caching, and rate limiting mechanisms.",
+    "primaryDataFlow": "DatasourceClient → MultiProviderMarketDataService → Individual Provider APIs",
+    "architecturePattern": "Singleton services with fallback chains and centralized configuration",
+    "dataMode": "Multi-provider with HuggingFace as primary AI/ML data source",
+    "keyStrengths": [
+      "Extensive fallback provider chain (38+ sources)",
+      "Centralized API configuration with key resolution fallback",
+      "Smart rate limiting with token bucket algorithm",
+      "Intelligent caching with configurable TTL",
+      "DataRefreshCoordinator prevents duplicate API calls"
+    ],
+    "keyIssues": [
+      "Binance service intentionally neutralized (returns dummy data)",
+      "Some API keys are hardcoded in configuration files",
+      "CoinMarketCap disabled due to quota limitations",
+      "Mixed testnet/mainnet configuration complexity"
+    ]
+  },
+
+  "routingSystem": {
+    "description": "Express-based routing with centralized data source controller",
+    "mainRoutes": {
+      "/api/config/data-source": {
+        "GET": "Retrieve current data source configuration",
+        "POST": "Update primary data source (runtime override)"
+      },
+      "/api/market": "Real-time market data",
+      "/api/market/history": "Historical OHLCV data",
+      "/api/sentiment": "Market sentiment analysis",
+      "/api/news/latest": "Crypto news aggregation",
+      "/api/ai/predict": "AI-powered predictions",
+      "/api/scoring/snapshot": "Signal scoring snapshots",
+      "/api/trading/portfolio": "Portfolio management",
+      "/binance/*": "Binance proxy endpoints",
+      "/coingecko/*": "CoinGecko proxy endpoints"
+    },
+    "dataFlow": {
+      "frontend": "React components → Custom hooks → DatasourceClient",
+      "backend": "Express routes → Controllers → Services → External APIs",
+      "caching": "TTLCache at service level with configurable expiration"
+    }
+  },
+
+  "dataSources": {
+    "marketData": {
+      "primary": {
+        "name": "CoinGecko",
+        "baseUrl": "https://api.coingecko.com/api/v3",
+        "status": "active",
+        "requiresApiKey": false,
+        "rateLimit": "50 requests/minute",
+        "features": ["prices", "market_cap", "volume", "historical_data"],
+        "notes": "Primary source for market data, no API key required"
+      },
+      "fallbacks": [
+        {
+          "name": "CoinCap",
+          "baseUrl": "https://api.coincap.io/v2",
+          "status": "active",
+          "requiresApiKey": false,
+          "rateLimit": "200 requests/minute"
+        },
+        {
+          "name": "CoinPaprika",
+          "baseUrl": "https://api.coinpaprika.com/v1",
+          "status": "active",
+          "requiresApiKey": false
+        },
+        {
+          "name": "Binance Public API",
+          "baseUrl": "https://api.binance.com/api/v3",
+          "status": "active",
+          "requiresApiKey": false,
+          "rateLimit": "1200 requests/minute",
+          "notes": "Uses CORS proxy for browser requests"
+        },
+        {
+          "name": "CryptoCompare",
+          "baseUrl": "https://min-api.cryptocompare.com/data",
+          "status": "active",
+          "requiresApiKey": true,
+          "keyConfigured": true,
+          "rateLimit": "100 requests/minute"
+        },
+        {
+          "name": "CoinLore",
+          "baseUrl": "https://api.coinlore.net/api",
+          "status": "active",
+          "requiresApiKey": false
+        },
+        {
+          "name": "Kraken Public API",
+          "baseUrl": "https://api.kraken.com/0/public",
+          "status": "active",
+          "requiresApiKey": false,
+          "features": ["prices", "OHLCV", "ticker"]
+        },
+        {
+          "name": "CoinMarketCap",
+          "baseUrl": "https://pro-api.coinmarketcap.com/v1",
+          "status": "disabled",
+          "requiresApiKey": true,
+          "keyConfigured": true,
+          "notes": "DISABLED - Limited quota, use free providers first"
+        },
+        {
+          "name": "Messari",
+          "baseUrl": "https://data.messari.io/api/v1",
+          "status": "active",
+          "requiresApiKey": false
+        },
+        {
+          "name": "Nomics",
+          "baseUrl": "https://api.nomics.com/v1",
+          "status": "active",
+          "requiresApiKey": false
+        }
+      ]
+    },
+    "exchangeIntegrations": {
+      "KuCoin": {
+        "status": "active",
+        "baseUrl": {
+          "mainnet": "https://api.kucoin.com",
+          "sandbox": "https://api-sandbox.kucoin.com"
+        },
+        "websocket": {
+          "mainnet": "wss://ws-api-spot.kucoin.com",
+          "sandbox": "wss://ws-api-sandbox.kucoin.com"
+        },
+        "features": [
+          "klines (OHLCV)",
+          "ticker",
+          "order management",
+          "account info",
+          "WebSocket streaming"
+        ],
+        "authentication": "HMAC-SHA256 with passphrase",
+        "rateLimit": "1800 requests/minute",
+        "notes": "Full implementation with testnet support"
+      },
+      "Binance": {
+        "status": "neutralized",
+        "notes": "Service intentionally disabled - All methods return dummy data. Real data should flow through DatasourceClient",
+        "reason": "Phase 4 neutralization to consolidate data flow"
+      }
+    },
+    "aiAndMLSources": {
+      "HuggingFace": {
+        "status": "active",
+        "baseUrls": {
+          "inference": "https://api-inference.huggingface.co/models",
+          "datasets": "https://datasets-server.huggingface.co",
+          "api": "https://huggingface.co/api"
+        },
+        "authentication": {
+          "method": "Bearer token",
+          "keyResolution": "HF_TOKEN_B64 (base64) → HUGGINGFACE_API_KEY → config"
+        },
+        "models": {
+          "primary": "ElKulako/cryptobert",
+          "fallback": "kk08/CryptoBERT"
+        },
+        "datasets": {
+          "BTC": "WinkingFace/CryptoLM-Bitcoin-BTC-USDT",
+          "ETH": "WinkingFace/CryptoLM-Ethereum-ETH-USDT",
+          "SOL": "WinkingFace/CryptoLM-Solana-SOL-USDT",
+          "XRP": "WinkingFace/CryptoLM-Ripple-XRP-USDT",
+          "DEFAULT": "linxy/CryptoCoin"
+        },
+        "rateLimit": "30 requests/second (free tier)",
+        "features": ["sentiment_analysis", "OHLCV_historical", "AI_predictions"]
+      }
+    },
+    "sentimentSources": {
+      "primary": {
+        "name": "Alternative.me Fear & Greed Index",
+        "baseUrl": "https://api.alternative.me/fng",
+        "status": "active",
+        "requiresApiKey": false
+      },
+      "fallbacks": [
+        "Santiment (GraphQL)",
+        "LunarCrush",
+        "The Tie",
+        "CryptoQuant",
+        "Glassnode Social",
+        "Reddit sentiment"
+      ]
+    },
+    "newsSources": {
+      "primary": {
+        "name": "CryptoPanic",
+        "baseUrl": "https://cryptopanic.com/api/v1",
+        "status": "active"
+      },
+      "fallbacks": [
+        {
+          "name": "NewsAPI",
+          "baseUrl": "https://newsapi.org/v2",
+          "status": "active",
+          "rateLimit": "100 requests/day"
+        },
+        "CryptoControl",
+        "CoinDesk RSS",
+        "CoinTelegraph",
+        "CryptoSlate",
+        "The Block"
+      ]
+    },
+    "blockchainExplorers": {
+      "ethereum": {
+        "primary": "Etherscan",
+        "baseUrl": "https://api.etherscan.io/api",
+        "keyConfigured": true,
+        "fallbacks": ["Blockchair", "Blockscout", "Ethplorer", "Infura RPC", "Alchemy RPC", "Covalent"]
+      },
+      "bsc": {
+        "primary": "BSCScan",
+        "baseUrl": "https://api.bscscan.com/api",
+        "keyConfigured": true,
+        "fallbacks": ["Ankr BSC", "Blockchair BSC", "NodeReal BSC"]
+      },
+      "tron": {
+        "primary": "TronScan",
+        "baseUrl": "https://apilist.tronscanapi.com/api",
+        "keyConfigured": true,
+        "fallbacks": ["TronGrid", "TronStack", "Blockchair Tron"]
+      }
+    },
+    "whaleTracking": [
+      "ClankApp",
+      "WhaleAlert",
+      "Bitquery (GraphQL)",
+      "Arkham",
+      "Nansen",
+      "DeBank",
+      "Zerion"
+    ]
+  },
+
+  "apiConfigurations": {
+    "keyResolutionOrder": [
+      "Environment variables (process.env)",
+      "Providers config file (providers_config.json)",
+      "API sources file (api - Copy.txt)",
+      "Hardcoded defaults"
+    ],
+    "configurationFiles": {
+      "/workspace/config/api.json": "Main API configuration with symbols, update intervals, and API settings",
+      "/workspace/config/exchanges.json": "Exchange-specific configurations (KuCoin)",
+      "/workspace/config/providers_config.json": "Comprehensive provider configuration with 38+ sources",
+      "/workspace/src/config/CentralizedAPIConfig.ts": "TypeScript centralized API config with fallback chains",
+      "/workspace/src/config/apiSources.ts": "API key resolution with fallback mechanisms",
+      "/workspace/src/config/apiConfig.ts": "Market provider configuration with backoff settings"
+    },
+    "rateManagement": {
+      "implementation": "TokenBucket algorithm",
+      "providers": {
+        "CoinGecko": "50 requests/minute",
+        "CoinMarketCap": "5 requests/second",
+        "CryptoCompare": "100 requests/minute",
+        "Binance": "1200 requests/minute",
+        "CoinCap": "200 requests/minute",
+        "HuggingFace": "30 requests/second"
+      },
+      "backoff": {
+        "baseMs": 500,
+        "maxMs": 8000,
+        "factor": 2,
+        "jitter": 0.25
+      }
+    },
+    "corsProxies": [
+      "https://api.allorigins.win/get?url=",
+      "https://proxy.cors.sh/",
+      "https://proxy.corsfix.com/?url=",
+      "https://api.codetabs.com/v1/proxy?quest=",
+      "https://thingproxy.freeboard.io/fetch/"
+    ]
+  },
+
+  "dataAggregation": {
+    "coordinationMechanisms": {
+      "DataRefreshCoordinator": {
+        "purpose": "Consolidates multiple polling intervals into single coordinated refresh cycle",
+        "problem_solved": "Previously 6+ components polling every 30s = 12+ API requests/minute for same data",
+        "solution": "Single refresh cycle that all components subscribe to",
+        "config": {
+          "refreshInterval": "60000ms (60 seconds)",
+          "minCallInterval": "5000ms (5 seconds minimum between same type)",
+          "dataTypes": ["signals", "portfolio", "marketData", "health"]
+        }
+      },
+      "DatasourceClient": {
+        "purpose": "Universal data source client - Single source of truth",
+        "pattern": "Singleton with centralized API base URL",
+        "features": [
+          "Timeout handling (10s default)",
+          "Error validation",
+          "Structured error logging"
+        ],
+        "endpoints": [
+          "getTopCoins",
+          "getPriceChart",
+          "getMarketStats",
+          "getLatestNews",
+          "getMarketSentiment",
+          "getAIPrediction",
+          "getPortfolio",
+          "getScoringSnapshot"
+        ]
+      },
+      "MultiProviderMarketDataService": {
+        "purpose": "Multi-source market data with intelligent fallback",
+        "providers_order": [
+          "CoinGecko (primary)",
+          "CoinCap",
+          "CoinPaprika",
+          "Binance",
+          "CryptoCompare",
+          "CoinLore"
+        ],
+        "features": [
+          "Automatic fallback on failure",
+          "Resource monitoring for smart prioritization",
+          "Cache hits/misses tracking",
+          "Symbol to provider ID mapping"
+        ]
+      }
+    },
+    "cachingStrategy": {
+      "levels": {
+        "priceCache": "15 seconds TTL",
+        "ohlcvCache": "120 seconds (2 minutes) TTL",
+        "marketDataCache": "120 seconds (2 minutes) TTL",
+        "newsCache": "600 seconds (10 minutes) TTL",
+        "sentimentCache": "3600 seconds (1 hour) TTL",
+        "hfOhlcvCache": "180 seconds (3 minutes) TTL"
+      },
+      "implementation": "TTLCache class with automatic expiration"
+    },
+    "fallbackData": {
+      "FallbackDataManager": {
+        "purpose": "Provides backup data when real APIs are unavailable",
+        "sources": ["Local cache", "LocalStorage", "Hardcoded reasonable defaults"],
+        "cacheTTL": "300 seconds (5 minutes)",
+        "supportedData": ["prices", "portfolio", "positions", "signals", "sentiment", "news"]
+      }
+    }
+  },
+
+  "issuesAndInefficiencies": {
+    "critical": [
+      {
+        "id": "CRIT-001",
+        "title": "Binance Service Completely Neutralized",
+        "description": "BinanceService is intentionally disabled and returns dummy data for all methods",
+        "impact": "Cannot use Binance as a data source without refactoring",
+        "file": "/workspace/src/services/BinanceService.ts",
+        "recommendation": "Either fully implement or remove the service to reduce code complexity"
+      },
+      {
+        "id": "CRIT-002",
+        "title": "Hardcoded API Keys in Configuration Files",
+        "description": "Several API keys (CMC, Etherscan, BSCScan, TronScan) are hardcoded in JSON configuration files",
+        "impact": "Security risk - keys visible in version control",
+        "files": [
+          "/workspace/config/api.json",
+          "/workspace/config/providers_config.json",
+          "/workspace/src/config/CentralizedAPIConfig.ts"
+        ],
+        "recommendation": "Move all API keys to environment variables or a secrets manager"
+      }
+    ],
+    "high": [
+      {
+        "id": "HIGH-001",
+        "title": "CoinMarketCap Disabled Due to Quota",
+        "description": "CoinMarketCap is explicitly disabled in configuration due to limited quota",
+        "impact": "Reduces fallback options for market data",
+        "recommendation": "Consider upgrading CMC plan or implementing dynamic quota management"
+      },
+      {
+        "id": "HIGH-002",
+        "title": "Mixed Testnet/Mainnet Configuration",
+        "description": "KuCoin has testnet mode enabled by default, which may cause confusion",
+        "impact": "Risk of trading with wrong endpoints",
+        "recommendation": "Make environment more explicit with clear production/development separation"
+      },
+      {
+        "id": "HIGH-003",
+        "title": "Inconsistent Error Handling",
+        "description": "Some services throw errors while others return empty arrays on failure",
+        "impact": "Unpredictable behavior in error scenarios",
+        "recommendation": "Standardize error handling across all data services"
+      }
+    ],
+    "medium": [
+      {
+        "id": "MED-001",
+        "title": "Symbol Mapping Duplication",
+        "description": "Symbol-to-provider ID mappings are duplicated across multiple services",
+        "files": [
+          "MultiProviderMarketDataService.ts",
+          "RealDataManager.ts",
+          "KuCoinService.ts"
+        ],
+        "recommendation": "Centralize symbol mappings in a single configuration file"
+      },
+      {
+        "id": "MED-002",
+        "title": "Multiple CMC API Keys with Same Quota",
+        "description": "Two CoinMarketCap keys configured but both likely share the same account quota",
+        "impact": "No real redundancy benefit",
+        "recommendation": "Use separate CMC accounts for true redundancy"
+      },
+      {
+        "id": "MED-003",
+        "title": "No Request Deduplication Across Services",
+        "description": "Different services may request the same data independently",
+        "impact": "Potentially wasted API calls",
+        "recommendation": "Implement request-level deduplication with shared cache"
+      }
+    ],
+    "low": [
+      {
+        "id": "LOW-001",
+        "title": "Unused CORS Proxies",
+        "description": "5 CORS proxies configured but usage is not clear",
+        "recommendation": "Implement health checking and automatic proxy rotation"
+      },
+      {
+        "id": "LOW-002",
+        "title": "Cache TTL Inconsistency",
+        "description": "Different cache TTLs defined in different files with no central management",
+        "recommendation": "Centralize cache TTL configuration"
+      }
+    ]
+  },
+
+  "optimizationSuggestions": {
+    "immediate": [
+      {
+        "id": "OPT-001",
+        "title": "Migrate API Keys to Environment Variables",
+        "priority": "critical",
+        "effort": "low",
+        "description": "Move all hardcoded API keys from JSON files to .env",
+        "implementation": "Create a .env.example file and update services to use process.env"
+      },
+      {
+        "id": "OPT-002",
+        "title": "Enable Request-Level Caching",
+        "priority": "high",
+        "effort": "medium",
+        "description": "Implement Redis or in-memory cache at the request coordinator level",
+        "implementation": "Use the existing requestCoordinator.ts to add cross-service caching"
+      }
+    ],
+    "shortTerm": [
+      {
+        "id": "OPT-003",
+        "title": "Implement Health-Based Provider Selection",
+        "priority": "high",
+        "effort": "medium",
+        "description": "Use ResourceMonitorService data to dynamically prioritize healthy providers",
+        "implementation": "Extend MultiProviderMarketDataService to check provider health before requests"
+      },
+      {
+        "id": "OPT-004",
+        "title": "Centralize Symbol Mappings",
+        "priority": "medium",
+        "effort": "low",
+        "description": "Create a single symbol-registry.json with all provider ID mappings",
+        "implementation": "Extract mappings from services into shared config"
+      },
+      {
+        "id": "OPT-005",
+        "title": "Add Circuit Breaker Pattern",
+        "priority": "medium",
+        "effort": "medium",
+        "description": "Implement circuit breaker to prevent cascading failures",
+        "implementation": "Use the circuitBreaker config in providers_config.json as foundation"
+      }
+    ],
+    "longTerm": [
+      {
+        "id": "OPT-006",
+        "title": "Implement WebSocket Aggregation",
+        "priority": "medium",
+        "effort": "high",
+        "description": "Use WebSocket connections for real-time data instead of polling where possible",
+        "implementation": "Extend KuCoin WebSocket support to other providers"
+      },
+      {
+        "id": "OPT-007",
+        "title": "Add Prometheus Metrics",
+        "priority": "low",
+        "effort": "medium",
+        "description": "Expose API call metrics, cache hit rates, and provider health to Prometheus",
+        "implementation": "Use existing /workspace/src/observability/metrics.ts as foundation"
+      },
+      {
+        "id": "OPT-008",
+        "title": "Implement GraphQL Gateway",
+        "priority": "low",
+        "effort": "high",
+        "description": "Create GraphQL layer to optimize frontend data fetching",
+        "implementation": "Add Apollo Server with data loader pattern"
+      }
+    ]
+  },
+
+  "supportedSymbols": [
+    "BTC", "ETH", "ADA", "DOT", "LINK", "LTC", "BCH", "XLM", "XRP", "TRX",
+    "SOL", "BNB", "MATIC", "AVAX", "ATOM", "DOGE", "USDT", "USDC"
+  ],
+
+  "rpcNodes": {
+    "ethereum": [
+      "https://eth.llamarpc.com",
+      "https://ethereum.publicnode.com",
+      "https://cloudflare-eth.com",
+      "https://rpc.ankr.com/eth",
+      "https://eth.drpc.org",
+      "https://1rpc.io/eth"
+    ],
+    "bsc": [
+      "https://bsc-dataseed.binance.org",
+      "https://bsc-dataseed1.defibit.io",
+      "https://rpc.ankr.com/bsc"
+    ],
+    "polygon": [
+      "https://polygon-rpc.com",
+      "https://rpc.ankr.com/polygon"
+    ],
+    "tron": [
+      "https://api.trongrid.io",
+      "https://api.tronstack.io"
+    ]
+  }
+}
