@@ -48,6 +48,8 @@
     "test:api:market": "tsx src/testing/cli.ts market",
     "test:api:integration": "tsx src/testing/cli.ts integration",
     "test:api:performance": "tsx src/testing/cli.ts performance",
+    "test:ohlcv": "tsx scripts/test-ohlcv-data-verification.ts",
+    "test:ohlcv:simple": "bash scripts/test-ohlcv-simple.sh",
     "test:api:security": "tsx src/testing/cli.ts security",
     "test:api:concurrent": "tsx src/testing/cli.ts concurrent 20",
     "test:api:load": "tsx src/testing/cli.ts load 10 10",
