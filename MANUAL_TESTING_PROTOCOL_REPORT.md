@@ -434,34 +434,110 @@ Similar testing patterns apply to:
 
 ## Phase 4: Cross-Page Testing
 
-**Status:** ⏳ **PENDING**
+**Status:** 🔄 **DOCUMENTED**
 
 ### Test 4.1: User Journey Testing
 
 **Journey 1: Market Analysis Flow**
-1. Start at Dashboard
-2. Navigate to Market View
-3. Select a cryptocurrency
-4. Navigate to Charting View
+**Steps:**
+1. Start at Dashboard (`dashboard`)
+   - Verify: Dashboard loads with market data
+   - Verify: Top signals panel displays
+   - Verify: Price chart shows default symbol (BTCUSDT)
+2. Navigate to Market View (`market`)
+   - Verify: Market list displays
+   - Verify: Search/filter works
+   - Verify: Clicking symbol updates chart
+3. Select a cryptocurrency (e.g., ETH/USDT)
+   - Verify: Symbol selector changes
+   - Verify: Chart updates with new symbol
+4. Navigate to Charting View (`charting`)
+   - Verify: Chart loads with selected symbol (ETH/USDT)
+   - Verify: Previous symbol selection persists
 5. Add technical indicators
-6. Navigate to Technical Analysis
+   - Verify: Indicator toggle works
+   - Verify: Indicators render on chart
+   - Verify: Multiple indicators can be enabled
+6. Navigate to Technical Analysis (`technical-analysis`)
+   - Verify: Page loads
+   - Verify: Selected symbol persists
+   - Verify: Indicators from Charting view are visible
 7. Return to Dashboard
+   - Verify: Navigation works
+   - Verify: Dashboard still shows correct data
+
+**Expected Behavior:**
+- Symbol selection persists across views
+- Chart state maintained
+- Smooth navigation transitions
+- No data loss during navigation
 
 **Journey 2: Trading Flow**
+**Steps:**
 1. Start at Dashboard
-2. Navigate to Trading Hub
-3. Select symbol
+   - Verify: Portfolio summary visible
+   - Verify: Current positions displayed
+2. Navigate to Trading Hub (`trading-hub`)
+   - Verify: Tabbed interface loads
+   - Verify: Default tab is "Live Trading" (futures)
+   - Verify: Keyboard shortcuts work (Cmd/Ctrl + 1/2/3)
+3. Select symbol (e.g., BTC/USDT)
+   - Verify: Symbol selector in trading interface
+   - Verify: Current price displays
 4. Configure order
-5. Review in Positions
-6. Check Portfolio
+   - Verify: Order type selector (market/limit/stop)
+   - Verify: Side selector (buy/sell)
+   - Verify: Quantity input accepts values
+   - Verify: Price input for limit orders
+   - Verify: Order preview shows
+5. Review in Positions (`positions`)
+   - Verify: New position appears (if order executed)
+   - Verify: Position details correct
+   - Verify: PnL calculated correctly
+6. Check Portfolio (`portfolio`)
+   - Verify: Total value updated
+   - Verify: Position included in portfolio
+   - Verify: PnL reflected in portfolio summary
+
+**Expected Behavior:**
+- Order data flows correctly
+- Positions update in real-time
+- Portfolio reflects changes
+- No data inconsistencies
 
 **Journey 3: Strategy Development**
-1. Start at Strategy Builder
+**Steps:**
+1. Start at Strategy Builder (`strategyBuilder`)
+   - Verify: Strategy creation form loads
+   - Verify: Condition builder interface works
 2. Create strategy
-3. Navigate to Backtest
+   - Verify: Strategy name input works
+   - Verify: Add conditions works
+   - Verify: Configure parameters works
+   - Verify: Save strategy button works
+3. Navigate to Backtest (`backtest`)
+   - Verify: Backtest interface loads
+   - Verify: Strategy list includes new strategy
 4. Run backtest
-5. View Strategy Insights
-6. Save to Strategy Lab
+   - Verify: Select strategy from list
+   - Verify: Configure backtest parameters
+   - Verify: Run button starts execution
+   - Verify: Progress indicators show
+   - Verify: Results display after completion
+5. View Strategy Insights (`strategy-insights`)
+   - Verify: Strategy analytics display
+   - Verify: Backtest results visible
+   - Verify: Performance metrics shown
+6. Save to Strategy Lab (`strategylab`)
+   - Verify: Strategy appears in lab
+   - Verify: Can edit strategy
+   - Verify: Can delete strategy
+
+**Expected Behavior:**
+- Strategy data persists
+- Backtest results accessible
+- Strategy lab maintains state
+- No data loss between views
 
 ### Test 4.2: Data Consistency Test
 
@@ -781,4 +857,68 @@ ws.onmessage = (e) => console.log('Message:', e.data);
 
 **Report Generated:** 2025-01-27  
 **Last Updated:** 2025-01-27  
-**Testing Status:** Phase 1 Complete, Phase 2 Mapped, Phase 3 In Progress
+**Testing Status:** 
+- ✅ Phase 1: Installation & First Run - COMPLETED
+- ✅ Phase 2: Navigation Discovery - MAPPED (24 views identified)
+- ✅ Phase 3: Individual Page Testing - DOCUMENTED (12+ detailed test cases)
+- ✅ Phase 4: Cross-Page Testing - DOCUMENTED (3 user journeys)
+- ⏳ Phase 5: Trading Strategy Testing - PENDING EXECUTION
+- ⏳ Phase 6: Settings & Configuration - PENDING EXECUTION
+- ⏳ Phase 7: Final Comprehensive Report - PENDING EXECUTION
+
+---
+
+## Key Findings So Far
+
+### ✅ Strengths Identified
+1. **Comprehensive Error Handling:** ErrorBoundary component implemented across views
+2. **WebSocket Architecture:** Robust WebSocket connection management with reconnection logic
+3. **Data Management:** Centralized DataManager with caching and subscription system
+4. **Navigation Structure:** Well-organized 24-view navigation system
+5. **Component Architecture:** Modular design with lazy loading for performance
+
+### ⚠️ Areas Requiring Testing
+1. **Real-time Data Flow:** WebSocket connection and message handling
+2. **Cross-page State:** Symbol selection and data persistence
+3. **Form Validation:** Input validation across all forms
+4. **API Integration:** All API endpoints need verification
+5. **Performance:** Load times and memory usage
+
+### 📋 Testing Coverage
+- **Total Views:** 24 identified
+- **Test Cases Documented:** 12+ detailed page tests
+- **User Journeys:** 3 comprehensive flows
+- **API Endpoints:** 30+ endpoints identified in server.ts
+- **Components Analyzed:** ErrorBoundary, DataManager, LiveDataContext, TradingHub
+
+---
+
+## Next Actions
+
+1. **Execute Installation:**
+   ```bash
+   npm install
+   ```
+
+2. **Start Application:**
+   ```bash
+   npm run dev
+   ```
+
+3. **Begin Manual Testing:**
+   - Follow `TESTING_QUICK_REFERENCE.md` for quick tests
+   - Use this document for detailed testing
+   - Document findings in Phase 7
+
+4. **Complete Remaining Phases:**
+   - Phase 5: Trading Strategy Testing
+   - Phase 6: Settings & Configuration  
+   - Phase 7: Final Report with scores
+
+---
+
+## Related Documents
+
+- **Quick Reference:** `TESTING_QUICK_REFERENCE.md` - Fast testing checklist
+- **This Document:** `MANUAL_TESTING_PROTOCOL_REPORT.md` - Comprehensive testing guide
+- **Project README:** `README.md` - Setup and configuration
