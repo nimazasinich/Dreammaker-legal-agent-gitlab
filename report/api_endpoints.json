@@ -1,0 +1,936 @@
+{
+  "apiVersion": "1.0.0",
+  "lastUpdated": "2025-11-28T00:00:00.000Z",
+  "baseUrl": "http://localhost:8000",
+  "documentation": {
+    "format": "OpenAPI-like JSON documentation",
+    "purpose": "Complete API endpoint reference for the trading platform"
+  },
+  "endpoints": {
+    "futures": {
+      "basePath": "/api/futures",
+      "description": "Futures trading operations including positions, orders, and margin management",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/positions",
+          "description": "List all open futures positions",
+          "response": { "type": "array", "items": "Position" }
+        },
+        {
+          "method": "POST",
+          "path": "/order",
+          "description": "Place a new futures order",
+          "requestBody": {
+            "symbol": "string (required)",
+            "side": "'BUY' | 'SELL' (required)",
+            "type": "'MARKET' | 'LIMIT' (required)",
+            "qty": "number (required)",
+            "price": "number (optional, required for LIMIT)",
+            "leverage": "number (optional)",
+            "stopLoss": "number (optional)",
+            "takeProfit": "number (optional)",
+            "reduceOnly": "boolean (optional)",
+            "marginMode": "'ISOLATED' | 'CROSS' (optional)"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/position/:id",
+          "description": "Close an existing futures position",
+          "params": { "id": "string (position ID)" }
+        },
+        {
+          "method": "GET",
+          "path": "/margin",
+          "description": "Get margin account information"
+        },
+        {
+          "method": "GET",
+          "path": "/orders",
+          "description": "Get all orders (open and recent)"
+        },
+        {
+          "method": "DELETE",
+          "path": "/order/:id",
+          "description": "Cancel a pending order",
+          "params": { "id": "string (order ID)" }
+        },
+        {
+          "method": "POST",
+          "path": "/leverage",
+          "description": "Set leverage for a symbol",
+          "requestBody": {
+            "symbol": "string (required)",
+            "leverage": "number (required, 1-125)"
+          }
+        }
+      ]
+    },
+    "strategies": {
+      "basePath": "/api/strategies",
+      "description": "Strategy management and execution",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/templates",
+          "description": "List all strategy templates"
+        },
+        {
+          "method": "POST",
+          "path": "/templates",
+          "description": "Create a new strategy template",
+          "requestBody": {
+            "name": "string (required)",
+            "description": "string (optional)",
+            "parameters": "object (required)",
+            "signals": "array (required)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/templates/:id",
+          "description": "Get a specific strategy template"
+        },
+        {
+          "method": "PUT",
+          "path": "/templates/:id",
+          "description": "Update a strategy template"
+        },
+        {
+          "method": "DELETE",
+          "path": "/templates/:id",
+          "description": "Delete a strategy template"
+        },
+        {
+          "method": "POST",
+          "path": "/apply",
+          "description": "Apply a strategy template and run",
+          "requestBody": {
+            "templateId": "string (required)",
+            "symbol": "string (required)",
+            "timeframe": "string (optional)"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/apply/batch",
+          "description": "Apply multiple strategy templates"
+        }
+      ]
+    },
+    "backtest": {
+      "basePath": "/api/backtest",
+      "description": "Backtesting operations",
+      "routes": [
+        {
+          "method": "POST",
+          "path": "/run",
+          "description": "Execute a backtest",
+          "requestBody": {
+            "strategy": "object (required)",
+            "symbol": "string (required)",
+            "timeframe": "string (required)",
+            "startDate": "string (required)",
+            "endDate": "string (required)",
+            "initialCapital": "number (optional)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/results/:id",
+          "description": "Get backtest results by ID"
+        },
+        {
+          "method": "GET",
+          "path": "/history",
+          "description": "List all past backtests"
+        },
+        {
+          "method": "DELETE",
+          "path": "/results/:id",
+          "description": "Delete a backtest result"
+        }
+      ]
+    },
+    "marketUniverse": {
+      "basePath": "/api/market/universe",
+      "description": "Market universe and symbol information",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/",
+          "description": "List all supported symbols and exchanges"
+        },
+        {
+          "method": "GET",
+          "path": "/:exchange",
+          "description": "Get symbols for a specific exchange"
+        },
+        {
+          "method": "GET",
+          "path": "/search/:query",
+          "description": "Search symbols by name or ticker"
+        }
+      ]
+    },
+    "marketReadiness": {
+      "basePath": "/api/market/readiness",
+      "description": "Data feed readiness checks",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/:symbol",
+          "description": "Check data readiness for a symbol"
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "description": "Batch readiness check for multiple symbols"
+        },
+        {
+          "method": "POST",
+          "path": "/refresh",
+          "description": "Trigger data refresh for symbols"
+        }
+      ]
+    },
+    "ml": {
+      "basePath": "/api/ml",
+      "description": "Machine learning training, tuning, and inference",
+      "routes": [
+        {
+          "method": "POST",
+          "path": "/train",
+          "description": "Start ML model training",
+          "requestBody": {
+            "symbols": "string[] (optional)",
+            "timeframe": "string (optional)",
+            "lookbackDays": "number (optional)",
+            "modelType": "string (optional)",
+            "parameters": "object (optional)"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tune",
+          "description": "Run hyperparameter tuning",
+          "requestBody": {
+            "symbol": "string (required)",
+            "timeframe": "string (optional)",
+            "parameterSpace": "object (optional)",
+            "trials": "number (optional)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/result/:id",
+          "description": "Get training/tuning result by ID"
+        },
+        {
+          "method": "GET",
+          "path": "/latest",
+          "description": "Get latest training/tuning result"
+        },
+        {
+          "method": "GET",
+          "path": "/all",
+          "description": "List all training/tuning results"
+        },
+        {
+          "method": "POST",
+          "path": "/predict",
+          "description": "Make predictions using trained model"
+        },
+        {
+          "method": "GET",
+          "path": "/models",
+          "description": "List available ML models"
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "description": "Get ML system status"
+        },
+        {
+          "method": "DELETE",
+          "path": "/result/:id",
+          "description": "Delete a training/tuning result"
+        }
+      ]
+    },
+    "news": {
+      "basePath": "/api/news",
+      "description": "News aggregation and sentiment analysis",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/latest",
+          "description": "Fetch latest market news"
+        },
+        {
+          "method": "POST",
+          "path": "/analyze",
+          "description": "Analyze sentiment of text",
+          "requestBody": {
+            "text": "string (required)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/sentiment/:symbol",
+          "description": "Get sentiment for a specific symbol"
+        },
+        {
+          "method": "GET",
+          "path": "/trending",
+          "description": "Get trending topics"
+        },
+        {
+          "method": "GET",
+          "path": "/sources",
+          "description": "List available news sources"
+        },
+        {
+          "method": "POST",
+          "path": "/batch-analyze",
+          "description": "Batch sentiment analysis"
+        }
+      ]
+    },
+    "diagnosticsMarket": {
+      "basePath": "/api/diagnostics/market",
+      "description": "Market data diagnostics and quality checks",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/missing-data/:symbol",
+          "description": "Report missing data for a symbol"
+        },
+        {
+          "method": "GET",
+          "path": "/outliers/:symbol",
+          "description": "Detect data outliers"
+        },
+        {
+          "method": "GET",
+          "path": "/quality/:symbol",
+          "description": "Get data quality report"
+        },
+        {
+          "method": "GET",
+          "path": "/latency",
+          "description": "Check data feed latency"
+        }
+      ]
+    },
+    "systemDiagnostics": {
+      "basePath": "/api/system/diagnostics",
+      "description": "System health diagnostics",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/",
+          "description": "Comprehensive system diagnostics"
+        },
+        {
+          "method": "GET",
+          "path": "/processes",
+          "description": "Process information"
+        },
+        {
+          "method": "GET",
+          "path": "/disk",
+          "description": "Disk usage information"
+        },
+        {
+          "method": "GET",
+          "path": "/environment",
+          "description": "Environment information"
+        }
+      ]
+    },
+    "systemMetrics": {
+      "basePath": "/api/system/metrics",
+      "description": "Detailed system metrics",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/",
+          "description": "Current system metrics"
+        },
+        {
+          "method": "GET",
+          "path": "/history",
+          "description": "Historical metrics data"
+        },
+        {
+          "method": "GET",
+          "path": "/cpu",
+          "description": "Detailed CPU metrics"
+        },
+        {
+          "method": "GET",
+          "path": "/memory",
+          "description": "Detailed memory metrics"
+        },
+        {
+          "method": "GET",
+          "path": "/network",
+          "description": "Network metrics"
+        },
+        {
+          "method": "GET",
+          "path": "/uptime",
+          "description": "Uptime information"
+        },
+        {
+          "method": "GET",
+          "path": "/summary",
+          "description": "Metrics summary"
+        }
+      ]
+    },
+    "resources": {
+      "basePath": "/api/resources",
+      "description": "Server resource monitoring",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/",
+          "description": "Resource usage snapshot"
+        },
+        {
+          "method": "GET",
+          "path": "/cpu",
+          "description": "CPU usage details"
+        },
+        {
+          "method": "GET",
+          "path": "/memory",
+          "description": "Memory usage details"
+        },
+        {
+          "method": "GET",
+          "path": "/disk",
+          "description": "Disk usage"
+        },
+        {
+          "method": "GET",
+          "path": "/network",
+          "description": "Network information"
+        },
+        {
+          "method": "GET",
+          "path": "/summary",
+          "description": "Quick resource summary"
+        },
+        {
+          "method": "GET",
+          "path": "/alerts",
+          "description": "Resource alerts"
+        }
+      ]
+    },
+    "offline": {
+      "basePath": "/api/offline",
+      "description": "Offline/fallback data service",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/status",
+          "description": "Offline data availability status"
+        },
+        {
+          "method": "GET",
+          "path": "/market/:symbol",
+          "description": "Get offline market data"
+        },
+        {
+          "method": "GET",
+          "path": "/ohlcv/:symbol",
+          "description": "Get offline OHLCV data"
+        },
+        {
+          "method": "GET",
+          "path": "/symbols",
+          "description": "List symbols with offline data"
+        },
+        {
+          "method": "POST",
+          "path": "/cache",
+          "description": "Cache data for offline use"
+        }
+      ]
+    },
+    "optionalPublic": {
+      "basePath": "/api/optional/public",
+      "description": "Optional public data providers",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/fear-greed",
+          "description": "Fear & Greed index"
+        },
+        {
+          "method": "GET",
+          "path": "/dominance",
+          "description": "Market dominance data"
+        },
+        {
+          "method": "GET",
+          "path": "/exchanges",
+          "description": "Exchange information"
+        },
+        {
+          "method": "GET",
+          "path": "/global",
+          "description": "Global market statistics"
+        },
+        {
+          "method": "GET",
+          "path": "/trending",
+          "description": "Trending coins"
+        }
+      ]
+    },
+    "optionalNews": {
+      "basePath": "/api/optional/news",
+      "description": "Alternative news sources",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/",
+          "description": "Get news from alternative sources"
+        },
+        {
+          "method": "GET",
+          "path": "/sources",
+          "description": "List news sources"
+        },
+        {
+          "method": "GET",
+          "path": "/crypto",
+          "description": "Crypto-specific news"
+        },
+        {
+          "method": "GET",
+          "path": "/sentiment",
+          "description": "News with sentiment analysis"
+        },
+        {
+          "method": "GET",
+          "path": "/aggregate",
+          "description": "Aggregated news feed"
+        }
+      ]
+    },
+    "optionalMarket": {
+      "basePath": "/api/optional/market",
+      "description": "Alternative market data providers",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/prices",
+          "description": "Market prices from alternative sources"
+        },
+        {
+          "method": "GET",
+          "path": "/ohlcv/:symbol",
+          "description": "OHLCV from alternative sources"
+        },
+        {
+          "method": "GET",
+          "path": "/orderbook/:symbol",
+          "description": "Order book data"
+        },
+        {
+          "method": "GET",
+          "path": "/trades/:symbol",
+          "description": "Recent trades"
+        },
+        {
+          "method": "GET",
+          "path": "/providers",
+          "description": "List available providers"
+        }
+      ]
+    },
+    "optionalOnchain": {
+      "basePath": "/api/optional/onchain",
+      "description": "On-chain analytics",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/whales",
+          "description": "Whale transaction data"
+        },
+        {
+          "method": "GET",
+          "path": "/metrics",
+          "description": "On-chain metrics"
+        },
+        {
+          "method": "GET",
+          "path": "/addresses/:address",
+          "description": "Address information"
+        },
+        {
+          "method": "GET",
+          "path": "/network/:blockchain",
+          "description": "Network statistics"
+        },
+        {
+          "method": "GET",
+          "path": "/exchange-flows",
+          "description": "Exchange flow data"
+        },
+        {
+          "method": "GET",
+          "path": "/defi/:protocol",
+          "description": "DeFi protocol statistics"
+        },
+        {
+          "method": "GET",
+          "path": "/providers",
+          "description": "List on-chain data providers"
+        }
+      ]
+    },
+    "huggingFace": {
+      "basePath": "/api/hf",
+      "description": "Hugging Face integration",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "description": "HF service health check"
+        },
+        {
+          "method": "POST",
+          "path": "/refresh",
+          "description": "Refresh HF cache"
+        },
+        {
+          "method": "GET",
+          "path": "/registry",
+          "description": "List available datasets and models"
+        },
+        {
+          "method": "POST",
+          "path": "/sentiment",
+          "description": "Sentiment analysis via HF",
+          "requestBody": {
+            "text": "string (required)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/ohlcv/:symbol",
+          "description": "OHLCV data from HF datasets"
+        },
+        {
+          "method": "GET",
+          "path": "/signals/:symbol",
+          "description": "Trading signals from HF models"
+        },
+        {
+          "method": "GET",
+          "path": "/analysis/:symbol",
+          "description": "Comprehensive analysis"
+        },
+        {
+          "method": "POST",
+          "path": "/predict",
+          "description": "Make predictions using HF models"
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "description": "HF system status"
+        },
+        {
+          "method": "POST",
+          "path": "/cache/clear",
+          "description": "Clear HF cache"
+        },
+        {
+          "method": "GET",
+          "path": "/datasets/:id",
+          "description": "Dataset information"
+        }
+      ]
+    },
+    "system": {
+      "basePath": "/api/system",
+      "description": "System health and configuration",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "description": "System health status"
+        },
+        {
+          "method": "GET",
+          "path": "/config",
+          "description": "System configuration"
+        }
+      ]
+    },
+    "ai": {
+      "basePath": "/api/ai",
+      "description": "AI training and inference",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/test-initialization",
+          "description": "Test network initialization"
+        },
+        {
+          "method": "GET",
+          "path": "/test-activations",
+          "description": "Test activation functions"
+        },
+        {
+          "method": "POST",
+          "path": "/create-network",
+          "description": "Create neural network"
+        },
+        {
+          "method": "POST",
+          "path": "/train-step",
+          "description": "Run training step"
+        },
+        {
+          "method": "POST",
+          "path": "/train-epoch",
+          "description": "Run training epoch"
+        },
+        {
+          "method": "POST",
+          "path": "/predict",
+          "description": "Make predictions"
+        },
+        {
+          "method": "POST",
+          "path": "/extract-features",
+          "description": "Extract features"
+        },
+        {
+          "method": "POST",
+          "path": "/backtest",
+          "description": "Run AI backtest"
+        }
+      ]
+    },
+    "analysis": {
+      "basePath": "/api/analysis",
+      "description": "Technical and sentiment analysis",
+      "routes": [
+        {
+          "method": "POST",
+          "path": "/signals",
+          "description": "Analyze technical signals"
+        },
+        {
+          "method": "POST",
+          "path": "/smc",
+          "description": "Smart Money Concepts analysis"
+        },
+        {
+          "method": "POST",
+          "path": "/elliott",
+          "description": "Elliott Wave analysis"
+        },
+        {
+          "method": "POST",
+          "path": "/harmonic",
+          "description": "Harmonic pattern detection"
+        },
+        {
+          "method": "POST",
+          "path": "/sentiment",
+          "description": "Sentiment analysis"
+        },
+        {
+          "method": "POST",
+          "path": "/whale",
+          "description": "Whale activity analysis"
+        }
+      ]
+    },
+    "trading": {
+      "basePath": "/api/trading",
+      "description": "Trading operations",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/portfolio",
+          "description": "Get portfolio status"
+        },
+        {
+          "method": "GET",
+          "path": "/market/:symbol",
+          "description": "Get market data for symbol"
+        }
+      ]
+    },
+    "trade": {
+      "basePath": "/api/trade",
+      "description": "Trade execution",
+      "routes": [
+        {
+          "method": "POST",
+          "path": "/execute",
+          "description": "Execute trade"
+        },
+        {
+          "method": "GET",
+          "path": "/open-positions",
+          "description": "Get open positions"
+        }
+      ]
+    },
+    "alerts": {
+      "basePath": "/api/alerts",
+      "description": "Alert management",
+      "routes": [
+        {
+          "method": "POST",
+          "path": "/",
+          "description": "Create new alert"
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "description": "Get alerts"
+        },
+        {
+          "method": "DELETE",
+          "path": "/:id",
+          "description": "Delete alert"
+        },
+        {
+          "method": "GET",
+          "path": "/analytics",
+          "description": "Alert analytics"
+        },
+        {
+          "method": "POST",
+          "path": "/:id/success",
+          "description": "Mark alert successful"
+        },
+        {
+          "method": "POST",
+          "path": "/:id/false-positive",
+          "description": "Mark alert as false positive"
+        }
+      ]
+    },
+    "marketData": {
+      "basePath": "/api/market",
+      "description": "Market data endpoints",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/overview",
+          "description": "Market overview"
+        },
+        {
+          "method": "GET",
+          "path": "/prices",
+          "description": "Current prices"
+        },
+        {
+          "method": "GET",
+          "path": "-data/prices",
+          "description": "Market data prices"
+        }
+      ]
+    },
+    "realData": {
+      "basePath": "/market",
+      "description": "Real market data endpoints",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/candlestick/:symbol",
+          "description": "Candlestick data"
+        },
+        {
+          "method": "GET",
+          "path": "/ohlcv",
+          "description": "OHLCV data"
+        },
+        {
+          "method": "GET",
+          "path": "/ohlcv/ready",
+          "description": "OHLCV readiness check"
+        }
+      ]
+    },
+    "health": {
+      "basePath": "/",
+      "description": "Health check endpoints",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "description": "Basic health check"
+        },
+        {
+          "method": "GET",
+          "path": "/status/health",
+          "description": "Status health check"
+        },
+        {
+          "method": "GET",
+          "path": "/metrics",
+          "description": "Prometheus metrics"
+        }
+      ]
+    },
+    "proxy": {
+      "basePath": "/api/proxy",
+      "description": "Unified proxy service",
+      "routes": [
+        {
+          "method": "ALL",
+          "path": "/*",
+          "description": "Proxy all requests to external APIs"
+        }
+      ]
+    },
+    "websocket": {
+      "basePath": "/ws",
+      "description": "WebSocket connection",
+      "routes": [
+        {
+          "method": "WS",
+          "path": "/",
+          "description": "WebSocket endpoint for real-time data"
+        }
+      ]
+    }
+  },
+  "httpStatusCodes": {
+    "200": "OK - Successful request",
+    "201": "Created - Resource created successfully",
+    "400": "Bad Request - Invalid input parameters",
+    "401": "Unauthorized - Authentication required",
+    "404": "Not Found - Resource not found",
+    "500": "Internal Server Error - Server error",
+    "503": "Service Unavailable - Service temporarily unavailable"
+  },
+  "responseFormat": {
+    "success": {
+      "success": true,
+      "data": "object | array",
+      "message": "string (optional)"
+    },
+    "error": {
+      "error": "string",
+      "message": "string"
+    }
+  }
+}
