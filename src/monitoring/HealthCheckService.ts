@@ -2,7 +2,9 @@
 import { Logger } from '../core/Logger.js';
 import { Database } from '../data/Database.js';
 import { RedisService } from '../services/RedisService.js';
-import { BinanceService } from '../services/BinanceService.js';
+// NOTE: BinanceService is REMOVED - using MixedModeDataService instead
+// import { BinanceService } from '../services/BinanceService.js';
+import { mixedModeDataService } from '../services/MixedModeDataService.js';
 import { ConfigManager } from '../core/ConfigManager.js';
 
 export interface HealthStatus {
@@ -11,7 +13,7 @@ export interface HealthStatus {
   services: {
     database: ServiceHealth;
     redis: ServiceHealth;
-    binance: ServiceHealth;
+    dataSource: ServiceHealth;  // Renamed from binance
     externalAPIs: ServiceHealth;
   };
   system: {
@@ -39,7 +41,8 @@ export class HealthCheckService {
   private logger = Logger.getInstance();
   private database = Database.getInstance();
   private redisService = RedisService.getInstance();
-  private binanceService = BinanceService.getInstance();
+  // NOTE: BinanceService REMOVED - using MixedModeDataService
+  // private binanceService = BinanceService.getInstance();
   private config = ConfigManager.getInstance();
   private lastHealthCheck: HealthStatus | null = null;
 
@@ -57,11 +60,11 @@ export class HealthCheckService {
     const checks = await Promise.allSettled([
       this.checkDatabase(),
       this.checkRedis(),
-      this.checkBinance(),
+      this.checkDataSource(),  // Changed from checkBinance to checkDataSource
       this.checkExternalAPIs()
     ]);
 
-    const [dbHealth, redisHealth, binanceHealth, apiHealth] = (checks || []).map((result, index) => {
+    const [dbHealth, redisHealth, dataSourceHealth, apiHealth] = (checks || []).map((result, index) => {
       if (result.status === 'fulfilled') {
         return result.value;
       }
@@ -75,7 +78,7 @@ export class HealthCheckService {
     const overallStatus = this.calculateOverallStatus([
       dbHealth,
       redisHealth,
-      binanceHealth,
+      dataSourceHealth,
       apiHealth
     ]);
 
@@ -87,7 +90,7 @@ export class HealthCheckService {
       services: {
         database: dbHealth,
         redis: redisHealth,
-        binance: binanceHealth,
+        dataSource: dataSourceHealth,  // Changed from binance
         externalAPIs: apiHealth
       },
       system: systemInfo
@@ -147,13 +150,39 @@ export class HealthCheckService {
     }
   }
 
-  private async checkBinance(): Promise<ServiceHealth> {
+  /**
+   * Check data source health using MixedModeDataService
+   * NOTE: Binance is REMOVED - using HuggingFace + fallback sources
+   */
+  private async checkDataSource(): Promise<ServiceHealth> {
     const startTime = Date.now();
     try {
-      // Simple ping check
-      const testSymbol = 'BTCUSDT';
-      await this.binanceService.getCurrentPrice(testSymbol);
+      // Check MixedModeDataService health
+      const stats = mixedModeDataService.getStats();
+      const healthStatus = mixedModeDataService.getSourceHealthStatus();
       const latency = Date.now() - startTime;
+
+      // Check if any sources are healthy
+      const healthySources = healthStatus.filter(s => s.isHealthy).length;
+      const totalSources = healthStatus.length;
+
+      if (healthySources === 0) {
+        return {
+          status: 'unhealthy',
+          error: 'No healthy data sources available',
+          latency,
+          lastCheck: Date.now()
+        };
+      }
+
+      if (healthySources < totalSources / 2) {
+        return {
+          status: 'degraded',
+          error: `Only ${healthySources}/${totalSources} data sources healthy`,
+          latency,
+          lastCheck: Date.now()
+        };
+      }
 
       return {
         status: 'healthy',

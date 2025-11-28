@@ -17,7 +17,8 @@ import { AdvancedCache } from '../core/AdvancedCache.js';
 import { MultiProviderMarketDataService } from './MultiProviderMarketDataService.js';
 import { HuggingFaceService } from './HuggingFaceService.js';
 import { hfDataEngineAdapter } from './HFDataEngineAdapter.js';
-import { BinanceService } from './BinanceService.js';
+// NOTE: BinanceService is REMOVED - system uses MixedMode with HuggingFace + fallbacks
+// import { BinanceService } from './BinanceService.js';
 import { EventEmitter } from 'events';
 import axios, { AxiosRequestConfig } from 'axios';
 import providersConfig from '../../config/providers_config.json' assert { type: 'json' };
@@ -109,9 +110,10 @@ export class UnifiedDataSourceManager extends EventEmitter {
   private cache = AdvancedCache.getInstance();
   
   // Service instances
+  // NOTE: Binance and KuCoin are REMOVED - using HuggingFace + free API fallbacks
   private multiProviderService = MultiProviderMarketDataService.getInstance();
   private huggingFaceService = HuggingFaceService.getInstance();
-  private binanceService = BinanceService.getInstance();
+  // private binanceService = BinanceService.getInstance(); // REMOVED
   
   // Health monitoring
   private sourceHealthMap = new Map<string, DataSourceHealth>();
@@ -474,6 +476,7 @@ export class UnifiedDataSourceManager extends EventEmitter {
 
   /**
    * Fetch market data with fallback support
+   * NOTE: Binance and KuCoin are REMOVED - uses HuggingFace + fallback sources
    */
   async fetchMarketData(
     request: MarketDataRequest,
@@ -482,15 +485,21 @@ export class UnifiedDataSourceManager extends EventEmitter {
     const cacheKey = `market:${request.symbol}:${request.timeframe || 'ticker'}`;
     
     const fetchFn = async (source: DataSourceConfig) => {
+      // HuggingFace is the primary source
       if (this.currentMode === 'huggingface' || source.name === 'huggingface') {
         return await hfDataEngineAdapter.getMarketPrice(request.symbol);
-      } else if (source.name === 'binance') {
-        return await this.binanceService.getCurrentPrice(request.symbol);
-      } else {
+      }
+      // NOTE: Binance reference REMOVED - use multiProvider which has fallbacks
+      // else if (source.name === 'binance') {
+      //   return await this.binanceService.getCurrentPrice(request.symbol);
+      // }
+      else {
+        // Use MultiProviderMarketDataService which handles CoinGecko, CryptoCompare, etc.
         return await this.multiProviderService.getRealTimePrice(request.symbol);
       }
     };
     
+    // Default to mixed mode for best reliability
     if (options.mode === 'mixed' || this.currentMode === 'mixed') {
       return this.fetchMixed(fetchFn, 'market', cacheKey, options);
     }

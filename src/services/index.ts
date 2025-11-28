@@ -12,7 +12,10 @@ export * from './WhaleTrackerService';
 export * from './TechnicalAnalysisService';
 
 // Market Data Services
-export * from './BinanceService';
+// NOTE: BinanceService is NEUTRALIZED - kept for backward compatibility but returns dummy data
+// The system now uses MixedModeDataService with HuggingFace as primary
+export * from './BinanceService';  // Neutralized - returns dummy data
+export * from './MixedModeDataService';  // NEW: Primary data service
 export * from './MarketDataIngestionService';
 export * from './RealMarketDataService';
 export * from './MultiProviderMarketDataService';

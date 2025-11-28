@@ -5,10 +5,12 @@ import { ConfigManager } from '../core/ConfigManager.js';
 import { Database } from '../data/Database.js';
 import { RedisService } from '../services/RedisService.js';
 import { MultiProviderMarketDataService } from '../services/MultiProviderMarketDataService.js';
-import { BinanceService } from '../services/BinanceService.js';
+// NOTE: BinanceService is REMOVED - using MixedModeDataService instead
+// import { BinanceService } from '../services/BinanceService.js';
+import { mixedModeDataService } from '../services/MixedModeDataService.js';
 import { AdvancedCache } from '../core/AdvancedCache.js';
 import { hfDataEngineAdapter } from '../services/HFDataEngineAdapter.js';
-import { getPrimarySource } from '../config/dataSource.js';
+import { getPrimarySource, isMixedMode } from '../config/dataSource.js';
 
 export class SystemController {
   private logger = Logger.getInstance();
@@ -16,12 +18,9 @@ export class SystemController {
   private database = Database.getInstance();
   private redisService = RedisService.getInstance();
   private multiProviderService = MultiProviderMarketDataService.getInstance();
-  private binanceService = BinanceService.getInstance(); // Fallback only
+  // NOTE: BinanceService REMOVED - using MixedModeDataService
+  // private binanceService = BinanceService.getInstance();
   private cache = AdvancedCache.getInstance();
-  
-  // Cache for KuCoin health status
-  private kucoinHealthCache: { status: 'up' | 'degraded' | 'down', timestamp: number } | null = null;
-  private readonly KUCOIN_HEALTH_CACHE_TTL = 60000; // 60 seconds
 
   async getHealth(req: Request, res: Response): Promise<void> {
     try {
@@ -57,21 +56,27 @@ export class SystemController {
         }
       }
 
-      // Check Binance if needed (for binance or mixed mode)
-      if (primarySource === 'binance' || primarySource === 'mixed') {
+      // Check MixedModeDataService fallback sources (in mixed mode)
+      // NOTE: Binance and KuCoin are REMOVED - using CoinGecko, CryptoCompare, etc.
+      if (isMixedMode()) {
         try {
-          const isConnected = await this.binanceService.testConnection();
-          providerStatuses.binance = isConnected ? 'up' : 'down';
+          const mixedModeStats = mixedModeDataService.getStats();
+          const sourceHealth = mixedModeDataService.getSourceHealthStatus();
+          
+          // Add status for each fallback source
+          for (const health of sourceHealth) {
+            if (health.name !== 'huggingface') {
+              providerStatuses[health.name] = health.isHealthy ? 'up' : (health.isDisabled ? 'down' : 'degraded');
+            }
+          }
+          
+          // Overall fallback status
+          const healthySources = sourceHealth.filter(s => s.isHealthy).length;
+          providerStatuses.fallback_sources = healthySources > 0 ? 'up' : 'down';
         } catch (error: any) {
-          this.logger.warn('Binance health check failed', {}, error);
-          providerStatuses.binance = 'down';
+          this.logger.warn('MixedMode fallback health check failed', {}, error);
+          providerStatuses.fallback_sources = 'degraded';
         }
-      }
-
-      // Check KuCoin if needed (for kucoin or mixed mode)
-      if (primarySource === 'kucoin' || primarySource === 'mixed') {
-        const kucoinStatus = await this.checkKuCoinHealthWithRetry();
-        providerStatuses.kucoin = kucoinStatus;
       }
 
       // Overall backend status: "up" if core services (db, redis) are ok
@@ -211,116 +216,15 @@ export class SystemController {
 
   /**
    * Check KuCoin health with retry logic, exponential backoff, and caching
+   * @deprecated KuCoin is REMOVED in Mixed Mode architecture. 
+   * This method is kept for backward compatibility but always returns 'down'.
    */
   private async checkKuCoinHealthWithRetry(): Promise<'up' | 'degraded' | 'down'> {
-    // Check cache first
-    if (this.kucoinHealthCache && 
-        (Date.now() - this.kucoinHealthCache.timestamp) < this.KUCOIN_HEALTH_CACHE_TTL) {
-      this.logger.debug('KUCOIN_HEALTH_CACHED', { status: this.kucoinHealthCache.status });
-      return this.kucoinHealthCache.status;
-    }
-
-    const maxRetries = 3;
-    const baseDelay = 1000; // 1 second
-    
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        // Check if KuCoin API keys are configured
-        const kucoinConfig = this.config.getKuCoinConfig();
-        if (!kucoinConfig.apiKey || !kucoinConfig.secretKey) {
-          this.logger.info('KUCOIN_DISABLED_BY_CONFIG', { 
-            reason: 'API keys not configured' 
-          });
-          const status = 'down'; // Treat as disabled
-          this.kucoinHealthCache = { status, timestamp: Date.now() };
-          return status;
-        }
-
-        const { KuCoinService } = await import('../services/KuCoinService.js');
-        const kucoinService = KuCoinService.getInstance();
-        
-        // Test connection with timeout
-        const isConnected = await Promise.race([
-          kucoinService.testConnection(),
-          new Promise<boolean>((_, reject) => 
-            setTimeout(() => reject(new Error('TIMEOUT')), 5000)
-          )
-        ]);
-
-        if (isConnected) {
-          this.logger.info('KUCOIN_HEALTH_SUCCESS', { attempt: attempt + 1 });
-          const status = 'up';
-          this.kucoinHealthCache = { status, timestamp: Date.now() };
-          return status;
-        } else {
-          throw new Error('Connection test failed');
-        }
-      } catch (error: any) {
-        const message = error.message || String(error);
-        
-        // Determine error type
-        if (message.includes('ENOTFOUND') || message.includes('api-sandbox.kucoin.com')) {
-          this.logger.warn('KUCOIN_UNAVAILABLE', { 
-            error: 'KuCoin API unreachable',
-            attempt: attempt + 1,
-            maxRetries 
-          });
-          
-          // Last attempt - cache the result
-          if (attempt === maxRetries - 1) {
-            const status = 'down';
-            this.kucoinHealthCache = { status, timestamp: Date.now() };
-            return status;
-          }
-        } else if (message.includes('TIMEOUT')) {
-          this.logger.warn('KUCOIN_TIMEOUT', { 
-            error: 'KuCoin health check timeout',
-            attempt: attempt + 1,
-            maxRetries 
-          });
-          
-          if (attempt === maxRetries - 1) {
-            const status = 'degraded';
-            this.kucoinHealthCache = { status, timestamp: Date.now() };
-            return status;
-          }
-        } else {
-          this.logger.error('KUCOIN_HEALTH_FAIL', { 
-            error: message,
-            attempt: attempt + 1,
-            maxRetries 
-          }, error);
-          
-          if (attempt === maxRetries - 1) {
-            const status = 'degraded';
-            this.kucoinHealthCache = { status, timestamp: Date.now() };
-            return status;
-          }
-        }
-        
-        // Exponential backoff with jitter
-        if (attempt < maxRetries - 1) {
-          const delay = baseDelay * Math.pow(2, attempt);
-          const jitter = Math.random() * 500; // 0-500ms jitter
-          const waitTime = delay + jitter;
-          
-          this.logger.debug('KUCOIN_RETRY_BACKOFF', { 
-            attempt: attempt + 1,
-            waitTime: Math.round(waitTime)
-          });
-          
-          await new Promise(resolve => setTimeout(resolve, waitTime));
-        }
-      }
-    }
-    
-    // Fallback - should never reach here
-    this.logger.error('KUCOIN_HEALTH_EXHAUSTED', { 
-      error: 'All retry attempts failed' 
+    // KuCoin is DISABLED in Mixed Mode - always return 'down'
+    this.logger.debug('KUCOIN_DISABLED', { 
+      reason: 'KuCoin is removed in Mixed Mode architecture. Using HuggingFace + fallback sources instead.' 
     });
-    const status = 'down';
-    this.kucoinHealthCache = { status, timestamp: Date.now() };
-    return status;
+    return 'down';
   }
 }
 

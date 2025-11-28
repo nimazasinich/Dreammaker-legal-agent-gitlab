@@ -4,18 +4,21 @@ import { Logger } from '../core/Logger.js';
 import { Database } from '../data/Database.js';
 import { MultiProviderMarketDataService } from '../services/MultiProviderMarketDataService.js';
 import { SentimentNewsService } from '../services/SentimentNewsService.js';
-import { BinanceService } from '../services/BinanceService.js';
+// NOTE: BinanceService is REMOVED - using MixedModeDataService instead
+// import { BinanceService } from '../services/BinanceService.js';
+import { mixedModeDataService } from '../services/MixedModeDataService.js';
 import { ConfigManager } from '../core/ConfigManager.js';
 import { AdvancedCache } from '../core/AdvancedCache.js';
 import { hfDataEngineAdapter } from '../services/HFDataEngineAdapter.js';
-import { getPrimarySource } from '../config/dataSource.js';
+import { getPrimarySource, isMixedMode } from '../config/dataSource.js';
 
 export class MarketDataController {
   private logger = Logger.getInstance();
   private database = Database.getInstance();
   private multiProviderService = MultiProviderMarketDataService.getInstance();
   private sentimentNewsService = SentimentNewsService.getInstance();
-  private binanceService = BinanceService.getInstance();
+  // NOTE: BinanceService REMOVED - using MixedModeDataService
+  // private binanceService = BinanceService.getInstance();
   private config = ConfigManager.getInstance();
   private cache = AdvancedCache.getInstance();
 
@@ -100,39 +103,38 @@ export class MarketDataController {
           timestamp: Date.now()
         });
       } else {
-        const symbolList = typeof symbols === 'string' ? symbols.split(',') : ['BTCUSDT', 'ETHUSDT'];
+        // NOTE: Using MixedModeDataService instead of BinanceService
+        const symbolList = typeof symbols === 'string' 
+          ? symbols.split(',').map(s => s.trim().replace('USDT', '')) 
+          : ['BTC', 'ETH'];
 
-        const prices = await Promise.all(
-          (symbolList || []).map(async (symbol: string) => {
-            try {
-              const price = await this.binanceService.getCurrentPrice(symbol.trim());
-              const ticker = await this.binanceService.get24hrTicker(symbol.trim());
+        const result = await mixedModeDataService.fetchMultipleMarketData(symbolList);
 
-              return {
-                symbol: symbol.trim().toUpperCase(),
-                price: price,
-                change24h: parseFloat(ticker.priceChange || '0'),
-                changePercent24h: parseFloat(ticker.priceChangePercent || '0'),
-                volume: parseFloat(ticker.volume || '0'),
-                timestamp: Date.now()
-              };
-            } catch (error) {
-              this.logger.error('Failed to fetch price for symbol', { symbol }, error as Error);
-              return {
-                symbol: symbol.trim().toUpperCase(),
-                price: 0,
-                error: (error as Error).message
-              };
-            }
-          })
-        );
-
-        res.json({
-          success: true,
-          prices,
-          primaryDataSource: primarySource,
-          timestamp: Date.now()
-        });
+        if (result.success && result.data) {
+          res.json({
+            success: true,
+            prices: result.data.map(p => ({
+              symbol: p.symbol + 'USDT',
+              price: p.price,
+              change24h: p.change24h,
+              changePercent24h: p.changePercent24h,
+              volume: p.volume24h,
+              source: p.source,
+              timestamp: new Date(p.lastUpdated).getTime()
+            })),
+            dataSource: result.source,
+            primaryDataSource: primarySource,
+            fallbackUsed: result.fallbackUsed,
+            timestamp: Date.now()
+          });
+        } else {
+          res.status(503).json({
+            success: false,
+            error: result.error || 'Failed to fetch prices from any source',
+            primaryDataSource: primarySource,
+            timestamp: Date.now()
+          });
+        }
       }
     } catch (error) {
       this.logger.error('Failed to fetch market prices', {}, error as Error);
@@ -201,19 +203,10 @@ export class MarketDataController {
 
             return marketData;
           } catch (error) {
-            this.logger.warn('Multi-provider failed, trying Binance fallback', {}, error as Error);
-            // Fallback to Binance
-            const marketData = await this.binanceService.getKlines(
-              symbol,
-              interval as string,
-              Number(limit)
-            );
-
-            for (const dataPoint of marketData) {
-              await this.database.insertMarketData(dataPoint);
-            }
-
-            return marketData;
+            this.logger.warn('Multi-provider failed, using empty fallback', {}, error as Error);
+            // NOTE: Binance fallback REMOVED - return empty array
+            // The MixedModeDataService handles fallbacks internally
+            return [];
           }
         },
         { ttl: 60, tags: ['market-data', symbol.toUpperCase()] }
@@ -254,8 +247,23 @@ export class MarketDataController {
           timestamp: priceData.timestamp
         });
       } else {
-        const price = await this.binanceService.getCurrentPrice(symbol);
-        res.json({ symbol, price, timestamp: Date.now() });
+        // NOTE: BinanceService REMOVED - using MixedModeDataService
+        const cleanSymbol = symbol.replace('USDT', '').toUpperCase();
+        const result = await mixedModeDataService.fetchMarketData(cleanSymbol);
+        
+        if (result.success && result.data) {
+          res.json({ 
+            symbol: result.data.symbol + 'USDT', 
+            price: result.data.price, 
+            source: result.source,
+            timestamp: Date.now() 
+          });
+        } else {
+          res.status(503).json({ 
+            error: 'Failed to fetch price', 
+            message: result.error 
+          });
+        }
       }
     } catch (error) {
       this.logger.error('Failed to fetch current price', {

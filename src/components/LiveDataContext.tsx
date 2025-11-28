@@ -1,12 +1,22 @@
 /**
  * LiveDataContext
- * Provides WebSocket real-time data to React components
+ * 
+ * MIXED MODE ARCHITECTURE:
+ * - NO WebSocket - uses HTTP polling for real-time updates
+ * - HuggingFace as primary data source with fallbacks
+ * - Automatic caching and on-demand data fetching
+ * - Indicates data source for UI display
+ * 
+ * This replaces the previous WebSocket-based implementation with
+ * a more reliable HTTP polling approach.
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode, useRef } from 'react';
 import { MarketData, PredictionData } from '../types';
 import { dataManager } from '../services/dataManager';
 import { showToast } from './ui/Toast';
+import { mixedModeDataService, MarketPrice, DataSourceNotification } from '../services/MixedModeDataService';
+import { POLLING_ENABLED, POLLING_INTERVAL_MS } from '../config/ws';
 
 interface LiveDataContextValue {
   // Market data
@@ -21,10 +31,17 @@ interface LiveDataContextValue {
   health: any;
   subscribeToHealth: (callback: (data: any) => void) => () => void;
   
-  // Connection status
+  // Connection status (now represents polling status, not WebSocket)
   isConnected: boolean;
   connect: () => void;
   disconnect: () => void;
+  
+  // NEW: Data source info for UI
+  currentDataSource: string;
+  dataSourceStatus: 'fresh' | 'cached' | 'stale' | 'fallback' | 'error';
+  
+  // NEW: Manual refresh
+  refreshData: () => Promise<void>;
 }
 
 const LiveDataContext = createContext<LiveDataContextValue | undefined>(undefined);
@@ -48,132 +65,136 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
   const [signals, setSignals] = useState<Map<string, PredictionData>>(new Map());
   const [health, setHealth] = useState<any>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [currentDataSource, setCurrentDataSource] = useState<string>('huggingface');
+  const [dataSourceStatus, setDataSourceStatus] = useState<'fresh' | 'cached' | 'stale' | 'fallback' | 'error'>('fresh');
+  
+  // Track active subscriptions
+  const activeSymbols = useRef<Set<string>>(new Set());
+  const pollingCleanup = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    let checkInterval: NodeJS.Timeout | null = null;
-    let unsubscribeLiquidation: (() => void) | null = null;
-    let startupDelay: NodeJS.Timeout | null = null;
 
-    // Subscribe to liquidation risk alerts
-    unsubscribeLiquidation = dataManager.subscribe('liquidation_risk', [], (data: any) => {
-      if (isMounted && data?.data) {
-        const { symbol, riskLevel, marginRatio, currentPrice, liquidationPrice } = data.data;
-        showToast(
-          riskLevel === 'high' ? 'error' : 'warning',
-          `Liquidation Risk: ${symbol}`,
-          `Margin: ${(marginRatio * 100).toFixed(2)}% | Price: $${currentPrice?.toFixed(2)} | Liq: $${liquidationPrice?.toFixed(2)}`
-        );
+    // Subscribe to data source notifications
+    const unsubscribeNotifications = mixedModeDataService.onNotification((notification: DataSourceNotification) => {
+      if (!isMounted) return;
+      
+      // Update source info
+      setCurrentDataSource(notification.source);
+      
+      // Show toast for important notifications
+      if (notification.type === 'error') {
+        showToast('error', 'Data Source Error', notification.message);
+      } else if (notification.type === 'warning' && notification.message.includes('fallback')) {
+        showToast('warning', 'Using Fallback', notification.message);
       }
     });
 
-    // Connect WebSocket on mount (gracefully handle failures)
-    // Only connect once per app lifecycle
-    const connectOnStart = import.meta.env.VITE_WS_CONNECT_ON_START === 'true';
-    if (connectOnStart) {
-      dataManager.connectWebSocket()
-        .then(() => {
-          if (isMounted) {
-            setIsConnected(true);
-            console.log('✅ WebSocket connected successfully');
-          }
-        })
-        .catch((err) => {
-          // Connection failed - app can continue without WebSocket
-          // Log error for debugging but don't crash the app
-          if (isMounted) {
-            setIsConnected(false);
-            console.warn('⚠️ WebSocket connection failed. Real-time updates disabled.', err);
-            // Note: This is expected behavior when backend is not running
-            // The app will continue to function with polling-based updates
-          }
-        });
-    } else {
-      console.log('ℹ️ WebSocket auto-connect disabled (VITE_WS_CONNECT_ON_START=false)');
-    }
-
-    // OPTIMIZED: Delay connection status checks during startup to reduce overhead
-    // Wait 30 seconds before starting periodic checks (avoids startup noise)
-    startupDelay = setTimeout(() => {
-      if (!isMounted) return;
-
-      // Monitor connection status periodically (reduced frequency)
-      // Only check every 30 seconds since WebSocket state changes are infrequent
-      checkInterval = setInterval(() => {
-        if (!isMounted) {
-          if (checkInterval) clearInterval(checkInterval);
-          return;
-        }
-        const ws = (dataManager as any).ws;
-        const connected = ws && ws.readyState === WebSocket.OPEN;
-        setIsConnected(connected);
-      }, 30000); // Reduced from 5 seconds to 30 seconds to prevent unnecessary overhead
-    }, 30000); // Wait 30 seconds before starting checks
+    // Initialize polling status as "connected"
+    // In Mixed Mode, we're always "connected" because we use HTTP polling
+    setIsConnected(POLLING_ENABLED);
+    console.log('✅ Mixed Mode initialized - Using HTTP polling (NO WebSocket)');
 
     return () => {
       isMounted = false;
+      unsubscribeNotifications();
       
-      // Clear startup delay
-      if (startupDelay) {
-        clearTimeout(startupDelay);
-        startupDelay = null;
+      // Stop any active polling
+      if (pollingCleanup.current) {
+        pollingCleanup.current();
+        pollingCleanup.current = null;
       }
-      
-      // Clear interval
-      if (checkInterval) {
-        clearInterval(checkInterval);
-        checkInterval = null;
-      }
-      
-      // Unsubscribe from liquidation alerts
-      if (unsubscribeLiquidation) {
-        unsubscribeLiquidation();
-        unsubscribeLiquidation = null;
-      }
-      
-      // Disconnect WebSocket when provider unmounts
-      // This ensures clean disconnection on navigation
-      dataManager.disconnectWebSocket();
     };
-  }, []); // Run only once on mount
+  }, []);
+
+  // Convert MarketPrice to MarketData format
+  const convertToMarketData = (price: MarketPrice): MarketData => ({
+    symbol: price.symbol + 'USDT',
+    timestamp: new Date(price.lastUpdated).getTime(),
+    open: price.price,
+    high: price.price * 1.01,
+    low: price.price * 0.99,
+    close: price.price,
+    volume: price.volume24h,
+    price: price.price,
+    change24h: price.change24h,
+    changePercent24h: price.changePercent24h,
+    interval: '1m'
+  });
 
   const subscribeToMarketData = useCallback((symbols: string[], callback: (data: MarketData) => void) => {
-    const MAX_MAP_SIZE = 100; // Limit map size to prevent memory leak
+    const MAX_MAP_SIZE = 100;
     
-    const unsubscribe = dataManager.subscribe('market_data', symbols, (data: MarketData) => {
-      if (data && data.symbol) {
-        setMarketData(prev => {
-          const updated = new Map(prev);
-          updated.set(data.symbol, data);
+    // Add symbols to active set
+    symbols.forEach(s => activeSymbols.current.add(s.toUpperCase().replace('USDT', '')));
+    
+    // Stop existing polling if any
+    if (pollingCleanup.current) {
+      pollingCleanup.current();
+    }
+    
+    // Start polling using MixedModeDataService
+    const allSymbols = Array.from(activeSymbols.current);
+    
+    pollingCleanup.current = mixedModeDataService.startPolling(
+      allSymbols,
+      (prices: MarketPrice[]) => {
+        prices.forEach(price => {
+          const marketDataItem = convertToMarketData(price);
           
-          // Limit map size - remove oldest entries if exceeds limit
-          if (updated.size > MAX_MAP_SIZE) {
-            const firstKey = updated.keys().next().value;
-            updated.delete(firstKey);
+          setMarketData(prev => {
+            const updated = new Map(prev);
+            updated.set(marketDataItem.symbol, marketDataItem);
+            
+            if (updated.size > MAX_MAP_SIZE) {
+              const firstKey = updated.keys().next().value;
+              if (firstKey) updated.delete(firstKey);
+            }
+            
+            return updated;
+          });
+          
+          // Update data source info
+          setCurrentDataSource(price.source);
+          setDataSourceStatus('fresh');
+          
+          // Call the callback for each symbol
+          if (symbols.some(s => 
+            marketDataItem.symbol.includes(s.toUpperCase().replace('USDT', ''))
+          )) {
+            callback(marketDataItem);
           }
-          
-          return updated;
         });
-        callback(data);
-      }
-    });
+      },
+      POLLING_INTERVAL_MS
+    );
 
-    return unsubscribe;
+    // Return unsubscribe function
+    return () => {
+      // Remove symbols from active set
+      symbols.forEach(s => activeSymbols.current.delete(s.toUpperCase().replace('USDT', '')));
+      
+      // If no more active symbols, stop polling
+      if (activeSymbols.current.size === 0 && pollingCleanup.current) {
+        pollingCleanup.current();
+        pollingCleanup.current = null;
+      }
+    };
   }, []);
 
   const subscribeToSignals = useCallback((symbols: string[], callback: (data: any) => void) => {
-    const MAX_MAP_SIZE = 50; // Limit signals map size
+    const MAX_MAP_SIZE = 50;
     
+    // Use dataManager for signals (still uses internal mechanism)
     const unsubscribe = dataManager.subscribe('signal_update', symbols, (data: any) => {
       if (data && data.symbol) {
         setSignals(prev => {
           const updated = new Map(prev);
           updated.set(data.symbol, data.prediction || data);
           
-          // Limit map size
           if (updated.size > MAX_MAP_SIZE) {
             const firstKey = updated.keys().next().value;
-            updated.delete(firstKey);
+            if (firstKey) updated.delete(firstKey);
           }
           
           return updated;
@@ -186,27 +207,75 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
   }, []);
 
   const subscribeToHealth = useCallback((callback: (data: any) => void) => {
-    const unsubscribe = dataManager.subscribe('health', [], (data: any) => {
-      setHealth(data);
-      callback(data);
-    });
-
-    return unsubscribe;
+    // Get health from MixedModeDataService stats
+    const checkHealth = () => {
+      const stats = mixedModeDataService.getStats();
+      const healthData = {
+        mode: stats.mode,
+        primarySource: stats.primarySource,
+        sources: stats.sources,
+        requests: stats.requests,
+        cacheSize: stats.cacheSize,
+        timestamp: Date.now()
+      };
+      setHealth(healthData);
+      callback(healthData);
+    };
+    
+    // Check immediately
+    checkHealth();
+    
+    // Check periodically
+    const interval = setInterval(checkHealth, 60000); // Every minute
+    
+    return () => clearInterval(interval);
   }, []);
 
+  // Connect/Disconnect now control polling state
   const connect = useCallback(() => {
-    dataManager.connectWebSocket()
-      .then(() => {
-        setIsConnected(true);
-      })
-      .catch(() => {
-        setIsConnected(false);
-      });
+    setIsConnected(true);
+    console.log('✅ Polling enabled');
   }, []);
 
   const disconnect = useCallback(() => {
-    dataManager.disconnectWebSocket();
     setIsConnected(false);
+    
+    // Stop all polling
+    if (pollingCleanup.current) {
+      pollingCleanup.current();
+      pollingCleanup.current = null;
+    }
+    mixedModeDataService.stopAllPolling();
+    console.log('⏸️ Polling disabled');
+  }, []);
+
+  // Manual refresh function
+  const refreshData = useCallback(async () => {
+    const symbols = Array.from(activeSymbols.current);
+    if (symbols.length === 0) return;
+    
+    try {
+      const result = await mixedModeDataService.fetchMultipleMarketData(symbols, true);
+      
+      if (result.success && result.data) {
+        result.data.forEach(price => {
+          const marketDataItem = convertToMarketData(price);
+          setMarketData(prev => {
+            const updated = new Map(prev);
+            updated.set(marketDataItem.symbol, marketDataItem);
+            return updated;
+          });
+        });
+        
+        setCurrentDataSource(result.source);
+        setDataSourceStatus(result.status);
+        
+        showToast('success', 'Data Refreshed', `Updated from ${result.source}`);
+      }
+    } catch (error) {
+      showToast('error', 'Refresh Failed', (error as Error).message);
+      setDataSourceStatus('error');
+    }
   }, []);
 
   const value: LiveDataContextValue = {
@@ -218,7 +287,10 @@ export const LiveDataProvider: React.FC<LiveDataProviderProps> = ({ children }) 
     subscribeToHealth,
     isConnected,
     connect,
-    disconnect
+    disconnect,
+    currentDataSource,
+    dataSourceStatus,
+    refreshData
   };
 
   return (

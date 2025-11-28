@@ -1,6 +1,22 @@
+/**
+ * BINANCE SERVICE - NEUTRALIZED
+ * 
+ * @deprecated This service is NEUTRALIZED and returns dummy data only.
+ * 
+ * MIXED MODE ARCHITECTURE:
+ * - All market data now flows through MixedModeDataService
+ * - HuggingFace is the primary data source
+ * - CoinGecko, CryptoCompare, etc. are fallbacks
+ * - NO WebSocket connections
+ * - NO Binance or KuCoin API calls
+ * 
+ * This file is kept for backward compatibility only.
+ * Use MixedModeDataService for all data fetching.
+ */
+
 // PHASE 4: NEUTRALIZED BINANCE SERVICE - NO EXTERNAL CALLS
 // This is a dummy implementation that returns safe defaults
-// All real data should flow through DatasourceClient
+// All real data should flow through MixedModeDataService
 
 import { MarketData } from '../types/index.js';
 import { Logger } from '../core/Logger.js';

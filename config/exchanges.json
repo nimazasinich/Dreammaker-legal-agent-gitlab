@@ -1,9 +1,8 @@
-[
-  {
-    "exchange": "kucoin",
-    "apiKey": "",
-    "secret": "",
-    "passphrase": "",
-    "isDefault": true
-  }
-]
+{
+  "_comment": "Exchange integrations are DISABLED in Mixed Mode - Using HuggingFace + Free APIs only",
+  "_note": "Binance and KuCoin are NOT supported in this architecture",
+  "enabled": false,
+  "exchanges": [],
+  "disabledExchanges": ["binance", "kucoin"],
+  "reason": "System operates in Mixed Mode with HuggingFace as primary data source and CoinGecko/CryptoCompare as fallbacks"
+}
