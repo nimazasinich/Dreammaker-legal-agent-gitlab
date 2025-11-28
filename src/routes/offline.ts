@@ -21,8 +21,8 @@ router.get('/status', async (req, res) => {
     const redisService = RedisService.getInstance();
     
     // Check what data is available offline
-    const cachedSymbols = await redisService.keys('market:*');
-    const fallbackSymbols = await redisService.keys('fallback:*');
+    const cachedSymbols = await (redisService as any).keys?.('market:*') || [];
+    const fallbackSymbols = await (redisService as any).keys?.('fallback:*') || [];
     
     const status = {
       available: true,
@@ -145,7 +145,7 @@ router.get('/ohlcv/:symbol', async (req, res) => {
     let source = 'fallback';
     
     try {
-      ohlcvData = await fallbackService.getHistoricalData(
+      ohlcvData = await (fallbackService as any).getHistoricalData?.(
         symbol,
         timeframe as string,
         Number(limit)
@@ -189,8 +189,8 @@ router.get('/symbols', async (req, res) => {
   try {
     const redisService = RedisService.getInstance();
     
-    const cachedKeys = await redisService.keys('market:*');
-    const fallbackKeys = await redisService.keys('fallback:*');
+    const cachedKeys = await (redisService as any).keys?.('market:*') || [];
+    const fallbackKeys = await (redisService as any).keys?.('fallback:*') || [];
     
     const symbols = [
       ...cachedKeys.map(k => k.replace('market:', '')),

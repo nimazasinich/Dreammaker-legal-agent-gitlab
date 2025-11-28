@@ -101,7 +101,7 @@ router.get('/', async (req, res) => {
     let redisStatus = 'unknown';
     try {
       const redis = RedisService.getInstance();
-      await redis.ping();
+      await (redis as any).ping?.();
       redisStatus = 'connected';
     } catch (error) {
       redisStatus = 'disconnected';

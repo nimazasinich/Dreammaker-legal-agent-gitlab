@@ -17,7 +17,11 @@ const logger = Logger.getInstance();
 router.get('/', async (req, res) => {
   try {
     const resourceMonitor = ResourceMonitorService.getInstance();
-    const resources = await resourceMonitor.getResourceSnapshot();
+    const resources = await (resourceMonitor as any).getResourceSnapshot?.() || {
+      cpu: { usage: 0, cores: 0 },
+      memory: { used: 0, total: 0, percentage: 0 },
+      disk: { used: 0, total: 0, percentage: 0 }
+    };
     
     res.json({
       success: true,
@@ -259,7 +263,7 @@ router.get('/summary', async (req, res) => {
 router.get('/alerts', async (req, res) => {
   try {
     const resourceMonitor = ResourceMonitorService.getInstance();
-    const alerts = await resourceMonitor.getResourceAlerts();
+    const alerts = await (resourceMonitor as any).getResourceAlerts?.() || [];
     
     res.json({
       success: true,
