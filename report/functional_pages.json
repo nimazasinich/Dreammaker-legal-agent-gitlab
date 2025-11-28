@@ -1,0 +1,191 @@
+{
+  "readyPages": [
+    {
+      "category": "Data Source Configuration",
+      "endpoints": [
+        "GET /api/config/data-source",
+        "POST /api/config/data-source"
+      ]
+    },
+    {
+      "category": "AI Services",
+      "endpoints": [
+        "GET /api/ai/test-initialization",
+        "GET /api/ai/test-activations",
+        "POST /api/ai/create-network",
+        "POST /api/ai/train-step",
+        "POST /api/ai/train-epoch",
+        "POST /api/ai/predict",
+        "POST /api/ai/extract-features",
+        "POST /api/ai/backtest"
+      ]
+    },
+    {
+      "category": "Analysis Services",
+      "endpoints": [
+        "POST /api/analysis/signals",
+        "POST /api/analysis/smc",
+        "POST /api/analysis/elliott",
+        "POST /api/analysis/harmonic",
+        "POST /api/analysis/sentiment",
+        "POST /api/analysis/whale"
+      ]
+    },
+    {
+      "category": "Trading Services",
+      "endpoints": [
+        "GET /api/trading/portfolio",
+        "GET /api/trading/market/:symbol",
+        "POST /api/trade/execute",
+        "GET /api/trade/open-positions"
+      ]
+    },
+    {
+      "category": "Market Data",
+      "endpoints": [
+        "GET /api/market-data/prices",
+        "GET /api/market/overview",
+        "GET /api/market/prices",
+        "GET /market/candlestick/:symbol",
+        "GET /market/ohlcv"
+      ]
+    },
+    {
+      "category": "Data Pipeline",
+      "endpoints": [
+        "GET /api/data-pipeline/status",
+        "POST /api/data-pipeline/emergency-mode",
+        "POST /api/data-pipeline/add-symbol"
+      ]
+    },
+    {
+      "category": "System & Health",
+      "endpoints": [
+        "GET /status/health",
+        "GET /metrics",
+        "GET /api/health",
+        "GET /api/system/health",
+        "GET /api/system/config"
+      ]
+    },
+    {
+      "category": "Alerts & Notifications",
+      "endpoints": [
+        "POST /api/alerts",
+        "GET /api/alerts",
+        "DELETE /api/alerts/:id",
+        "GET /api/alerts/analytics",
+        "POST /api/alerts/:id/success",
+        "POST /api/alerts/:id/false-positive"
+      ]
+    },
+    {
+      "category": "HuggingFace Services",
+      "endpoints": [
+        "GET /api/hf/status",
+        "GET /api/hf/validate",
+        "GET /api/hf/health",
+        "POST /api/hf/refresh",
+        "GET /api/hf/registry",
+        "POST /api/hf/run-sentiment"
+      ]
+    },
+    {
+      "category": "Unified Proxy Service",
+      "endpoints": [
+        "/api/proxy/*"
+      ]
+    },
+    {
+      "category": "Telegram Configuration",
+      "endpoints": [
+        "GET /api/telegram/config"
+      ]
+    },
+    {
+      "category": "Provider & Logs",
+      "endpoints": [
+        "GET /api/providers/*",
+        "GET /api/logs",
+        "GET /api/rate-limits"
+      ]
+    },
+    {
+      "category": "Real Data & Candlestick",
+      "endpoints": [
+        "GET /health",
+        "GET /market/ohlcv/ready",
+        "GET /market/candlestick/:symbol",
+        "GET /market/ohlcv"
+      ]
+    },
+    {
+      "category": "WebSocket",
+      "endpoints": [
+        "/ws"
+      ]
+    }
+  ],
+  "missingPages": [
+    {
+      "category": "Futures Trading",
+      "recommendedBaseRoute": "/api/futures",
+      "priority": "high"
+    },
+    {
+      "category": "Strategy Templates & Backtesting",
+      "recommendedBaseRoute": "/api",
+      "priority": "high"
+    },
+    {
+      "category": "Market Universe & Readiness",
+      "recommendedBaseRoute": "/api/market",
+      "priority": "medium"
+    },
+    {
+      "category": "ML Training & Backtesting",
+      "recommendedBaseRoute": "/api/ml",
+      "priority": "medium"
+    },
+    {
+      "category": "News Proxy",
+      "recommendedBaseRoute": "/api",
+      "priority": "medium"
+    },
+    {
+      "category": "Market Diagnostics",
+      "recommendedBaseRoute": "/api",
+      "priority": "medium"
+    },
+    {
+      "category": "System Diagnostics",
+      "recommendedBaseRoute": "/api/system/diagnostics",
+      "priority": "low"
+    },
+    {
+      "category": "System Metrics",
+      "recommendedBaseRoute": "/api/system/metrics",
+      "priority": "low"
+    },
+    {
+      "category": "Offline/Fallback Data",
+      "recommendedBaseRoute": "/api/offline",
+      "priority": "low"
+    },
+    {
+      "category": "HuggingFace Router",
+      "recommendedBaseRoute": "/api/hf",
+      "priority": "low"
+    },
+    {
+      "category": "Resource Monitor",
+      "recommendedBaseRoute": "/api/resources",
+      "priority": "low"
+    },
+    {
+      "category": "Optional Providers",
+      "recommendedBaseRoute": "/api/optional",
+      "priority": "low"
+    }
+  ]
+}
