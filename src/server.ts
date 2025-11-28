@@ -857,6 +857,12 @@ app.use('/api/config', dataSourceRoutes);
 app.use('/diagnostics', diagnosticsRoutes);
 
 // ============================================================================
+// Unified Data Source Manager Routes
+// ============================================================================
+import unifiedDataSourceRoutes from './routes/unifiedDataSource.js';
+app.use('/api/unified-data', unifiedDataSourceRoutes);
+
+// ============================================================================
 // HuggingFace Data Engine Routes
 // ============================================================================
 
