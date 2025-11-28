@@ -552,22 +552,88 @@ export class UnifiedDataSourceManager extends EventEmitter {
 
   /**
    * Fetch expanded HuggingFace data including sentiment, predictions, etc.
+   * Enhanced with robust fallback mechanism
    */
-  async fetchHuggingFaceExtended(symbol: string): Promise<FetchResult<any>> {
+  async fetchHuggingFaceExtended(symbol: string, options: FetchOptions = {}): Promise<FetchResult<any>> {
     const cacheKey = `hf:extended:${symbol}`;
+    const startTime = Date.now();
+    const timeout = options.timeout || this.DEFAULT_TIMEOUT;
     
+    // Try cache first
+    if (options.cacheEnabled !== false) {
+      const cachedData = await this.getFromCache<any>(cacheKey);
+      if (cachedData) {
+        return {
+          success: true,
+          data: cachedData,
+          source: 'cache',
+          sourceType: 'cache',
+          timestamp: Date.now(),
+          responseTime: Date.now() - startTime,
+          fromCache: true,
+          fallbackUsed: false
+        };
+      }
+    }
+    
+    // Try HuggingFace first
     try {
-      const [price, sentiment, prediction] = await Promise.allSettled([
-        hfDataEngineAdapter.getMarketPrice(symbol),
-        hfDataEngineAdapter.getSentiment(symbol),
-        hfDataEngineAdapter.getPricePrediction(symbol)
+      // Create timeout wrapper
+      const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+        return Promise.race([
+          promise,
+          new Promise<T>((_, reject) => 
+            setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs)
+          )
+        ]);
+      };
+      
+      const [priceResult, sentimentResult, predictionResult] = await Promise.allSettled([
+        withTimeout(hfDataEngineAdapter.getMarketPrice(symbol), timeout),
+        withTimeout(hfDataEngineAdapter.getMarketSentiment(symbol), timeout),
+        withTimeout(hfDataEngineAdapter.getPricePrediction(symbol), timeout)
       ]);
       
+      // Check if we got at least price data
+      const priceData = priceResult.status === 'fulfilled' && priceResult.value?.success 
+        ? priceResult.value.data 
+        : null;
+      
+      // If price failed, fallback to direct market data
+      let fallbackUsed = false;
+      let finalPrice = priceData;
+      
+      if (!priceData) {
+        this.logger.warn('HuggingFace price fetch failed, falling back to direct sources', { symbol });
+        fallbackUsed = true;
+        
+        // Fallback to direct market data fetch
+        const fallbackResult = await this.fetchMarketData(
+          { symbol },
+          { ...options, timeout: timeout / 2, fallbackEnabled: true }
+        );
+        
+        if (fallbackResult.success && fallbackResult.data) {
+          finalPrice = {
+            symbol: fallbackResult.data.symbol || symbol,
+            price: fallbackResult.data.price || 0,
+            change_24h: fallbackResult.data.change24h || 0,
+            volume_24h: fallbackResult.data.volume24h || 0,
+            source: fallbackResult.source
+          };
+        }
+      }
+      
       const data = {
-        price: price.status === 'fulfilled' ? price.value : null,
-        sentiment: sentiment.status === 'fulfilled' ? sentiment.value : null,
-        prediction: prediction.status === 'fulfilled' ? prediction.value : null,
-        timestamp: Date.now()
+        price: finalPrice,
+        sentiment: sentimentResult.status === 'fulfilled' && sentimentResult.value?.success
+          ? sentimentResult.value.data
+          : null,
+        prediction: predictionResult.status === 'fulfilled' && predictionResult.value?.success
+          ? predictionResult.value.data
+          : null,
+        timestamp: Date.now(),
+        fallbackUsed
       };
       
       // Store in cache and database
@@ -577,23 +643,76 @@ export class UnifiedDataSourceManager extends EventEmitter {
       return {
         success: true,
         data,
-        source: 'huggingface',
-        sourceType: 'primary',
+        source: fallbackUsed ? 'huggingface+fallback' : 'huggingface',
+        sourceType: fallbackUsed ? 'fallback' : 'primary',
         timestamp: Date.now(),
-        responseTime: 0,
+        responseTime: Date.now() - startTime,
         fromCache: false,
-        fallbackUsed: false
+        fallbackUsed
       };
     } catch (error) {
+      this.logger.error('HuggingFace extended fetch failed, trying full fallback', { symbol }, error as Error);
+      
+      // Complete fallback to direct market data
+      const fallbackResult = await this.fetchMarketData(
+        { symbol },
+        { ...options, timeout: timeout / 2, fallbackEnabled: true }
+      );
+      
+      if (fallbackResult.success && fallbackResult.data) {
+        const fallbackData = {
+          price: {
+            symbol: fallbackResult.data.symbol || symbol,
+            price: fallbackResult.data.price || 0,
+            change_24h: fallbackResult.data.change24h || 0,
+            volume_24h: fallbackResult.data.volume24h || 0,
+            source: fallbackResult.source
+          },
+          sentiment: null,
+          prediction: null,
+          timestamp: Date.now(),
+          fallbackUsed: true
+        };
+        
+        // Store fallback data
+        await this.cache.set(cacheKey, fallbackData, { ttl: 60, tags: ['hf', symbol, 'fallback'] });
+        
+        return {
+          success: true,
+          data: fallbackData,
+          source: fallbackResult.source,
+          sourceType: 'fallback',
+          timestamp: Date.now(),
+          responseTime: Date.now() - startTime,
+          fromCache: false,
+          fallbackUsed: true
+        };
+      }
+      
+      // Complete failure - try stale cache
+      const staleData = await this.getStaleCache<any>(cacheKey);
+      if (staleData) {
+        return {
+          success: true,
+          data: staleData,
+          source: 'cache',
+          sourceType: 'cache',
+          timestamp: Date.now(),
+          responseTime: Date.now() - startTime,
+          fromCache: true,
+          fallbackUsed: true
+        };
+      }
+      
       return {
         success: false,
-        error: (error as Error).message,
-        source: 'huggingface',
+        error: (error as Error).message || 'All sources failed',
+        source: 'none',
         sourceType: 'primary',
         timestamp: Date.now(),
-        responseTime: 0,
+        responseTime: Date.now() - startTime,
         fromCache: false,
-        fallbackUsed: false
+        fallbackUsed: true
       };
     }
   }

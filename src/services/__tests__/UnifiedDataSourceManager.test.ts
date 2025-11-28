@@ -228,10 +228,63 @@ describe('UnifiedDataSourceManager', () => {
 
       expect(result).toHaveProperty('success');
       expect(result).toHaveProperty('source');
+      expect(result).toHaveProperty('fallbackUsed');
       
       if (result.success && result.data) {
         expect(result.data).toHaveProperty('timestamp');
         // Extended data may have price, sentiment, prediction
+      }
+    });
+
+    it('should use fallback when HuggingFace fails', async () => {
+      // Test with a very short timeout to force fallback
+      const result = await manager.fetchHuggingFaceExtended('BTC', { timeout: 1 });
+
+      expect(result).toHaveProperty('success');
+      expect(result).toHaveProperty('fallbackUsed');
+      
+      // Should either succeed with fallback or fail gracefully
+      if (result.success) {
+        expect(result.fallbackUsed).toBe(true);
+        expect(result.source).not.toBe('huggingface');
+      }
+    });
+
+    it('should use cache when available', async () => {
+      // First request to populate cache
+      await manager.fetchHuggingFaceExtended('BTC', { cacheEnabled: true, timeout: 10000 });
+      
+      // Second request should use cache
+      const result = await manager.fetchHuggingFaceExtended('BTC', { cacheEnabled: true });
+
+      expect(result).toHaveProperty('success');
+      if (result.success) {
+        expect(result.fromCache).toBe(true);
+        expect(result.source).toBe('cache');
+      }
+    });
+
+    it('should handle partial HuggingFace failures gracefully', async () => {
+      const result = await manager.fetchHuggingFaceExtended('BTC', { timeout: 10000 });
+
+      expect(result).toHaveProperty('success');
+      expect(result).toHaveProperty('data');
+      
+      if (result.success && result.data) {
+        // Should have at least some data (price, sentiment, or prediction)
+        const hasData = result.data.price || result.data.sentiment || result.data.prediction;
+        expect(hasData).toBeTruthy();
+      }
+    });
+
+    it('should track fallback usage correctly', async () => {
+      const result = await manager.fetchHuggingFaceExtended('BTC', { timeout: 10000 });
+
+      expect(result).toHaveProperty('fallbackUsed');
+      expect(typeof result.fallbackUsed).toBe('boolean');
+      
+      if (result.fallbackUsed) {
+        expect(result.sourceType).toBe('fallback');
       }
     });
   });
