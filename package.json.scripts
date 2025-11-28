@@ -1,0 +1,5 @@
+{
+  "test:unified-data": "ts-node scripts/test-unified-data-source.ts",
+  "unified-data:test": "vitest run src/services/__tests__/UnifiedDataSourceManager.test.ts",
+  "unified-data:monitor": "echo 'Open http://localhost:3000/data-sources to view the monitor'"
+}

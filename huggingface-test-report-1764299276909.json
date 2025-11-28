@@ -1,0 +1,45 @@
+{
+  "timestamp": "2025-11-28T03:07:56.910Z",
+  "summary": {
+    "total": 5,
+    "passed": 2,
+    "failed": 3,
+    "successRate": "40.0%"
+  },
+  "tests": [
+    {
+      "name": "HuggingFace Inference API (CryptoBERT Model)",
+      "status": "FAIL",
+      "duration": 62,
+      "error": "HTTP 410: Gone"
+    },
+    {
+      "name": "HuggingFace Router Endpoint",
+      "status": 404,
+      "duration": 51,
+      "endpoint": "https://router.huggingface.co",
+      "statusText": "Not Found",
+      "reachable": true
+    },
+    {
+      "name": "HuggingFace Datasets Server",
+      "status": 422,
+      "duration": 52,
+      "endpoint": "https://datasets-server.huggingface.co/is-valid",
+      "statusText": "Unprocessable Entity",
+      "reachable": true
+    },
+    {
+      "name": "Local HF Data Engine Health Check",
+      "status": "FAIL",
+      "duration": 3,
+      "error": "Server not running - start with \"npm run dev\""
+    },
+    {
+      "name": "Unified Data Source Health Check",
+      "status": "FAIL",
+      "duration": 1,
+      "error": "Server not running - start with \"npm run dev\""
+    }
+  ]
+}
