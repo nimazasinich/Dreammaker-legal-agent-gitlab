@@ -1,154 +1,422 @@
 /**
- * Data Source Controller
- *
- * Handles API requests for managing data source configuration.
- * Allows frontend to query and (optionally) change the active data source.
+ * DataSourceController
+ * 
+ * REST API controller for the Unified Data Source Manager
+ * Provides endpoints for data fetching, health monitoring, and configuration
  */
 
 import { Request, Response } from 'express';
 import { Logger } from '../core/Logger.js';
-import {
-  getDataSourceConfig,
-  getPrimarySource,
-  setPrimarySource,
-  DataSourceType
-} from '../config/dataSource.js';
-import { sendStructuredError } from '../utils/errorResponse.js';
+import { unifiedDataSourceManager, DataSourceMode } from '../services/UnifiedDataSourceManager.js';
 
 export class DataSourceController {
-  private static instance: DataSourceController;
   private logger = Logger.getInstance();
 
-  private constructor() {
-    this.logger.info('DataSource Controller initialized');
-  }
-
-  static getInstance(): DataSourceController {
-    if (!DataSourceController.instance) {
-      DataSourceController.instance = new DataSourceController();
-    }
-    return DataSourceController.instance;
-  }
-
   /**
-   * GET /api/config/data-source
-   * Returns current data source configuration
+   * GET /api/data-sources/market
+   * Fetch market data with fallback support
    */
-  getDataSourceConfig = async (req: Request, res: Response): Promise<void> => {
+  async getMarketData(req: Request, res: Response): Promise<void> {
     try {
-      const config = getDataSourceConfig();
+      const { symbol, timeframe, limit, mode, timeout } = req.query;
 
-      res.json({
-        ok: true,
-        primarySource: config.primarySource,
-        availableSources: ['huggingface', 'binance', 'kucoin', 'mixed'] as DataSourceType[],
-        huggingface: {
-          enabled: config.huggingface.enabled,
-          baseUrl: config.huggingface.baseUrl,
-          timeout: config.huggingface.timeout
+      if (!symbol || typeof symbol !== 'string') {
+        res.status(400).json({
+          success: false,
+          error: 'Symbol is required'
+        });
+        return;
+      }
+
+      const result = await unifiedDataSourceManager.fetchMarketData(
+        {
+          symbol,
+          timeframe: timeframe as string,
+          limit: limit ? parseInt(limit as string) : undefined
         },
-        exchanges: {
-          binance: {
-            enabled: config.exchanges.binance.enabled
-          },
-          kucoin: {
-            enabled: config.exchanges.kucoin.enabled
-          }
-        },
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      this.logger.error('Failed to get data source config', {}, error as Error);
-      sendStructuredError(
-        res,
-        500,
-        'internal',
-        'UNKNOWN_ERROR',
-        'Failed to retrieve data source configuration',
-        {},
-        error
+        {
+          mode: mode as DataSourceMode,
+          timeout: timeout ? parseInt(timeout as string) : undefined
+        }
       );
-    }
-  };
 
-  /**
-   * POST /api/config/data-source
-   * Updates the primary data source (runtime override)
-   *
-   * Body: { primarySource: 'huggingface' | 'binance' | 'kucoin' | 'mixed' }
-   */
-  setDataSourceConfig = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { primarySource } = req.body;
-
-      // Validate input
-      if (!primarySource) {
-        sendStructuredError(
-          res,
-          400,
-          'internal',
-          'DATA_INVALID',
-          'Missing required field: primarySource',
-          { received: req.body }
-        );
-        return;
-      }
-
-      const validSources: DataSourceType[] = ['huggingface', 'binance', 'kucoin', 'mixed'];
-      if (!validSources.includes(primarySource)) {
-        sendStructuredError(
-          res,
-          400,
-          'internal',
-          'DATA_INVALID',
-          `Invalid primarySource. Must be one of: ${validSources.join(', ')}`,
-          {
-            received: primarySource,
-            valid: validSources
-          }
-        );
-        return;
-      }
-
-      // For Phase 2, we only fully support HuggingFace and mixed mode
-      // Binance and KuCoin will return NOT_IMPLEMENTED errors when used
-      if (primarySource === 'binance' || primarySource === 'kucoin') {
-        this.logger.warn(`Setting primary source to ${primarySource}, but only HuggingFace is fully implemented`, {
-          requestedSource: primarySource
+      if (result.success) {
+        res.json({
+          success: true,
+          data: result.data,
+          source: result.source,
+          sourceType: result.sourceType,
+          fromCache: result.fromCache,
+          fallbackUsed: result.fallbackUsed,
+          responseTime: result.responseTime,
+          timestamp: result.timestamp
+        });
+      } else {
+        res.status(503).json({
+          success: false,
+          error: result.error,
+          source: result.source,
+          timestamp: result.timestamp
         });
       }
-
-      // Set the primary source (runtime override)
-      setPrimarySource(primarySource);
-
-      this.logger.info('Primary data source updated', {
-        newSource: primarySource,
-        previousSource: getPrimarySource()
+    } catch (error) {
+      this.logger.error('Failed to fetch market data', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
       });
+    }
+  }
+
+  /**
+   * GET /api/data-sources/sentiment
+   * Fetch sentiment data with fallback support
+   */
+  async getSentiment(req: Request, res: Response): Promise<void> {
+    try {
+      const { symbol, keyword, mode, timeout } = req.query;
+
+      const result = await unifiedDataSourceManager.fetchSentiment(
+        {
+          symbol: symbol as string,
+          keyword: keyword as string
+        },
+        {
+          mode: mode as DataSourceMode,
+          timeout: timeout ? parseInt(timeout as string) : undefined
+        }
+      );
+
+      if (result.success) {
+        res.json({
+          success: true,
+          data: result.data,
+          source: result.source,
+          sourceType: result.sourceType,
+          fromCache: result.fromCache,
+          fallbackUsed: result.fallbackUsed,
+          responseTime: result.responseTime,
+          timestamp: result.timestamp
+        });
+      } else {
+        res.status(503).json({
+          success: false,
+          error: result.error,
+          source: result.source,
+          timestamp: result.timestamp
+        });
+      }
+    } catch (error) {
+      this.logger.error('Failed to fetch sentiment', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * GET /api/data-sources/news
+   * Fetch news data with fallback support
+   */
+  async getNews(req: Request, res: Response): Promise<void> {
+    try {
+      const { limit, keyword, source, mode, timeout } = req.query;
+
+      const result = await unifiedDataSourceManager.fetchNews(
+        {
+          limit: limit ? parseInt(limit as string) : undefined,
+          keyword: keyword as string,
+          source: source as string
+        },
+        {
+          mode: mode as DataSourceMode,
+          timeout: timeout ? parseInt(timeout as string) : undefined
+        }
+      );
+
+      if (result.success) {
+        res.json({
+          success: true,
+          data: result.data,
+          source: result.source,
+          sourceType: result.sourceType,
+          fromCache: result.fromCache,
+          fallbackUsed: result.fallbackUsed,
+          responseTime: result.responseTime,
+          timestamp: result.timestamp
+        });
+      } else {
+        res.status(503).json({
+          success: false,
+          error: result.error,
+          source: result.source,
+          timestamp: result.timestamp
+        });
+      }
+    } catch (error) {
+      this.logger.error('Failed to fetch news', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * GET /api/data-sources/huggingface/extended
+   * Fetch extended HuggingFace data (price, sentiment, prediction)
+   */
+  async getHuggingFaceExtended(req: Request, res: Response): Promise<void> {
+    try {
+      const { symbol } = req.query;
+
+      if (!symbol || typeof symbol !== 'string') {
+        res.status(400).json({
+          success: false,
+          error: 'Symbol is required'
+        });
+        return;
+      }
+
+      const result = await unifiedDataSourceManager.fetchHuggingFaceExtended(symbol);
+
+      if (result.success) {
+        res.json({
+          success: true,
+          data: result.data,
+          source: result.source,
+          timestamp: result.timestamp
+        });
+      } else {
+        res.status(503).json({
+          success: false,
+          error: result.error,
+          timestamp: result.timestamp
+        });
+      }
+    } catch (error) {
+      this.logger.error('Failed to fetch HuggingFace extended data', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * GET /api/data-sources/health
+   * Get health status of all data sources
+   */
+  async getHealth(req: Request, res: Response): Promise<void> {
+    try {
+      const { source } = req.query;
+
+      const health = unifiedDataSourceManager.getSourceHealth(
+        source as string | undefined
+      );
 
       res.json({
-        ok: true,
-        message: 'Primary data source updated successfully',
-        primarySource,
-        note: (primarySource === 'binance' || primarySource === 'kucoin')
-          ? 'Only HuggingFace is fully implemented. Other sources may return NOT_IMPLEMENTED errors.'
-          : undefined,
-        timestamp: new Date().toISOString()
+        success: true,
+        health,
+        timestamp: Date.now()
       });
     } catch (error) {
-      this.logger.error('Failed to set data source config', {}, error as Error);
-      sendStructuredError(
-        res,
-        500,
-        'internal',
-        'UNKNOWN_ERROR',
-        'Failed to update data source configuration',
-        {},
-        error
-      );
+      this.logger.error('Failed to get source health', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
     }
-  };
-}
+  }
 
-// Export singleton instance
-export const dataSourceController = DataSourceController.getInstance();
+  /**
+   * GET /api/data-sources/stats
+   * Get statistics and metrics for data sources
+   */
+  async getStats(req: Request, res: Response): Promise<void> {
+    try {
+      const stats = unifiedDataSourceManager.getStats();
+
+      res.json({
+        success: true,
+        stats,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to get stats', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * POST /api/data-sources/mode
+   * Set data source mode (direct, huggingface, mixed)
+   */
+  async setMode(req: Request, res: Response): Promise<void> {
+    try {
+      const { mode } = req.body;
+
+      if (!mode || !['direct', 'huggingface', 'mixed'].includes(mode)) {
+        res.status(400).json({
+          success: false,
+          error: 'Invalid mode. Must be: direct, huggingface, or mixed'
+        });
+        return;
+      }
+
+      unifiedDataSourceManager.setMode(mode as DataSourceMode);
+
+      res.json({
+        success: true,
+        mode,
+        message: `Data source mode set to ${mode}`,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to set mode', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * GET /api/data-sources/mode
+   * Get current data source mode
+   */
+  async getMode(req: Request, res: Response): Promise<void> {
+    try {
+      const mode = unifiedDataSourceManager.getMode();
+
+      res.json({
+        success: true,
+        mode,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to get mode', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * POST /api/data-sources/:sourceName/disable
+   * Disable a specific data source
+   */
+  async disableSource(req: Request, res: Response): Promise<void> {
+    try {
+      const { sourceName } = req.params;
+      const { durationMs } = req.body;
+
+      unifiedDataSourceManager.disableSource(
+        sourceName,
+        durationMs ? parseInt(durationMs) : undefined
+      );
+
+      res.json({
+        success: true,
+        message: `Source ${sourceName} disabled`,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to disable source', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * POST /api/data-sources/:sourceName/enable
+   * Enable a specific data source
+   */
+  async enableSource(req: Request, res: Response): Promise<void> {
+    try {
+      const { sourceName } = req.params;
+
+      unifiedDataSourceManager.enableSource(sourceName);
+
+      res.json({
+        success: true,
+        message: `Source ${sourceName} enabled`,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to enable source', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * GET /api/data-sources/test
+   * Test data source system with all modes
+   */
+  async testDataSources(req: Request, res: Response): Promise<void> {
+    try {
+      const testSymbol = 'BTC';
+
+      // Test all modes
+      const [directResult, hfResult, mixedResult] = await Promise.allSettled([
+        unifiedDataSourceManager.fetchMarketData(
+          { symbol: testSymbol },
+          { mode: 'direct', timeout: 5000 }
+        ),
+        unifiedDataSourceManager.fetchMarketData(
+          { symbol: testSymbol },
+          { mode: 'huggingface', timeout: 5000 }
+        ),
+        unifiedDataSourceManager.fetchMarketData(
+          { symbol: testSymbol },
+          { mode: 'mixed', timeout: 5000 }
+        )
+      ]);
+
+      const results = {
+        direct: directResult.status === 'fulfilled' ? directResult.value : { success: false, error: 'Failed' },
+        huggingface: hfResult.status === 'fulfilled' ? hfResult.value : { success: false, error: 'Failed' },
+        mixed: mixedResult.status === 'fulfilled' ? mixedResult.value : { success: false, error: 'Failed' }
+      };
+
+      const stats = unifiedDataSourceManager.getStats();
+
+      res.json({
+        success: true,
+        test: {
+          symbol: testSymbol,
+          results,
+          stats
+        },
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to test data sources', {}, error as Error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+}
