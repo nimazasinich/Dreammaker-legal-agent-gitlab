@@ -774,5 +774,24 @@ export class KuCoinService {
       throw error;
     }
   }
+
+  // Get all available trading symbols
+  async getAllSymbols(): Promise<string[]> {
+    try {
+      const response = await this.httpClient.get('/api/v2/symbols');
+      
+      if (response.data.code !== '200000') {
+        this.logger.warn('Failed to get symbols from KuCoin', { error: response.data.msg });
+        return [];
+      }
+      
+      // Extract symbol names from the response
+      const symbols = response.data.data?.map((item: any) => item.symbol) || [];
+      return symbols;
+    } catch (error) {
+      this.logger.error('Failed to get all symbols', {}, error as Error);
+      return []; // Return empty array on error
+    }
+  }
 }
 

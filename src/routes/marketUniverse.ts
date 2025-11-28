@@ -21,10 +21,10 @@ router.get('/', async (req, res) => {
     const { exchange, type } = req.query;
     
     // Get supported exchanges from config
-    const exchanges = config.get('exchanges', {
+    const exchanges = config.get('exchanges') || {
       binance: { enabled: true, name: 'Binance' },
       kucoin: { enabled: true, name: 'KuCoin' }
-    });
+    };
     
     // Get symbols from services
     const binanceService = BinanceService.getInstance();

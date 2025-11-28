@@ -208,4 +208,9 @@ export class ConfigManager {
       volatilityFactor: 0.2
     };
   }
+
+  // Generic get method for accessing any config property
+  get(key: string): any {
+    return (this.config as any)[key];
+  }
 }

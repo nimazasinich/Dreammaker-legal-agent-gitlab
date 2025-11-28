@@ -267,4 +267,40 @@ export class FuturesService {
       throw error;
     }
   }
+
+  /**
+   * Get account information (balance, margin, etc.)
+   */
+  async getAccountInfo(): Promise<any> {
+    this.checkEnabled();
+    
+    try {
+      // Mock implementation - returns dummy account info
+      return {
+        availableBalance: 0,
+        totalBalance: 0,
+        unrealizedPnl: 0,
+        marginUsed: 0,
+        marginRatio: 0
+      };
+    } catch (error) {
+      this.logger.error('Failed to get account info', {}, error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get orders (open and recent)
+   */
+  async getOrders(symbol?: string, limit: number = 50): Promise<any[]> {
+    this.checkEnabled();
+    
+    try {
+      // Mock implementation - returns empty orders array
+      return [];
+    } catch (error) {
+      this.logger.error('Failed to get orders', { symbol, limit }, error as Error);
+      throw error;
+    }
+  }
 }

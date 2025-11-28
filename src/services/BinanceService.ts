@@ -132,4 +132,9 @@ export class BinanceService {
   async getExchangeInfo(): Promise<any> {
     return { symbols: [] };
   }
+
+  async getAllSymbols(): Promise<string[]> {
+    // Return empty array - symbols should come from Hugging Face or other providers
+    return [];
+  }
 }

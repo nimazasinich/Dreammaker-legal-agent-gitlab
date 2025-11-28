@@ -358,4 +358,58 @@ export class FuturesController {
       });
     }
   }
+
+  async getMarginInfo(req: Request, res: Response): Promise<void> {
+    if (!this.checkFeatureEnabled(req, res)) return;
+
+    try {
+      // Fetch margin account information
+      const marginInfo = await this.futuresService.getAccountInfo();
+      
+      res.json({
+        success: true,
+        data: {
+          availableBalance: marginInfo.availableBalance || 0,
+          totalBalance: marginInfo.totalBalance || 0,
+          unrealizedPnl: marginInfo.unrealizedPnl || 0,
+          marginUsed: marginInfo.marginUsed || 0,
+          marginRatio: marginInfo.marginRatio || 0
+        },
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to get margin info', {}, error as Error);
+      res.status(500).json({
+        error: 'Failed to get margin info',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  async getOrders(req: Request, res: Response): Promise<void> {
+    if (!this.checkFeatureEnabled(req, res)) return;
+
+    try {
+      const { symbol, limit = 50 } = req.query;
+      
+      // Fetch open and recent orders
+      const orders = await this.futuresService.getOrders(
+        symbol as string | undefined,
+        parseInt(limit as string)
+      );
+      
+      res.json({
+        success: true,
+        data: orders,
+        count: orders.length,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Failed to get orders', {}, error as Error);
+      res.status(500).json({
+        error: 'Failed to get orders',
+        message: (error as Error).message
+      });
+    }
+  }
 }
