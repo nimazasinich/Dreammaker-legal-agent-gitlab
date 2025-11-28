@@ -5,7 +5,7 @@
  * Tests critical user flows and KuCoin-specific functionality
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
@@ -188,8 +188,8 @@ test.describe('Performance & Stability', () => {
       console.log(`WebSocket opened: ${ws.url()}`);
       wsConnected = true;
       
-      ws.on('framesent', event => wsMessages++);
-      ws.on('framereceived', event => wsMessages++);
+      ws.on('framesent', () => wsMessages++);
+      ws.on('framereceived', () => wsMessages++);
       ws.on('close', () => console.log('WebSocket closed'));
       ws.on('socketerror', error => {
         console.error('WebSocket error:', error);

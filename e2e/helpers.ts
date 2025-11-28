@@ -127,7 +127,7 @@ export async function checkForUnknownText(page: Page): Promise<string[]> {
       if (text && /\b(unknown|undefined|null|NaN)\b/i.test(text)) {
         unknownTexts.push(text.trim().substring(0, 100));
       }
-    } catch (e) {
+    } catch {
       // Element might have disappeared
     }
   }
