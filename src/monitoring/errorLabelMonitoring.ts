@@ -72,7 +72,14 @@ export class ErrorLabelMonitoring {
     }
 
     // Log structured event
-    logger.log(event.severity, event.code, event.metadata || {});
+    const logMessage = `${event.code} - ${event.component}`;
+    if (event.severity === 'ERROR') {
+      logger.error(logMessage, event.metadata || {});
+    } else if (event.severity === 'WARN') {
+      logger.warn(logMessage, event.metadata || {});
+    } else {
+      logger.info(logMessage, event.metadata || {});
+    }
 
     // Check alert rules
     this.checkAlertRules(fullEvent);

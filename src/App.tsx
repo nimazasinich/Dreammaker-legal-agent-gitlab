@@ -9,7 +9,9 @@ import { DataProvider } from './contexts/DataContext';
 import { TradingProvider } from './contexts/TradingContext';
 import { ModeProvider } from './contexts/ModeContext';
 import { BacktestProvider } from './contexts/BacktestContext';
+import { DataProviderProvider } from './contexts/DataProviderContext';
 import { Sidebar } from './components/Navigation/Sidebar';
+import { DataProviderToggle } from './components/DataProviderToggle';
 import { lazyLoad } from './components/lazyLoad';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import LoadingScreen from './components/ui/LoadingScreen';
@@ -132,8 +134,9 @@ const AppContent: React.FC = () => {
         }}
       >
         <main className="flex-1 overflow-auto px-6 py-4 lg:p-8 max-w-[1600px] w-full mx-auto">
-          <div className="sticky top-0 z-30 -mx-6 lg:-mx-8 px-6 lg:px-8 bg-surface/80 backdrop-blur border-b border-border">
+          <div className="sticky top-0 z-30 -mx-6 lg:-mx-8 px-6 lg:px-8 bg-surface/80 backdrop-blur border-b border-border space-y-2 py-2">
             <StatusRibbon />
+            <DataProviderToggle />
           </div>
           <div className="mt-6">
             {renderCurrentView()}
@@ -184,19 +187,21 @@ function App() {
       <ThemeProvider>
         <AccessibilityProvider>
           <RefreshSettingsProvider>
-            <DataProvider>
-              {/* FIXED: Removed RealDataProvider to prevent duplicate data fetching */}
-              <LiveDataProvider>
-                <TradingProvider>
-                  <BacktestProvider>
-                    <NavigationProvider>
-                      <AppContent />
-                      <ToastContainer />
-                    </NavigationProvider>
-                  </BacktestProvider>
-                </TradingProvider>
-              </LiveDataProvider>
-            </DataProvider>
+            <DataProviderProvider>
+              <DataProvider>
+                {/* FIXED: Removed RealDataProvider to prevent duplicate data fetching */}
+                <LiveDataProvider>
+                  <TradingProvider>
+                    <BacktestProvider>
+                      <NavigationProvider>
+                        <AppContent />
+                        <ToastContainer />
+                      </NavigationProvider>
+                    </BacktestProvider>
+                  </TradingProvider>
+                </LiveDataProvider>
+              </DataProvider>
+            </DataProviderProvider>
           </RefreshSettingsProvider>
         </AccessibilityProvider>
       </ThemeProvider>

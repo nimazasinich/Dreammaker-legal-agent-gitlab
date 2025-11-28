@@ -30,17 +30,80 @@ export class RealBacktestEngine {
     return RealBacktestEngine.instance;
   }
 
-  async runBacktest(symbol: string, timeframe: string, bars: number, config: {
-    startDate: number;
-    endDate: number;
+  // Overloaded method to accept different parameter formats
+  async runBacktest(params: {
+    symbol: string;
+    strategy: string;
+    startDate: Date;
+    endDate: Date;
     initialCapital: number;
-    feeRate: number;
-    slippageRate: number;
-    maxPositionSize: number;
-  }): Promise<BacktestResult> {
-    const md: MarketData[] = await RealMarketDataService.getInstance().getHistoricalData(symbol, bars);
+    timeframe?: string;
+    commission?: number;
+    slippage?: number;
+  }): Promise<BacktestResult>;
+  
+  async runBacktest(
+    symbol: string,
+    timeframe: string,
+    bars: number,
+    config: {
+      startDate: number;
+      endDate: number;
+      initialCapital: number;
+      feeRate: number;
+      slippageRate: number;
+      maxPositionSize: number;
+    }
+  ): Promise<BacktestResult>;
+
+  async runBacktest(
+    symbolOrParams: string | {
+      symbol: string;
+      strategy: string;
+      startDate: Date;
+      endDate: Date;
+      initialCapital: number;
+      timeframe?: string;
+      commission?: number;
+      slippage?: number;
+    },
+    timeframe?: string,
+    bars?: number,
+    config?: {
+      startDate: number;
+      endDate: number;
+      initialCapital: number;
+      feeRate: number;
+      slippageRate: number;
+      maxPositionSize: number;
+    }
+  ): Promise<BacktestResult> {
+    // Handle object parameter format
+    if (typeof symbolOrParams === 'object') {
+      const params = symbolOrParams;
+      const days = Math.ceil((params.endDate.getTime() - params.startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const md: MarketData[] = await RealMarketDataService.getInstance().getHistoricalData(
+        params.symbol,
+        days
+      );
+      
+      const engine = BacktestEngine.getInstance();
+      return await engine.runBacktest(md, {
+        symbol: params.symbol,
+        startDate: params.startDate.getTime(),
+        endDate: params.endDate.getTime(),
+        initialCapital: params.initialCapital,
+        feeRate: params.commission || 0.001,
+        slippageRate: params.slippage || 0.0005,
+        maxPositionSize: 0.95
+      });
+    }
+    
+    // Handle separate parameters format (legacy)
+    const symbol = symbolOrParams;
+    const md: MarketData[] = await RealMarketDataService.getInstance().getHistoricalData(symbol, bars!);
     const engine = BacktestEngine.getInstance();
-    return await engine.runBacktest(md, config);
+    return await engine.runBacktest(md, config!);
   }
 
   /**

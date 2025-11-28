@@ -5,9 +5,10 @@
  */
 
 import { Router } from 'express';
-import { dataSourceController } from '../controllers/DataSourceController.js';
+import { DataSourceController } from '../controllers/DataSourceController.js';
 
 const router = Router();
+const dataSourceController = new DataSourceController();
 
 /**
  * GET /api/config/data-source

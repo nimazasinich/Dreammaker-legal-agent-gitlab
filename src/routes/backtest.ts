@@ -11,7 +11,7 @@ import path from 'path';
 
 const router = express.Router();
 const logger = Logger.getInstance();
-const backtestEngine = new BacktestEngine();
+const backtestEngine = BacktestEngine.getInstance();
 const realBacktestEngine = RealBacktestEngine.getInstance();
 
 const BACKTEST_RESULTS_DIR = path.join(process.cwd(), 'data', 'backtest-results');
