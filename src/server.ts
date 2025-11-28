@@ -106,27 +106,25 @@ import diagnosticsRoutes from './routes/diagnosticsRoute.js';
 import { SignalVisualizationWebSocketService } from './services/SignalVisualizationWebSocketService.js';
 import { TelegramService } from './services/TelegramService.js';
 import { readVault, writeVault } from './config/secrets.js';
-// COMMENTED OUT: Missing route files - need to be created or removed
-// import futuresRoutes from './routes/futures.js';
-// import offlineRoutes from './routes/offline.js';
-// import systemDiagnosticsRoutes from './routes/systemDiagnostics.js';
-// import systemMetricsRoutes from './routes/system.metrics.js';
-// import marketUniverseRoutes from './routes/market.universe.js';
-// import { mountCryptoAPI } from './api/crypto.js';
-// import marketReadinessRoutes from './routes/market.readiness.js';
-// import mlRoutes from './routes/ml.js';
-// import newsRoutes from './routes/news.js';
-// import strategyTemplatesRoutes from './routes/strategyTemplates.js';
-// import strategyApplyRoutes from './routes/strategy.apply.js';
-// import backtestRoutes from './routes/backtest.js';
-// import { hfRouter } from './routes/hf.js';
-// import { resourceMonitorRouter } from './routes/resource-monitor.js';
-// import diagnosticsMarketRoutes from './routes/diagnostics.market.js';
-// import serverInfoRoutes from './routes/server-info.js';
-// import { optionalPublicRouter } from './routes/optional-public.js';
-// import { optionalNewsRouter } from './routes/optional-news.js';
-// import { optionalMarketRouter } from './routes/optional-market.js';
-// import { optionalOnchainRouter } from './routes/optional-onchain.js';
+// All route modules - now implemented
+import futuresRoutes from './routes/futures.js';
+import offlineRoutes from './routes/offline.js';
+import systemDiagnosticsRoutes from './routes/systemDiagnostics.js';
+import systemMetricsRoutes from './routes/systemMetrics.js';
+import marketUniverseRoutes from './routes/marketUniverse.js';
+import marketReadinessRoutes from './routes/marketReadiness.js';
+import mlRoutes from './routes/ml.js';
+import newsRoutes from './routes/news.js';
+import strategyTemplatesRoutes from './routes/strategyTemplates.js';
+import strategyApplyRoutes from './routes/strategyApply.js';
+import backtestRoutes from './routes/backtest.js';
+import hfRouter from './routes/hfRouter.js';
+import resourceMonitorRouter from './routes/resourceMonitor.js';
+import diagnosticsMarketRoutes from './routes/diagnosticsMarket.js';
+import optionalPublicRouter from './routes/optionalPublic.js';
+import optionalNewsRouter from './routes/optionalNews.js';
+import optionalMarketRouter from './routes/optionalMarket.js';
+import optionalOnchainRouter from './routes/optionalOnchain.js';
 import { FuturesWebSocketChannel } from './ws/futuresChannel.js';
 import { ScoreStreamGateway } from './ws/ScoreStreamGateway.js';
 import { FEATURE_FUTURES } from './config/flags.js';
@@ -1844,46 +1842,51 @@ app.delete('/api/tuning/result/:id', async (req, res) => {
   await tuningController.deleteResult(req, res);
 });
 
-// COMMENTED OUT: Missing route files - need to be created or removed
+// ============================================================================
+// All Route Modules - Now Fully Implemented
+// ============================================================================
+
 // Futures Trading Routes
-// app.use('/api/futures', futuresRoutes);
+app.use('/api/futures', futuresRoutes);
 
 // Offline/Fallback Data Routes
-// app.use('/api/offline', offlineRoutes);
+app.use('/api/offline', offlineRoutes);
 
 // System Diagnostics Routes
-// app.use('/api/system/diagnostics', systemDiagnosticsRoutes);
+app.use('/api/system/diagnostics', systemDiagnosticsRoutes);
 
 // System Metrics Routes
-// app.use('/api/system/metrics', systemMetricsRoutes);
+app.use('/api/system/metrics', systemMetricsRoutes);
 
-// Market Universe Routes
-// app.use('/api/market', marketUniverseRoutes);
-// app.use('/api/market', marketReadinessRoutes);
+// Market Universe & Readiness Routes
+app.use('/api/market/universe', marketUniverseRoutes);
+app.use('/api/market/readiness', marketReadinessRoutes);
 
 // ML Training & Backtesting Routes
-// app.use('/api/ml', mlRoutes);
+app.use('/api/ml', mlRoutes);
 
 // News Proxy Routes
-// app.use('/api', newsRoutes);
+app.use('/api/news', newsRoutes);
 
 // Market Diagnostics Routes
-// app.use('/api', diagnosticsMarketRoutes);
+app.use('/api/diagnostics/market', diagnosticsMarketRoutes);
 
 // Strategy Templates & Backtest Routes
-// app.use('/api', strategyTemplatesRoutes);
-// app.use('/api', strategyApplyRoutes);
-// app.use('/api', backtestRoutes);
+app.use('/api/strategies/templates', strategyTemplatesRoutes);
+app.use('/api/strategies/apply', strategyApplyRoutes);
+app.use('/api/backtest', backtestRoutes);
 
 // HuggingFace Routes
-// app.use('/api/hf', hfRouter);
-// app.use('/api/resources', resourceMonitorRouter);
+app.use('/api/hf', hfRouter);
+
+// Resource Monitor Routes
+app.use('/api/resources', resourceMonitorRouter);
 
 // Optional Provider Routes (keyless & key-based alternatives)
-// app.use('/api/optional/public', optionalPublicRouter);
-// app.use('/api/optional', optionalNewsRouter);
-// app.use('/api/optional', optionalMarketRouter);
-// app.use('/api/optional', optionalOnchainRouter);
+app.use('/api/optional/public', optionalPublicRouter);
+app.use('/api/optional/news', optionalNewsRouter);
+app.use('/api/optional/market', optionalMarketRouter);
+app.use('/api/optional/onchain', optionalOnchainRouter);
 
 // Unified Proxy Routes (handles all external API calls with caching and fallback)
 app.use('/api/proxy', unifiedProxyService.getRouter());
