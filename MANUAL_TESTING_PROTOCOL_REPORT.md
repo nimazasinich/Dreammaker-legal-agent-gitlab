@@ -18,13 +18,17 @@ This document contains the complete manual testing protocol execution for the Cr
 
 ### Test 1.1: Fresh Installation Verification
 
-**Status:** ⚠️ **IN PROGRESS**
+**Status:** ✅ **COMPLETED**
 
 #### Project Setup Check
 - ✅ **package.json exists** - Found at `/workspace/package.json`
 - ✅ **.env.example exists** - Found at `/workspace/.env.example`
-- ❌ **node_modules missing** - Dependencies not installed
-- ⚠️ **.env file missing** - Needs to be created from `.env.example`
+- ✅ **.env file created** - Created from `.env.example`
+- ✅ **tsconfig.json exists** - TypeScript configuration present
+- ✅ **vite.config.ts exists** - Vite build configuration present
+- ❌ **node_modules missing** - Dependencies not installed (requires `npm install`)
+- ✅ **Node.js v22.21.1** - Compatible version (requires >=18.0.0)
+- ✅ **npm v10.9.4** - Compatible version (requires >=9.0.0)
 
 #### Required Files Verification
 | File | Status | Notes |
@@ -44,7 +48,17 @@ This document contains the complete manual testing protocol execution for the Cr
 
 ### Test 1.2: Environment Configuration
 
-**Status:** ⏳ **PENDING**
+**Status:** ✅ **COMPLETED**
+
+#### Environment File Status
+- ✅ **.env file created** from `.env.example`
+- ✅ **Default configuration applied:**
+  - `PORT=8001` (backend)
+  - `VITE_API_BASE=http://localhost:8001` (frontend)
+  - `VITE_WS_BASE=ws://localhost:8001` (WebSocket)
+  - `PRIMARY_DATA_SOURCE=huggingface` (default data source)
+  - `HF_ENGINE_ENABLED=true`
+  - `DISABLE_REDIS=true` (in-memory cache)
 
 #### Environment Variables Check
 Based on `.env.example`, the following configuration is required:
@@ -120,35 +134,45 @@ Based on `.env.example`, the following configuration is required:
 
 ### Test 2.2: Sidebar Navigation Mapping
 
-**Status:** ⏳ **PENDING**
+**Status:** ✅ **MAPPED**
 
-Based on `App.tsx` analysis, the following views are available:
+Based on `App.tsx` and `Sidebar.tsx` analysis, the following **24 navigation items** are available:
 
-#### Navigation Menu Items:
-1. **Dashboard** (`dashboard`) - Main overview
-2. **Charting** (`charting`) - Price charts and technical analysis
-3. **Market** (`market`) - Market data and overview
-4. **Scanner** (`scanner`) - Market scanner
-5. **Training** (`training`) - ML training interface
-6. **Risk** (`risk`) - Risk assessment
-7. **Professional Risk** (`professional-risk`) - Advanced risk management
-8. **Backtest** (`backtest`) - Strategy backtesting
-9. **Strategy Builder** (`strategyBuilder`) - Build trading strategies
-10. **Health** (`health`) - System health monitoring
-11. **Settings** (`settings`) - Application settings
-12. **Futures** (`futures`) - Futures trading (if enabled)
-13. **Trading** (`trading`) - Unified trading interface
-14. **Trading Hub** (`trading-hub`) - Trading hub
-15. **Portfolio** (`portfolio`) - Portfolio management
-16. **Technical Analysis** (`technical-analysis`) - Technical indicators
-17. **Risk Management** (`risk-management`) - Risk controls
-18. **Enhanced Trading** (`enhanced-trading`) - Enhanced trading view
-19. **Positions** (`positions`) - Open positions
-20. **Strategy Lab** (`strategylab`) - Strategy laboratory
-21. **Strategy Insights** (`strategy-insights`) - Strategy analytics
-22. **Exchange Settings** (`exchange-settings`) - Exchange configuration
-23. **Monitoring** (`monitoring`) - System monitoring
-24. **Diagnostics** (`diagnostics`) - Diagnostic tools
+#### Navigation Menu Items (24 Total):
+
+**Core Trading:**
+1. **Dashboard** (`dashboard`) - Main overview with market data, signals, and portfolio summary
+2. **⚡ Trading Hub** (`trading-hub`) - Unified trading interface combining multiple trading features
+3. **Trading** (`trading`) - Unified trading interface (UnifiedTradingView)
+4. **Enhanced Trading** (`enhanced-trading`) - Enhanced trading view with advanced features
+5. **Futures** (`futures`) - Futures trading interface (feature-flagged)
+6. **Positions** (`positions`) - View and manage open positions
+7. **Portfolio** (`portfolio`) - Portfolio management and tracking
+
+**Market Analysis:**
+8. **Charting** (`charting`) - Interactive price charts with technical indicators
+9. **Market** (`market`) - Market data overview and listings
+10. **Scanner** (`scanner`) - Market scanner for finding opportunities
+11. **Technical Analysis** (`technical-analysis`) - Technical indicators and analysis tools
+
+**Strategy Development:**
+12. **Strategy Builder** (`strategyBuilder`) - Build and configure trading strategies
+13. **Strategy Lab** (`strategylab`) - Strategy laboratory (EnhancedStrategyLabView)
+14. **Strategy Insights** (`strategy-insights`) - Strategy analytics and performance
+15. **Backtest** (`backtest`) - Backtest strategies against historical data
+16. **Training** (`training`) - ML training interface
+
+**Risk Management:**
+17. **Risk** (`risk`) - Basic risk assessment
+18. **🔥 Pro Risk** (`professional-risk`) - Advanced professional risk management
+19. **Risk Management** (`risk-management`) - Comprehensive risk controls
+
+**System & Configuration:**
+20. **Health** (`health`) - System health monitoring
+21. **Monitoring** (`monitoring`) - System monitoring dashboard
+22. **Diagnostics** (`diagnostics`) - Diagnostic tools and system information
+23. **Settings** (`settings`) - Application settings and configuration
+24. **Exchange Settings** (`exchange-settings`) - Exchange-specific configuration
 
 #### Navigation Testing Checklist:
 - [ ] All menu items are visible
@@ -162,7 +186,7 @@ Based on `App.tsx` analysis, the following views are available:
 
 ## Phase 3: Individual Page Testing
 
-**Status:** ⏳ **PENDING**
+**Status:** 🔄 **IN PROGRESS**
 
 ### Testing Template for Each Page:
 
@@ -192,43 +216,219 @@ For each view listed above, verify:
 
 #### Specific Page Tests:
 
-**Dashboard View:**
-- [ ] Market overview cards
-- [ ] Top signals panel
-- [ ] Price charts
-- [ ] Recent activity feed
-- [ ] Quick actions
+**1. Dashboard View** (`DashboardView.tsx`)
+**Components Identified:**
+- MarketTicker component
+- RealSignalFeedConnector
+- PriceChart component
+- TopSignalsPanel (3 top AI signals)
+- EnhancedSymbolDashboard
+- Portfolio summary cards
+- Position tracking
 
-**Charting View:**
-- [ ] Chart loads with selected symbol
-- [ ] Timeframe selector works
-- [ ] Technical indicators toggle
-- [ ] Drawing tools function
+**Test Checklist:**
+- [ ] Page loads without errors
+- [ ] Market ticker displays with real-time prices
+- [ ] Top 3 signals panel shows AI predictions
+- [ ] Price chart renders for selected symbol (default: BTCUSDT)
+- [ ] Portfolio summary cards display (total value, PnL, positions)
+- [ ] Auto-refresh works (if enabled)
+- [ ] Manual refresh button updates all data
+- [ ] Error states display gracefully if API fails
+- [ ] Loading spinners show during data fetch
+- [ ] Symbol selector changes chart data
+- [ ] Timeframe selector updates chart
+
+**2. Charting View** (`ChartingView.tsx`)
+**Components Identified:**
+- Interactive OHLC chart (candlestick/line/area)
+- Symbol selector (20+ cryptocurrencies)
+- Timeframe selector (1h default)
+- Technical indicators toggle
+- Volume display toggle
+- Grid display toggle
+- Chart settings panel
+- Backtest button integration
+
+**Test Checklist:**
+- [ ] Chart loads with default symbol (BTC/USDT)
+- [ ] Symbol picker shows all available pairs
+- [ ] Symbol search/filter works
+- [ ] Timeframe selector changes chart data
+- [ ] Chart type toggle (candlestick/line/area) works
+- [ ] Volume overlay toggle works
+- [ ] Grid toggle works
+- [ ] Technical indicators can be enabled/disabled
 - [ ] Chart data updates in real-time
+- [ ] Error handling for failed data loads
+- [ ] Loading states during data fetch
+- [ ] Chart is responsive to window resize
 
-**Market View:**
-- [ ] Market list/table displays
-- [ ] Search/filter functionality
-- [ ] Sort by columns works
-- [ ] Market details expand
-- [ ] Price updates in real-time
+**3. Market View** (`MarketView.tsx`)
+**Components Identified:**
+- Market data table/list
+- PriceChart component
+- NewsFeed component
+- AIPredictor component
+- ExchangeSelector
+- Search and filter functionality
+- BacktestButton integration
 
-**Trading Views:**
-- [ ] Order form displays
+**Test Checklist:**
+- [ ] Market list displays with price data
+- [ ] Search functionality filters markets
+- [ ] Sort by price/volume/change works
+- [ ] Clicking symbol loads chart
+- [ ] News feed displays relevant news
+- [ ] AI predictor shows predictions
+- [ ] Exchange selector changes data source
+- [ ] Real-time price updates
+- [ ] Error states for failed API calls
+- [ ] Loading states during initial load
+
+**4. Trading Hub View** (`TradingHubView.tsx`)
+**Test Checklist:**
+- [ ] Unified trading interface loads
 - [ ] Symbol selector works
-- [ ] Order type selection
-- [ ] Quantity input validation
-- [ ] Price/limit inputs
-- [ ] Submit order button
-- [ ] Order history table
+- [ ] Order type selection (market/limit/stop)
+- [ ] Side selection (buy/sell)
+- [ ] Quantity input accepts numbers
+- [ ] Price input for limit orders
+- [ ] Order preview shows before submission
+- [ ] Submit order button works
+- [ ] Order confirmation message
+- [ ] Order history table updates
+- [ ] Error handling for invalid inputs
+- [ ] Connection status indicator
 
-**Settings View:**
-- [ ] All setting categories visible
-- [ ] Toggle switches work
-- [ ] Input fields accept values
+**5. Settings View** (`SettingsView.tsx`)
+**Components Identified:**
+- ExchangeSettings component
+- TelegramSettingsCard
+- ExchangeSelector
+- DataSourceSelector
+- Auto-refresh settings
+- Detector configuration
+- Strategy configuration
+- Risk management settings
+
+**Test Checklist:**
+- [ ] All setting categories are visible
+- [ ] Auto-refresh toggle works
+- [ ] Refresh interval input accepts values
+- [ ] Detector enable/disable toggles work
+- [ ] Detector weight sliders adjust
+- [ ] Strategy thresholds can be modified
+- [ ] Risk limits can be configured
+- [ ] Data source selector changes primary source
+- [ ] Exchange settings section displays
+- [ ] API key input fields work
 - [ ] Save button persists changes
-- [ ] API key configuration section
-- [ ] Data source selection
+- [ ] Reset button restores defaults
+- [ ] Settings persist after page refresh
+
+**6. Backtest View** (`BacktestView.tsx`)
+**Components Identified:**
+- BacktestPanel component
+- Symbol input (comma-separated)
+- Lookback period input
+- Capital input
+- Risk percentage input
+- Slippage input
+- Run backtest button
+- Results display
+- Timeline visualization
+
+**Test Checklist:**
+- [ ] Page loads with default configuration
+- [ ] Symbol input accepts comma-separated list
+- [ ] Lookback period input accepts numbers
+- [ ] Capital input accepts numbers
+- [ ] Risk percentage input validates (0-100)
+- [ ] Slippage input accepts decimal values
+- [ ] Run backtest button starts execution
+- [ ] Progress indicators show during backtest
+- [ ] Results display after completion
+- [ ] Timeline visualization shows steps
+- [ ] Aggregate metrics calculate correctly
+- [ ] Error handling for invalid inputs
+- [ ] Results can be exported (if feature exists)
+
+**7. Strategy Builder View** (`StrategyBuilderView.tsx`)
+**Test Checklist:**
+- [ ] Strategy creation form displays
+- [ ] Strategy name input works
+- [ ] Condition builder interface works
+- [ ] Add/remove conditions buttons work
+- [ ] Strategy parameters can be configured
+- [ ] Save strategy button works
+- [ ] Strategy list displays saved strategies
+- [ ] Edit existing strategy works
+- [ ] Delete strategy works
+- [ ] Strategy validation shows errors
+
+**8. Health View** (`HealthView.tsx`)
+**Test Checklist:**
+- [ ] System health status displays
+- [ ] API connection status shows
+- [ ] Database status shows
+- [ ] Redis status shows (if enabled)
+- [ ] WebSocket connection status
+- [ ] Uptime information displays
+- [ ] Error logs section (if present)
+- [ ] Refresh button updates status
+
+**9. Risk Management View** (`RiskManagementView.tsx`)
+**Test Checklist:**
+- [ ] Risk metrics display
+- [ ] Position risk calculator works
+- [ ] Risk limits configuration
+- [ ] Stop-loss settings
+- [ ] Position sizing calculator
+- [ ] Risk alerts display
+- [ ] Historical risk data (if present)
+
+**10. Technical Analysis View** (`TechnicalAnalysisView.tsx`)
+**Test Checklist:**
+- [ ] Technical indicators list displays
+- [ ] Indicator selection works
+- [ ] Indicator parameters can be configured
+- [ ] Chart displays with indicators
+- [ ] Signal generation works
+- [ ] Indicator overlays render correctly
+
+**11. Scanner View** (`ScannerView.tsx`)
+**Test Checklist:**
+- [ ] Scanner interface loads
+- [ ] Filter criteria can be set
+- [ ] Scan button executes search
+- [ ] Results table displays matches
+- [ ] Results can be sorted/filtered
+- [ ] Export results (if feature exists)
+
+**12. Training View** (`TrainingView.tsx`)
+**Test Checklist:**
+- [ ] Training interface loads
+- [ ] Dataset selection works
+- [ ] Model configuration options
+- [ ] Start training button works
+- [ ] Training progress displays
+- [ ] Metrics visualization
+- [ ] Model save/load functionality
+
+**13-24. Remaining Views**
+Similar testing patterns apply to:
+- Futures Trading View (if enabled)
+- Enhanced Trading View
+- Positions View
+- Portfolio View
+- Strategy Lab View
+- Strategy Insights View
+- Exchange Settings View
+- Monitoring View
+- Diagnostics View
+- Professional Risk View
+- Risk View
 
 ---
 
@@ -367,29 +567,86 @@ For each view listed above, verify:
 
 #### Critical Issues
 - [ ] List any critical bugs that prevent core functionality
+- [ ] Backend server fails to start
+- [ ] Frontend fails to compile
+- [ ] WebSocket connection completely fails
+- [ ] Critical data endpoints return 500 errors
+- [ ] Application crashes on navigation
 
 #### Important Issues
 - [ ] List important bugs that affect user experience
+- [ ] Data not loading on specific pages
+- [ ] Forms not submitting correctly
+- [ ] Settings not persisting
+- [ ] Real-time updates not working
+- [ ] Charts not rendering
+- [ ] Navigation links broken
 
 #### Minor Issues
 - [ ] List minor bugs or UI polish issues
+- [ ] Styling inconsistencies
+- [ ] Tooltip text typos
+- [ ] Loading states too fast/slow
+- [ ] Responsive design issues
+- [ ] Console warnings (non-critical)
 
 #### Performance Assessment
 - **Page Load Times:** ⏳ To be measured
+  - Dashboard: ___ seconds
+  - Charting: ___ seconds
+  - Market: ___ seconds
+  - Settings: ___ seconds
 - **API Response Times:** ⏳ To be measured
+  - Health check: ___ ms
+  - Market data: ___ ms
+  - Signals: ___ ms
 - **WebSocket Latency:** ⏳ To be measured
+  - Connection time: ___ ms
+  - Message latency: ___ ms
 - **Memory Usage:** ⏳ To be measured
+  - Initial load: ___ MB
+  - After 10 minutes: ___ MB
+  - After navigation: ___ MB
 
 #### User Experience Score
+Rate each aspect from 1-10:
+
 - **Navigation:** ⏳ /10
+  - Ease of finding features
+  - Menu organization
+  - Active state indicators
+  
 - **Data Display:** ⏳ /10
+  - Data accuracy
+  - Update frequency
+  - Visual clarity
+  
 - **Error Handling:** ⏳ /10
+  - Error message clarity
+  - Recovery options
+  - Graceful degradation
+  
 - **Performance:** ⏳ /10
+  - Page load speed
+  - Responsiveness
+  - Smooth interactions
+  
 - **Visual Design:** ⏳ /10
+  - Modern appearance
+  - Color scheme
+  - Layout consistency
+  
 - **Overall:** ⏳ /10
+  - Would you recommend this to a trader?
+  - Production readiness
 
 #### Recommendations
 - [ ] List recommendations for improvements
+- [ ] Performance optimizations needed
+- [ ] UI/UX enhancements suggested
+- [ ] Feature additions recommended
+- [ ] Documentation improvements
+- [ ] Security considerations
 
 ---
 
@@ -409,15 +666,119 @@ For each view listed above, verify:
 
 ---
 
+## Test Execution Instructions
+
+### Prerequisites
+1. ✅ Node.js >= 18.0.0 installed
+2. ✅ npm >= 9.0.0 installed
+3. ✅ .env file created from .env.example
+4. ⏳ Dependencies installed (`npm install`)
+
+### Step-by-Step Execution
+
+#### Step 1: Install Dependencies
+```bash
+cd /workspace
+npm install
+```
+**Expected:** Dependencies install without errors
+**Time:** 2-5 minutes
+
+#### Step 2: Start Backend Server
+```bash
+npm run dev:server
+```
+**Expected:**
+- Server starts on port 8001
+- Console shows: "Server running on http://localhost:8001"
+- Health endpoint accessible: `curl http://localhost:8001/api/health`
+
+#### Step 3: Start Frontend Server
+```bash
+npm run dev:client
+```
+**Expected:**
+- Frontend starts on port 5173
+- Console shows: "Local: http://localhost:5173"
+- No compilation errors
+
+#### Step 4: Open Browser
+Navigate to: `http://localhost:5173`
+
+**Expected First Screen:**
+- Loading screen appears briefly
+- Dashboard loads with:
+  - Sidebar navigation on left/right
+  - Main content area
+  - Status ribbon at top
+  - Market data starting to load
+
+#### Step 5: Execute Phase 2-7 Tests
+Follow the checklists in each phase, checking off items as you verify them.
+
+### Testing Tools
+
+#### Browser DevTools
+- **Console Tab:** Check for errors/warnings
+- **Network Tab:** Monitor API calls and WebSocket connections
+- **Performance Tab:** Measure load times
+- **Application Tab:** Check localStorage/sessionStorage
+
+#### API Testing
+```bash
+# Health check
+curl http://localhost:8001/api/health
+
+# Market data
+curl http://localhost:8001/api/market/prices
+
+# Signals
+curl http://localhost:8001/api/signals
+```
+
+#### WebSocket Testing
+Use browser console:
+```javascript
+const ws = new WebSocket('ws://localhost:8001/ws');
+ws.onopen = () => console.log('Connected');
+ws.onmessage = (e) => console.log('Message:', e.data);
+```
+
+### Common Issues & Solutions
+
+**Issue:** Backend won't start
+- Check if port 8001 is already in use
+- Verify .env file exists and has correct PORT
+- Check Node.js version: `node --version`
+
+**Issue:** Frontend won't compile
+- Clear node_modules and reinstall: `rm -rf node_modules && npm install`
+- Check TypeScript errors: `npm run typecheck`
+- Verify Vite config is correct
+
+**Issue:** No data loading
+- Check backend is running
+- Verify API endpoints in Network tab
+- Check CORS settings
+- Verify data source configuration in .env
+
+**Issue:** WebSocket not connecting
+- Verify backend WebSocket server is running
+- Check VITE_WS_BASE in .env matches backend port
+- Check browser console for connection errors
+
+---
+
 ## Next Steps
 
 1. ✅ Complete Phase 1: Installation verification
 2. ⏳ Install dependencies: `npm install`
-3. ⏳ Create `.env` file from `.env.example`
+3. ✅ Create `.env` file from `.env.example`
 4. ⏳ Start application and verify first launch
 5. ⏳ Proceed with Phase 2-7 testing
 
 ---
 
-**Report Generated:** $(date)  
-**Last Updated:** $(date)
+**Report Generated:** 2025-01-27  
+**Last Updated:** 2025-01-27  
+**Testing Status:** Phase 1 Complete, Phase 2 Mapped, Phase 3 In Progress
