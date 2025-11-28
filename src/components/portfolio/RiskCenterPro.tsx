@@ -248,7 +248,7 @@ export default function RiskCenterPro() {
   const equity = useMemo(() => {
     const rows = Array.isArray(hist) ? hist : [];
     const eq: { t: number; v: number }[] = [];
-    let base = 0;
+    const base = 0;
     let cur = 0;
 
     for (const r of rows) {

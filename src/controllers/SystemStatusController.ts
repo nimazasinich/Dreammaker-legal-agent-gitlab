@@ -45,7 +45,7 @@ export class SystemStatusController {
 
       // 3. Get tuning status
       let tuningHasRun = false;
-      let tuningLastMetric: { metric: 'sharpe' | 'winRate' | 'pnl' | null; value: number | null } = {
+      const tuningLastMetric: { metric: 'sharpe' | 'winRate' | 'pnl' | null; value: number | null } = {
         metric: null,
         value: null
       };

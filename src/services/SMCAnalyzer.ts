@@ -319,7 +319,7 @@ export class SMCAnalyzer {
   private calculateFillProbability(gapSize: number, totalGaps: number): number {
     // Larger gaps have higher fill probability historically
     // 1% gap = ~75% fill rate, 0.5% gap = ~85% fill rate
-    let baseProb = 0.85 - (gapSize * 10);
+    const baseProb = 0.85 - (gapSize * 10);
     
     // Recent gaps have slightly higher fill rates
     const recencyBoost = Math.min(0.1, totalGaps * 0.01);

@@ -1,6 +1,6 @@
 import type { Redis } from 'ioredis';
 let redis: Redis | null = null;
-let memo = new Map<string, { v: any; t: number; ttl: number }>();
+const memo = new Map<string, { v: any; t: number; ttl: number }>();
 
 export async function connectRedisIfAvailable() {
   if (redis || !process.env.REDIS_URL) return;

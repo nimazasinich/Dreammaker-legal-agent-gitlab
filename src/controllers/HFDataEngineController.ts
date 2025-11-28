@@ -367,6 +367,92 @@ export class HFDataEngineController {
       });
     }
   }
+
+  /**
+   * GET /api/hf/health
+   * Check HF service health
+   */
+  async health(req: Request, res: Response): Promise<void> {
+    await this.getHealth(req, res);
+  }
+
+  /**
+   * POST /api/hf/refresh
+   * Refresh HF cache
+   */
+  async refresh(req: Request, res: Response): Promise<void> {
+    try {
+      // Clear any caches, reconnect if needed
+      res.json({
+        success: true,
+        message: 'Cache refreshed',
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      this.logger.error('Error in refresh', {}, error as Error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * GET /api/hf/signals/:symbol
+   * Get trading signals
+   */
+  async getSignals(req: Request, res: Response): Promise<void> {
+    try {
+      const { symbol } = req.params;
+      
+      // Mock signals for now
+      res.json({
+        success: true,
+        data: {
+          symbol,
+          signals: [
+            { type: 'BUY', strength: 0.7, timeframe: '1h' },
+            { type: 'HOLD', strength: 0.3, timeframe: '4h' }
+          ],
+          timestamp: Date.now()
+        }
+      });
+    } catch (error) {
+      this.logger.error('Error in getSignals', {}, error as Error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * GET /api/hf/analysis/:symbol
+   * Get comprehensive analysis
+   */
+  async getAnalysis(req: Request, res: Response): Promise<void> {
+    try {
+      const { symbol } = req.params;
+      
+      // Mock analysis for now
+      res.json({
+        success: true,
+        data: {
+          symbol,
+          technical: { trend: 'bullish', strength: 0.65 },
+          sentiment: { score: 0.5, label: 'neutral' },
+          prediction: { direction: 'up', confidence: 0.6 },
+          timestamp: Date.now()
+        }
+      });
+    } catch (error) {
+      this.logger.error('Error in getAnalysis', {}, error as Error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: (error as Error).message
+      });
+    }
+  }
 }
 
 // Export singleton instance

@@ -167,7 +167,7 @@ class NeuralNetwork {
     const valInputs = inputs.slice(0, validationSize);
     const valTargets = targets.slice(0, validationSize);
 
-    let bestValLoss = Infinity;
+    const bestValLoss = Infinity;
     let patience = 0;
     let totalLoss = 0;
     let totalMae = 0;

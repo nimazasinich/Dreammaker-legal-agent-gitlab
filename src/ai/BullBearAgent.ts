@@ -408,8 +408,8 @@ export class BullBearAgent {
     }
 
     // Normalize probabilities and ensure strict inequalities are maintained
-    let total = bullProb + bearProb + neutralProb;
-    let normalized = [
+    const total = bullProb + bearProb + neutralProb;
+    const normalized = [
       Math.max(0, Math.min(1, bullProb / total)),
       Math.max(0, Math.min(1, bearProb / total)),
       Math.max(0, Math.min(1, neutralProb / total))

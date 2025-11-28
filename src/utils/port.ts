@@ -24,7 +24,7 @@ function check(port: number): Promise<boolean> {
 export async function getAvailablePort(preferred = 3001, maxTries = 10): Promise<number> {
   let p = preferred;
   for (let i = 0; i < maxTries; i++) {
-    // eslint-disable-next-line no-await-in-loop
+     
     const ok = await check(p);
     if (ok) return p;
     p += 1;

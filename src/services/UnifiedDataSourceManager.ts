@@ -616,10 +616,10 @@ export class UnifiedDataSourceManager extends EventEmitter {
         if (fallbackResult.success && fallbackResult.data) {
           finalPrice = {
             symbol: fallbackResult.data.symbol || symbol,
+            name: fallbackResult.data.name || symbol,
             price: fallbackResult.data.price || 0,
             change_24h: fallbackResult.data.change24h || 0,
-            volume_24h: fallbackResult.data.volume24h || 0,
-            source: fallbackResult.source
+            volume_24h: fallbackResult.data.volume24h || 0
           };
         }
       }
@@ -759,15 +759,14 @@ export class UnifiedDataSourceManager extends EventEmitter {
     source?: string
   ): Promise<void> {
     try {
-      // Store in a data_retrieval_log table
-      await this.database.query(`
-        INSERT INTO data_retrieval_log (category, cache_key, data, source, timestamp)
-        VALUES (?, ?, ?, ?, ?)
-        ON CONFLICT(cache_key) DO UPDATE SET
-          data = excluded.data,
-          source = excluded.source,
-          timestamp = excluded.timestamp
-      `, [category, key, JSON.stringify(data), source || 'unknown', Date.now()]);
+      // Store in database (using memory database's insert method)
+      await this.database.insert('data_retrieval_log', {
+        category,
+        cache_key: key,
+        data: JSON.stringify(data),
+        source: source || 'unknown',
+        timestamp: Date.now()
+      });
     } catch (error) {
       this.logger.error('Failed to store in database', { category, key }, error as Error);
     }
@@ -834,10 +833,12 @@ export class UnifiedDataSourceManager extends EventEmitter {
 
   private async logFailure(source: DataSourceConfig, error: Error): Promise<void> {
     try {
-      await this.database.query(`
-        INSERT INTO data_source_failures (source_name, category, error_message, timestamp)
-        VALUES (?, ?, ?, ?)
-      `, [source.name, source.category, error.message, Date.now()]);
+      await this.database.insert('data_source_failures', {
+        source_name: source.name,
+        category: source.category,
+        error_message: error.message,
+        timestamp: Date.now()
+      });
     } catch (dbError) {
       this.logger.error('Failed to log failure to database', {}, dbError as Error);
     }

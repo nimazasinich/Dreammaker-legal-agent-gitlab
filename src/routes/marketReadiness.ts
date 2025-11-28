@@ -51,9 +51,8 @@ router.get('/:symbol', async (req, res) => {
     try {
       const historicalData = await historicalService.getHistoricalData(
         symbol,
-        '1d',
-        new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
-        new Date()
+        'USD',
+        30  // Last 30 days
       );
       
       if (historicalData && historicalData.length > 0) {

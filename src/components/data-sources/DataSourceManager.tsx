@@ -12,6 +12,8 @@ import { DataSourceNotifications } from './DataSourceNotifications';
 import { Database, Bell, Activity } from 'lucide-react';
 
 export const DataSourceManager: React.FC = () => {
+  const [activeTab, setActiveTab] = React.useState('mode');
+
   return (
     <div className="container mx-auto p-4">
       <div className="mb-6">
@@ -21,7 +23,7 @@ export const DataSourceManager: React.FC = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="mode" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="mode" className="flex items-center gap-2">
             <Database className="w-4 h-4" />

@@ -64,6 +64,13 @@ export class HuggingFaceService {
     }
   }
 
+  static getInstance(): HuggingFaceService {
+    if (!HuggingFaceService.instance) {
+      HuggingFaceService.instance = new HuggingFaceService();
+    }
+    return HuggingFaceService.instance;
+  }
+
   /**
    * Wait for rate limiter and make request
    */

@@ -318,7 +318,7 @@ export function getResourcesByCategory(category: Category): CryptoResource[] { r
 export async function callResource(resource: CryptoResource, endpointKey: string, params: Record<string, any> = {}) {
   const ep = resource.endpoints?.[endpointKey];
   if (!ep) console.error(`endpoint not found: ${resource.id}.${endpointKey}`);
-  let path = ep.path.replace(/{(\w+)}/g, (_, k) => {
+  const path = ep.path.replace(/{(\w+)}/g, (_, k) => {
     const v = params[k];
     if (v == null) console.error(`missing path param: ${k}`);
     delete params[k];

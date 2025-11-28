@@ -134,7 +134,7 @@ export const DashboardView: React.FC = () => {
             logger.info('🔄 Dashboard: Mounted (data loads via context)');
             // Data will be loaded by DataContext, no need to trigger refresh here
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, []); // Only run once on mount
 
     // Sync data from context to local state

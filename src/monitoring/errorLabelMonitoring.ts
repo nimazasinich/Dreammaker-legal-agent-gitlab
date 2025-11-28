@@ -6,7 +6,7 @@
  * and raises alerts for critical error patterns.
  */
 
-import { Logger } from '../core/Logger.js';
+import { Logger, LogLevel } from '../core/Logger.js';
 
 const logger = Logger.getInstance();
 
@@ -72,7 +72,17 @@ export class ErrorLabelMonitoring {
     }
 
     // Log structured event
-    logger.log(event.severity, event.code, event.metadata || {});
+    const logLevel = event.severity === 'ERROR' ? LogLevel.ERROR : 
+                     event.severity === 'WARN' ? LogLevel.WARN : 
+                     LogLevel.INFO;
+    
+    if (event.severity === 'ERROR') {
+      logger.error(event.code, event.metadata || {});
+    } else if (event.severity === 'WARN') {
+      logger.warn(event.code, event.metadata || {});
+    } else {
+      logger.info(event.code, event.metadata || {});
+    }
 
     // Check alert rules
     this.checkAlertRules(fullEvent);

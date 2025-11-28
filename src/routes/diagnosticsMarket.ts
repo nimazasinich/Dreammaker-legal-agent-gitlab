@@ -35,9 +35,8 @@ router.get('/missing-data/:symbol', async (req, res) => {
     
     const data = await historicalService.getHistoricalData(
       symbol,
-      timeframe as string,
-      startDate,
-      endDate
+      'USD',
+      Number(days)
     );
     
     // Analyze for missing data
@@ -110,9 +109,8 @@ router.get('/outliers/:symbol', async (req, res) => {
     
     const data = await historicalService.getHistoricalData(
       symbol,
-      timeframe as string,
-      startDate,
-      endDate
+      'USD',
+      Number(days)
     );
     
     // Calculate statistics for outlier detection
@@ -201,9 +199,8 @@ router.get('/quality/:symbol', async (req, res) => {
     
     const data = await historicalService.getHistoricalData(
       symbol,
-      timeframe as string,
-      startDate,
-      endDate
+      'USD',
+      Number(days)
     );
     
     // Quality checks

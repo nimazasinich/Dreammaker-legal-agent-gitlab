@@ -45,12 +45,12 @@ export class SyntheticOHLCV {
     const now = a.start ?? Date.now() - N * tfMs;
 
     let p = Math.max(10, a.price ?? 30000);
-    let vol = a.vol ?? 1000;
+    const vol = a.vol ?? 1000;
     const out: Bar[] = [];
 
     // Volatility parameters
-    let drift = 0.00005;  // Small upward drift
-    let volScale = 0.0035; // Base volatility
+    const drift = 0.00005;  // Small upward drift
+    const volScale = 0.0035; // Base volatility
     let volState = 1.0;    // Volatility clustering state
 
     for (let i = 0; i < N; i++) {

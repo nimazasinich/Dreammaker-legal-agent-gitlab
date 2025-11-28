@@ -264,8 +264,8 @@ export class FeatureEngineering {
     if (closes.length < period + 1) return 50;
 
     // Use Wilder's Smoothing Method for RSI (industry standard)
-    let gains: number[] = [];
-    let losses: number[] = [];
+    const gains: number[] = [];
+    const losses: number[] = [];
 
     // Calculate initial changes
     for (let i = 1; i < closes.length; i++) {

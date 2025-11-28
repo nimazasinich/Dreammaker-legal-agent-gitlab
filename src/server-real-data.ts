@@ -1678,7 +1678,7 @@ app.get('/api/training-metrics', async (req, res) => {
 app.post('/api/analysis/elliott', async (req, res) => {
     try {
         const { symbol } = req.body;
-        let normalizedSymbol = symbol?.replace(/USDT$|USDC$|USD$/i, '') || 'BTC';
+        const normalizedSymbol = symbol?.replace(/USDT$|USDC$|USD$/i, '') || 'BTC';
         
         // Get real historical data
         const historicalData = await marketDataService.getHistoricalData(normalizedSymbol, 90);
@@ -1709,7 +1709,7 @@ app.post('/api/analysis/elliott', async (req, res) => {
 app.post('/api/analysis/harmonic', async (req, res) => {
     try {
         const { symbol } = req.body;
-        let normalizedSymbol = symbol?.replace(/USDT$|USDC$|USD$/i, '') || 'BTC';
+        const normalizedSymbol = symbol?.replace(/USDT$|USDC$|USD$/i, '') || 'BTC';
         
         // Get real historical data
         const historicalData = await marketDataService.getHistoricalData(normalizedSymbol, 90);

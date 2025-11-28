@@ -346,9 +346,9 @@ export class TensorFlowModel {
       const priceChange = features[10] || 0;
       const volumeRatio = features[9] || 1;
       
-      let bullProb = Math.max(0, Math.min(1, 0.33 + priceChange * 2 + (volumeRatio - 1) * 0.1 + noise()));
-      let bearProb = Math.max(0, Math.min(1, 0.33 - priceChange * 2 - (volumeRatio - 1) * 0.1 + noise()));
-      let neutralProb = Math.max(0, Math.min(1, 1 - bullProb - bearProb));
+      const bullProb = Math.max(0, Math.min(1, 0.33 + priceChange * 2 + (volumeRatio - 1) * 0.1 + noise()));
+      const bearProb = Math.max(0, Math.min(1, 0.33 - priceChange * 2 - (volumeRatio - 1) * 0.1 + noise()));
+      const neutralProb = Math.max(0, Math.min(1, 1 - bullProb - bearProb));
       
       const total = bullProb + bearProb + neutralProb;
       predictions.push([bullProb / total, bearProb / total, neutralProb / total]);
@@ -361,9 +361,9 @@ export class TensorFlowModel {
     const priceChange = features[10] || 0;
     const volumeRatio = features[9] || 1;
     
-    let bullProb = Math.max(0, Math.min(1, 0.33 + priceChange * 2 + (volumeRatio - 1) * 0.1));
-    let bearProb = Math.max(0, Math.min(1, 0.33 - priceChange * 2 - (volumeRatio - 1) * 0.1));
-    let neutralProb = Math.max(0, Math.min(1, 1 - bullProb - bearProb));
+    const bullProb = Math.max(0, Math.min(1, 0.33 + priceChange * 2 + (volumeRatio - 1) * 0.1));
+    const bearProb = Math.max(0, Math.min(1, 0.33 - priceChange * 2 - (volumeRatio - 1) * 0.1));
+    const neutralProb = Math.max(0, Math.min(1, 1 - bullProb - bearProb));
     
     const total = bullProb + bearProb + neutralProb;
     return [bullProb / total, bearProb / total, neutralProb / total];

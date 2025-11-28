@@ -11,7 +11,7 @@ import path from 'path';
 
 const router = express.Router();
 const logger = Logger.getInstance();
-const backtestEngine = new BacktestEngine();
+const backtestEngine = BacktestEngine.getInstance();
 const realBacktestEngine = RealBacktestEngine.getInstance();
 
 const BACKTEST_RESULTS_DIR = path.join(process.cwd(), 'data', 'backtest-results');
@@ -64,14 +64,19 @@ router.post('/run', async (req, res) => {
     logger.info('Starting backtest', { symbol, startDate, endDate, timeframe });
     
     // Execute backtest using RealBacktestEngine
-    const result = await realBacktestEngine.runBacktest({
+    const result = await realBacktestEngine.runBacktest(
       symbol,
-      strategy: typeof strategy === 'string' ? strategy : 'custom',
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      initialCapital,
-      timeframe
-    });
+      timeframe,
+      500, // Default number of bars
+      {
+        startDate: new Date(startDate).getTime(),
+        endDate: new Date(endDate).getTime(),
+        initialCapital: Number(initialCapital),
+        feeRate: Number(commission),
+        slippageRate: Number(slippage),
+        maxPositionSize: 0.95
+      }
+    );
     
     // Generate unique ID for this backtest
     const backtestId = `backtest_${Date.now()}_${symbol}`;

@@ -12,8 +12,8 @@ export function rsi(closes: number[], period: number = 14): number[] {
 
   if (closes.length < period + 1) return result;
 
-  let gains: number[] = [];
-  let losses: number[] = [];
+  const gains: number[] = [];
+  const losses: number[] = [];
 
   // Calculate initial changes
   for (let i = 1; i < closes.length; i++) {

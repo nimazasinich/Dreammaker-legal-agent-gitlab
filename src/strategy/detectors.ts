@@ -273,7 +273,7 @@ export function detectReversal(candles: OHLCVData[], features: TechnicalFeatures
   // 5. Fibonacci PRZ proximity
 
   let reversalScore = 0;
-  let signals: string[] = [];
+  const signals: string[] = [];
 
   const close = candles[candles.length - 1].close;
   const rsi = lastValid(features.rsi);

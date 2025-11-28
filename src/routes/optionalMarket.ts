@@ -236,7 +236,7 @@ function generateMockOHLCV(symbol: string, limit: number) {
 
 function generateMockOrderBookSide(depth: number, side: 'buy' | 'sell') {
   const orders = [];
-  let basePrice = 50000;
+  const basePrice = 50000;
   
   for (let i = 0; i < depth; i++) {
     const priceOffset = side === 'buy' ? -i * 10 : i * 10;

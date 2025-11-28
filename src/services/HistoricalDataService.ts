@@ -15,6 +15,7 @@ const PROVIDERS = {
 } as const;
 
 export class HistoricalDataService {
+  private static instance: HistoricalDataService;
   private logger = Logger.getInstance();
   private config = ConfigManager.getInstance();
   
@@ -25,6 +26,13 @@ export class HistoricalDataService {
   
   // Cache with proper TTL
   private readonly histCache = new TTLCache<any>(PROVIDERS.ttlMs);
+
+  static getInstance(): HistoricalDataService {
+    if (!HistoricalDataService.instance) {
+      HistoricalDataService.instance = new HistoricalDataService();
+    }
+    return HistoricalDataService.instance;
+  }
 
   // Retry with exponential backoff
   private async backoffRetry<T>(

@@ -10,7 +10,7 @@ import { HFOHLCVService } from '../services/HFOHLCVService.js';
 
 const router = express.Router();
 const logger = Logger.getInstance();
-const hfController = new HFDataEngineController();
+const hfController = HFDataEngineController.getInstance();
 
 /**
  * GET /api/hf/health

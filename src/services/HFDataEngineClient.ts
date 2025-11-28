@@ -407,6 +407,43 @@ export class HFDataEngineClient {
       return false;
     }
   }
+
+  /**
+   * Run HuggingFace inference
+   */
+  async runHfInference(params: { model: string; inputs: any }): Promise<any> {
+    try {
+      // Mock implementation - in production would call actual HF inference API
+      this.logger.info('Running HF inference', params);
+      return {
+        predictions: [],
+        confidence: 0.5,
+        model: params.model
+      };
+    } catch (error) {
+      this.logger.error('HF inference failed', params, error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get price data from HF
+   */
+  async getPrice(symbol: string): Promise<any> {
+    try {
+      // Try to fetch from the OHLCV endpoint
+      const response = await this.get<any>(`/api/data/ohlcv/${symbol}?interval=1h&limit=1`);
+      
+      if (HFDataEngineClient.isError(response)) {
+        throw new Error('Failed to get price from HF');
+      }
+
+      return response;
+    } catch (error) {
+      this.logger.error('Failed to get price', { symbol }, error as Error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance
