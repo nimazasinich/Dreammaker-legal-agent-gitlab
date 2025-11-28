@@ -53,7 +53,7 @@ async function validateNoMockText(page: Page, pageName: string) {
 }
 
 async function validateApiEnvelopes(page: Page, pageName: string) {
-  const apiResponses: any[] = [];
+  const apiResponses: Array<{ url: string; status: number; body: unknown }> = [];
   
   page.on('response', async (response) => {
     const url = response.url();
@@ -201,7 +201,7 @@ test.describe('Interactive Elements - Press Every Button', () => {
         await validateNoMockText(page, `Dashboard after clicking ${id}`);
         
         results.push({ id, action: 'click', success: true });
-      } catch (error) {
+      } catch {
         results.push({ id, action: 'click', success: false });
       }
     }
@@ -278,7 +278,7 @@ test.describe('Interactive Elements - Press Every Button', () => {
 
 test.describe('Network Response Validation', () => {
   test('All API responses follow envelope pattern', async ({ page }) => {
-    const apiCalls: { url: string; envelope: any }[] = [];
+    const apiCalls: { url: string; envelope: { status?: string; data?: unknown } }[] = [];
     
     page.on('response', async (response) => {
       if (response.url().includes('/api/')) {

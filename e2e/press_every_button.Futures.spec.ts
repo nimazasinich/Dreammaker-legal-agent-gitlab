@@ -28,15 +28,10 @@ test('FuturesTradingView — press every interactive element and validate envelo
     // Skip if disabled
     const disabled = await el.getAttribute('disabled');
     if (disabled) continue;
-    try {
-      await el.scrollIntoViewIfNeeded();
-      await el.click({ timeout: 3000 });
-      // wait shortly for network and UI updates
-      await page.waitForTimeout(300);
-    } catch (err) {
-      // If interaction triggers modal or expects input, we try best-effort; record as failure if uncaught
-      throw err;
-    }
+    await el.scrollIntoViewIfNeeded();
+    await el.click({ timeout: 3000 });
+    // wait shortly for network and UI updates
+    await page.waitForTimeout(300);
   }
 
   // Ensure page doesn't display forbidden words (mock/demo/unknown/null/undefined)
