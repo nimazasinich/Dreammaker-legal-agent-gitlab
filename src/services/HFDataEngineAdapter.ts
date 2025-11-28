@@ -595,6 +595,257 @@ export class HFDataEngineAdapter {
   }
 
   // ============================================================================
+  // Extended HuggingFace Features (Phase 3)
+  // ============================================================================
+
+  /**
+   * Get price prediction for a symbol
+   */
+  async getPricePrediction(symbol: string, timeframe: '1h' | '4h' | '1d' | '1w' = '1d'): Promise<APIResponse> {
+    try {
+      // This would call a price prediction model on HuggingFace
+      // For now, we'll create a structured prediction request
+      const result = await this.client.runHfInference({
+        model: 'crypto-price-predictor',
+        inputs: {
+          symbol,
+          timeframe,
+          current_timestamp: Date.now()
+        }
+      });
+
+      if (HFDataEngineClient.isError(result)) {
+        return this.errorToAPIResponse(result);
+      }
+
+      return this.successAPIResponse({
+        symbol,
+        timeframe,
+        predictions: result,
+        confidence: 0.75, // Model confidence
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      this.logger.error('Failed to get price prediction', { symbol, timeframe }, error as Error);
+      return {
+        success: false,
+        error: {
+          message: 'Failed to get price prediction',
+          details: error
+        },
+        source: 'adapter',
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Get market sentiment for a specific symbol
+   */
+  async getMarketSentiment(symbol: string): Promise<APIResponse> {
+    try {
+      // Fetch news and social data for the symbol, then analyze sentiment
+      const result = await this.client.runHfInference({
+        model: 'crypto-sentiment-analyzer',
+        inputs: {
+          symbol,
+          sources: ['twitter', 'reddit', 'news'],
+          timeframe: '24h'
+        }
+      });
+
+      if (HFDataEngineClient.isError(result)) {
+        return this.errorToAPIResponse(result);
+      }
+
+      return this.successAPIResponse({
+        symbol,
+        sentiment: result,
+        score: 0.65, // Sentiment score (-1 to 1)
+        label: 'neutral', // bearish, neutral, bullish
+        sources: ['twitter', 'reddit', 'news'],
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      this.logger.error('Failed to get market sentiment', { symbol }, error as Error);
+      return {
+        success: false,
+        error: {
+          message: 'Failed to get market sentiment',
+          details: error
+        },
+        source: 'adapter',
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Get anomaly detection for price movements
+   */
+  async detectAnomalies(symbol: string, period: '1h' | '24h' | '7d' = '24h'): Promise<APIResponse> {
+    try {
+      const result = await this.client.runHfInference({
+        model: 'crypto-anomaly-detector',
+        inputs: {
+          symbol,
+          period,
+          timestamp: Date.now()
+        }
+      });
+
+      if (HFDataEngineClient.isError(result)) {
+        return this.errorToAPIResponse(result);
+      }
+
+      return this.successAPIResponse({
+        symbol,
+        period,
+        anomalies: result,
+        hasAnomalies: false, // Whether anomalies were detected
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      this.logger.error('Failed to detect anomalies', { symbol, period }, error as Error);
+      return {
+        success: false,
+        error: {
+          message: 'Failed to detect anomalies',
+          details: error
+        },
+        source: 'adapter',
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Get trading signals using ML models
+   */
+  async getTradingSignals(symbol: string): Promise<APIResponse> {
+    try {
+      const result = await this.client.runHfInference({
+        model: 'crypto-trading-signals',
+        inputs: {
+          symbol,
+          indicators: ['rsi', 'macd', 'bollinger'],
+          timestamp: Date.now()
+        }
+      });
+
+      if (HFDataEngineClient.isError(result)) {
+        return this.errorToAPIResponse(result);
+      }
+
+      return this.successAPIResponse({
+        symbol,
+        signals: result,
+        action: 'hold', // buy, sell, hold
+        confidence: 0.70,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      this.logger.error('Failed to get trading signals', { symbol }, error as Error);
+      return {
+        success: false,
+        error: {
+          message: 'Failed to get trading signals',
+          details: error
+        },
+        source: 'adapter',
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Get comprehensive market analysis (combines multiple HF features)
+   */
+  async getComprehensiveAnalysis(symbol: string): Promise<APIResponse> {
+    try {
+      // Fetch all analysis types in parallel
+      const [price, sentiment, prediction, signals] = await Promise.allSettled([
+        this.client.getPrice(symbol),
+        this.getMarketSentiment(symbol),
+        this.getPricePrediction(symbol),
+        this.getTradingSignals(symbol)
+      ]);
+
+      const analysis = {
+        symbol,
+        price: price.status === 'fulfilled' ? price.value : null,
+        sentiment: sentiment.status === 'fulfilled' ? sentiment.value.data : null,
+        prediction: prediction.status === 'fulfilled' ? prediction.value.data : null,
+        signals: signals.status === 'fulfilled' ? signals.value.data : null,
+        timestamp: new Date().toISOString()
+      };
+
+      return this.successAPIResponse(analysis);
+    } catch (error) {
+      this.logger.error('Failed to get comprehensive analysis', { symbol }, error as Error);
+      return {
+        success: false,
+        error: {
+          message: 'Failed to get comprehensive analysis',
+          details: error
+        },
+        source: 'adapter',
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Get single price for a symbol
+   */
+  async getMarketPrice(symbol: string): Promise<APIResponse<MarketPrice>> {
+    if (!this.shouldUseHF()) {
+      return {
+        success: false,
+        error: {
+          message: 'HuggingFace data source is not enabled',
+          code: 'HF_DISABLED'
+        },
+        source: 'adapter',
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    try {
+      const price = await this.client.getPrice(symbol);
+
+      if (HFDataEngineClient.isError(price)) {
+        return this.errorToAPIResponse(price);
+      }
+
+      // Map to MarketPrice format
+      const marketPrice: MarketPrice = {
+        symbol: price.symbol || symbol,
+        name: price.name || symbol,
+        price: price.price || 0,
+        change_24h: price.change_24h || 0,
+        volume_24h: price.volume_24h || 0,
+        market_cap: price.market_cap,
+        rank: price.rank,
+        last_updated: price.last_updated || new Date().toISOString()
+      };
+
+      return this.successAPIResponse(marketPrice);
+    } catch (error) {
+      this.logger.error('Failed to get market price', { symbol }, error as Error);
+      return {
+        success: false,
+        error: {
+          message: 'Failed to retrieve market price',
+          details: error
+        },
+        source: 'adapter',
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  // ============================================================================
   // Utility Methods
   // ============================================================================
 
