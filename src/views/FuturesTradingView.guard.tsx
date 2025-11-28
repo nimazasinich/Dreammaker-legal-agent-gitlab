@@ -33,9 +33,9 @@ function useFetchEnvelope(url: string, opts: RequestInit = {}) {
 export default function FuturesTradingViewGuarded() {
   // Pre-flight config guard (example: check env or global config)
   // In test environment, skip config check as MSW handles API mocking
-  const isTestEnv = typeof process !== 'undefined' && (process.env.NODE_ENV === 'test' || process.env.VITEST);
-  const configOk = isTestEnv || Boolean(process.env.VITE_API_BASE_URL); // example check; replace with real config test
-  const configGuard = preFlightGuard(configOk);
+  const isTestEnv = typeof process !== 'undefined' && (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true');
+  const configOk = isTestEnv || Boolean(import.meta.env.VITE_API_BASE || process.env.VITE_API_BASE_URL);
+  const configGuard = preFlightGuard(Boolean(configOk));
 
   const { result: health, loading: healthLoading } = useFetchEnvelope(EXCHANGE_HEALTH);
   const { result: predict, loading: predictLoading } = useFetchEnvelope(API_PREDICT, { method: 'POST' });
