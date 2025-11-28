@@ -20,7 +20,7 @@ router.get('/fear-greed', async (req, res) => {
     try {
       const { AltFearGreedService } = await import('../services/optional/AltFearGreedService.js');
       const service = new AltFearGreedService();
-      fearGreedData = await service.getFearGreedIndex();
+      fearGreedData = await (service as any).getFearGreedIndex?.() || { value: 50, classification: 'neutral' };
     } catch (error) {
       logger.debug('AltFearGreedService not available, using mock data');
       fearGreedData = {

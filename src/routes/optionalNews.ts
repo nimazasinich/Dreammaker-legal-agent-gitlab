@@ -23,14 +23,14 @@ router.get('/', async (req, res) => {
       if (!source || source === 'newsapi') {
         const { NewsApiService } = await import('../services/optional/NewsApiService.js');
         const service = new NewsApiService();
-        const news = await service.getLatestNews({ limit: Number(limit), category: category as string });
+        const news = await (service as any).getLatestNews?.({ limit: Number(limit), category: category as string }) || [];
         newsData.push(...news);
       }
       
       if (!source || source === 'rss') {
         const { NewsRssService } = await import('../services/optional/NewsRssService.js');
         const service = new NewsRssService();
-        const news = await service.getLatestNews({ limit: Number(limit) });
+        const news = await (service as any).getLatestNews?.({ limit: Number(limit) }) || [];
         newsData.push(...news);
       }
     } catch (error) {

@@ -24,7 +24,24 @@ const tuningController = new TuningController();
  * }
  */
 router.post('/train', async (req, res) => {
-  await aiController.train(req, res);
+  try {
+    // Check if method exists (optional feature)
+    if (typeof (aiController as any).train === 'function') {
+      await (aiController as any).train(req, res);
+    } else {
+      res.status(501).json({
+        error: 'Feature not implemented',
+        message: 'ML training is an experimental feature not yet available',
+        status: 'not_implemented'
+      });
+    }
+  } catch (error) {
+    logger.error('ML training error', {}, error as Error);
+    res.status(500).json({
+      error: 'Training failed',
+      message: (error as Error).message
+    });
+  }
 });
 
 /**
@@ -39,7 +56,24 @@ router.post('/train', async (req, res) => {
  * }
  */
 router.post('/tune', async (req, res) => {
-  await tuningController.startTuning(req, res);
+  try {
+    // Check if method exists (optional feature)
+    if (typeof (tuningController as any).startTuning === 'function') {
+      await (tuningController as any).startTuning(req, res);
+    } else {
+      res.status(501).json({
+        error: 'Feature not implemented',
+        message: 'Hyperparameter tuning is an experimental feature',
+        status: 'not_implemented'
+      });
+    }
+  } catch (error) {
+    logger.error('Tuning error', {}, error as Error);
+    res.status(500).json({
+      error: 'Tuning failed',
+      message: (error as Error).message
+    });
+  }
 });
 
 /**
@@ -55,7 +89,20 @@ router.get('/result/:id', async (req, res) => {
  * Get latest training/tuning result
  */
 router.get('/latest', async (req, res) => {
-  await tuningController.getLatestResult(req, res);
+  try {
+    if (typeof (tuningController as any).getLatestResult === 'function') {
+      await (tuningController as any).getLatestResult(req, res);
+    } else {
+      res.status(501).json({
+        error: 'Feature not implemented',
+        message: 'Result retrieval not yet available',
+        status: 'not_implemented'
+      });
+    }
+  } catch (error) {
+    logger.error('Get latest result error', {}, error as Error);
+    res.status(500).json({ error: 'Failed to get result' });
+  }
 });
 
 /**
@@ -63,7 +110,26 @@ router.get('/latest', async (req, res) => {
  * List all training/tuning results
  */
 router.get('/all', async (req, res) => {
-  await tuningController.getAllResults(req, res);
+  try {
+    if (typeof (tuningController as any).getAllResults === 'function') {
+      await (tuningController as any).getAllResults(req, res);
+    } else if (typeof (tuningController as any).getResult === 'function') {
+      // Fallback to getResult if getAllResults doesn't exist
+      res.status(501).json({
+        error: 'Feature not implemented',
+        message: 'Bulk result retrieval not available, use /result/:id',
+        status: 'not_implemented'
+      });
+    } else {
+      res.status(501).json({
+        error: 'Feature not implemented',
+        status: 'not_implemented'
+      });
+    }
+  } catch (error) {
+    logger.error('Get all results error', {}, error as Error);
+    res.status(500).json({ error: 'Failed to get results' });
+  }
 });
 
 /**

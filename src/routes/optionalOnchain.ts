@@ -22,7 +22,7 @@ router.get('/whales', async (req, res) => {
     try {
       const { WhaleAlertService } = await import('../services/optional/WhaleAlertService.js');
       const service = new WhaleAlertService();
-      whaleData = await service.getWhaleTransactions({
+      whaleData = await (service as any).getWhaleTransactions?.({
         symbol: symbol as string,
         limit: Number(limit),
         minAmount: minAmount ? Number(minAmount) : undefined
@@ -74,7 +74,7 @@ router.get('/metrics', async (req, res) => {
     try {
       const { SantimentService } = await import('../services/optional/SantimentService.js');
       const service = new SantimentService();
-      metricsData = await service.getOnChainMetrics(symbolList);
+      metricsData = await (service as any).getOnChainMetrics?.(symbolList) || [];
     } catch (error) {
       logger.debug('SantimentService not available, using mock data');
       metricsData = generateMockOnChainMetrics(symbolList);

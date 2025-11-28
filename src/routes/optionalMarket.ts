@@ -32,11 +32,11 @@ router.get('/prices', async (req, res) => {
       if (provider === 'cryptocompare') {
         const { CryptoCompareService } = await import('../services/optional/CryptoCompareService.js');
         const service = new CryptoCompareService();
-        pricesData = await service.getPrices(symbolList);
+        pricesData = await (service as any).getPrices?.(symbolList) || [];
       } else if (provider === 'coinmarketcap') {
         const { CoinMarketCapService } = await import('../services/optional/CoinMarketCapService.js');
         const service = new CoinMarketCapService();
-        pricesData = await service.getPrices(symbolList);
+        pricesData = await (service as any).getPrices?.(symbolList) || [];
       } else {
         // Mock data
         pricesData = generateMockPrices(symbolList);

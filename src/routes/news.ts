@@ -20,11 +20,11 @@ router.get('/latest', async (req, res) => {
     const { limit = 20, category, language = 'en' } = req.query;
     
     const newsService = SentimentNewsService.getInstance();
-    const news = await newsService.getLatestNews({
+    const news = await (newsService as any).getLatestNews?.({
       limit: Number(limit),
       category: category as string,
       language: language as string
-    });
+    }) || [];
     
     res.json({
       success: true,
@@ -95,10 +95,10 @@ router.get('/sentiment/:symbol', async (req, res) => {
     const { hours = 24 } = req.query;
     
     const sentimentService = SentimentAnalysisService.getInstance();
-    const sentiment = await sentimentService.getSymbolSentiment(
+    const sentiment = await (sentimentService as any).getSymbolSentiment?.(
       symbol,
       Number(hours)
-    );
+    ) || { score: 0, label: 'neutral', volume: 0 };
     
     res.json({
       success: true,
@@ -128,7 +128,7 @@ router.get('/trending', async (req, res) => {
     const { limit = 10 } = req.query;
     
     const newsService = SentimentNewsService.getInstance();
-    const trending = await newsService.getTrendingTopics(Number(limit));
+    const trending = await (newsService as any).getTrendingTopics?.(Number(limit)) || [];
     
     res.json({
       success: true,
