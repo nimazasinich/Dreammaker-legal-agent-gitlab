@@ -32,30 +32,32 @@ interface NavigationItem {
 }
 
 const NAV_ITEMS: NavigationItem[] = [
+  // Core Pages
   { id: 'dashboard', label: t('navigation.dashboard'), icon: Home },
   { id: 'charting', label: t('navigation.charting'), icon: TrendingUp },
   { id: 'market', label: t('navigation.market'), icon: Zap },
   { id: 'scanner', label: t('navigation.scanner'), icon: Search },
-  { id: 'trading-hub', label: '⚡ Trading Hub', icon: Layers },
-  { id: 'trading', label: t('navigation.trading'), icon: Sparkles },
-  { id: 'enhanced-trading', label: 'Enhanced Trading', icon: Rocket },
-  { id: 'positions', label: 'Positions', icon: ListOrdered },
-  { id: 'futures', label: t('navigation.futures'), icon: DollarSign },
+  
+  // Trading (Unified - single entry point)
+  { id: 'trading-hub', label: '⚡ Trading', icon: Layers },
+  
+  // Portfolio & Positions
   { id: 'portfolio', label: 'Portfolio', icon: Wallet },
+  { id: 'positions', label: 'Positions', icon: ListOrdered },
+  
+  // Analysis & Strategy
   { id: 'technical-analysis', label: 'Technical Analysis', icon: Activity },
-  { id: 'risk-management', label: 'Risk Management', icon: Shield },
-  { id: 'training', label: t('navigation.training'), icon: Brain },
-  { id: 'risk', label: t('navigation.risk'), icon: Shield },
-  { id: 'professional-risk', label: '🔥 Pro Risk', icon: AlertTriangle },
-  { id: 'backtest', label: t('navigation.backtest'), icon: BarChart3 },
   { id: 'strategyBuilder', label: 'Strategy Builder', icon: Sliders },
-  { id: 'strategylab', label: 'Strategy Lab', icon: Activity },
-  { id: 'strategy-insights', label: 'Strategy Insights', icon: Layers },
+  { id: 'backtest', label: t('navigation.backtest'), icon: BarChart3 },
+  
+  // Training & Risk (Consolidated)
+  { id: 'training', label: t('navigation.training'), icon: Brain },
+  { id: 'professional-risk', label: 'Risk Management', icon: Shield },
+  
+  // System & Monitoring
   { id: 'health', label: t('navigation.health'), icon: Activity },
-  { id: 'monitoring', label: 'Monitoring', icon: Monitor },
   { id: 'diagnostics', label: 'Diagnostics', icon: Stethoscope },
   { id: 'settings', label: t('navigation.settings'), icon: Settings },
-  { id: 'exchange-settings', label: 'Exchange Settings', icon: Settings },
 ];
 
 export const Sidebar: React.FC = () => {

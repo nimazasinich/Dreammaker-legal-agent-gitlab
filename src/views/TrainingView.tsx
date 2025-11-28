@@ -14,6 +14,7 @@ import { t } from '../i18n';
 import fmt from '../lib/formatNumber';
 import createPseudoRandom from '../lib/pseudoRandom';
 import { MLTrainingPanel } from '../components/ml/MLTrainingPanel';
+import { RiskManagementDropdown } from '../components/RiskManagementDropdown';
 
 type TrainingStatus = 'idle' | 'running' | 'completed';
 
@@ -604,6 +605,11 @@ const TrainingView: React.FC = () => {
               </table>
             </div>
           )}
+        </section>
+
+        {/* Risk Management Settings */}
+        <section>
+          <RiskManagementDropdown />
         </section>
 
         {/* Real ML Training & Backtesting */}
