@@ -1,0 +1,126 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - main [ref=e4]:
+    - status [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - strong [ref=e9]: "Health:"
+          - text: down
+        - generic "Backend is not reachable – please ensure the server is running." [ref=e10]
+      - generic [ref=e11]:
+        - 'generic "Primary data source: huggingface" [ref=e12]':
+          - strong [ref=e13]: "Data:"
+          - text: huggingface
+        - 'generic "Trading Mode: OFF, Market: FUTURES" [ref=e14]':
+          - generic [ref=e15]: "OFF"
+          - generic [ref=e16]: "|"
+          - generic [ref=e17]: FUTURES
+        - generic "WebSocket disconnected" [ref=e18]: WS
+        - generic [ref=e20]:
+          - button "Offline" [ref=e21] [cursor=pointer]
+          - button "Online" [pressed] [ref=e22] [cursor=pointer]
+        - generic [ref=e23]:
+          - button "Virtual" [ref=e24] [cursor=pointer]
+          - button "Real" [pressed] [ref=e25] [cursor=pointer]
+        - generic [ref=e26]:
+          - button "🤗 HF" [ref=e27] [cursor=pointer]
+          - button "📊 Exchanges" [ref=e28] [cursor=pointer]
+          - button "🔀 Mixed" [pressed] [ref=e29] [cursor=pointer]
+    - generic [ref=e32]:
+      - generic [ref=e33]:
+        - heading "Exchange Settings" [level=1] [ref=e34]
+        - button "Save Changes" [ref=e35] [cursor=pointer]
+      - generic [ref=e37]:
+        - generic [ref=e38]: ⚡
+        - generic [ref=e39]:
+          - paragraph [ref=e40]: "Trading Provider: KuCoin Futures (Testnet)"
+          - paragraph [ref=e41]:
+            - text: Only
+            - strong [ref=e42]: KuCoin Futures
+            - text: supports real trading in this build. Other exchanges are available for data only.
+      - paragraph [ref=e44]:
+        - strong [ref=e45]: "Note:"
+        - text: API keys are stored locally. You can add multiple exchanges for data, but only KuCoin Futures can execute trades.
+      - button "+ Add Exchange" [ref=e46] [cursor=pointer]
+  - complementary [ref=e47]:
+    - generic [ref=e49]:
+      - img [ref=e52]
+      - button "Expand navigation" [ref=e54] [cursor=pointer]:
+        - img [ref=e55]
+    - navigation [ref=e57]:
+      - list [ref=e58]:
+        - listitem [ref=e59]:
+          - button [ref=e60] [cursor=pointer]:
+            - img [ref=e64]
+        - listitem [ref=e67]:
+          - button [ref=e68] [cursor=pointer]:
+            - img [ref=e72]
+        - listitem [ref=e75]:
+          - button [ref=e76] [cursor=pointer]:
+            - img [ref=e80]
+        - listitem [ref=e82]:
+          - button [ref=e83] [cursor=pointer]:
+            - img [ref=e87]
+        - listitem [ref=e90]:
+          - button [ref=e91] [cursor=pointer]:
+            - img [ref=e95]
+        - listitem [ref=e99]:
+          - button [ref=e100] [cursor=pointer]:
+            - img [ref=e104]
+        - listitem [ref=e106]:
+          - button [ref=e107] [cursor=pointer]:
+            - img [ref=e111]
+        - listitem [ref=e116]:
+          - button [ref=e117] [cursor=pointer]:
+            - img [ref=e121]
+        - listitem [ref=e124]:
+          - button [ref=e125] [cursor=pointer]:
+            - img [ref=e129]
+        - listitem [ref=e131]:
+          - button [ref=e132] [cursor=pointer]:
+            - img [ref=e136]
+        - listitem [ref=e140]:
+          - button [ref=e141] [cursor=pointer]:
+            - img [ref=e145]
+        - listitem [ref=e147]:
+          - button [ref=e148] [cursor=pointer]:
+            - img [ref=e152]
+        - listitem [ref=e154]:
+          - button [ref=e155] [cursor=pointer]:
+            - img [ref=e159]
+        - listitem [ref=e162]:
+          - button [ref=e163] [cursor=pointer]:
+            - img [ref=e167]
+        - listitem [ref=e169]:
+          - button [ref=e170] [cursor=pointer]:
+            - img [ref=e174]
+        - listitem [ref=e176]:
+          - button [ref=e177] [cursor=pointer]:
+            - img [ref=e181]
+        - listitem [ref=e183]:
+          - button [ref=e184] [cursor=pointer]:
+            - img [ref=e188]
+        - listitem [ref=e189]:
+          - button [ref=e190] [cursor=pointer]:
+            - img [ref=e194]
+        - listitem [ref=e196]:
+          - button [ref=e197] [cursor=pointer]:
+            - img [ref=e201]
+        - listitem [ref=e205]:
+          - button [ref=e206] [cursor=pointer]:
+            - img [ref=e210]
+        - listitem [ref=e212]:
+          - button [ref=e213] [cursor=pointer]:
+            - img [ref=e217]
+        - listitem [ref=e219]:
+          - button [ref=e220] [cursor=pointer]:
+            - img [ref=e224]
+        - listitem [ref=e228]:
+          - button [ref=e229] [cursor=pointer]:
+            - img [ref=e233]
+        - listitem [ref=e236]:
+          - button [active] [ref=e237] [cursor=pointer]:
+            - img [ref=e240]
+```
