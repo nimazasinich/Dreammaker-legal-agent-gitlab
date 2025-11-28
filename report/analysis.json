@@ -1,0 +1,1425 @@
+{
+  "analysisDate": "2025-11-28T00:00:00.000Z",
+  "projectName": "Dreammaker Crypto Trading Platform",
+  "analysisType": "Comprehensive Backend Analysis",
+  "summary": {
+    "totalRouteModules": 20,
+    "totalInlineRoutes": 140,
+    "totalControllers": 12,
+    "totalServices": 50,
+    "implementationStatus": "COMPLETE",
+    "notes": "All documented route modules are implemented and mounted. Additional inline routes exist in server.ts for legacy/compatibility purposes."
+  },
+  "routeModules": {
+    "modularRoutes": [
+      {
+        "file": "src/routes/dataSource.ts",
+        "basePath": "/api/config",
+        "status": "ACTIVE",
+        "endpoints": 2,
+        "description": "Data source configuration management",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/diagnosticsRoute.ts",
+        "basePath": "/diagnostics",
+        "status": "ACTIVE",
+        "endpoints": 1,
+        "description": "Comprehensive diagnostics for all data providers",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/futures.ts",
+        "basePath": "/api/futures",
+        "status": "ACTIVE",
+        "endpoints": 7,
+        "description": "Futures trading operations",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/offline.ts",
+        "basePath": "/api/offline",
+        "status": "ACTIVE",
+        "endpoints": 5,
+        "description": "Offline/fallback data service",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/systemDiagnostics.ts",
+        "basePath": "/api/system/diagnostics",
+        "status": "ACTIVE",
+        "endpoints": 4,
+        "description": "System health diagnostics",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/systemMetrics.ts",
+        "basePath": "/api/system/metrics",
+        "status": "ACTIVE",
+        "endpoints": 7,
+        "description": "Detailed system metrics",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/marketUniverse.ts",
+        "basePath": "/api/market/universe",
+        "status": "ACTIVE",
+        "endpoints": 3,
+        "description": "Market universe and symbol information",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/marketReadiness.ts",
+        "basePath": "/api/market/readiness",
+        "status": "ACTIVE",
+        "endpoints": 3,
+        "description": "Data feed readiness checks",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/ml.ts",
+        "basePath": "/api/ml",
+        "status": "ACTIVE",
+        "endpoints": 9,
+        "description": "Unified ML training, tuning, and prediction API",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/news.ts",
+        "basePath": "/api/news",
+        "status": "ACTIVE",
+        "endpoints": 6,
+        "description": "News aggregation and sentiment analysis",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/diagnosticsMarket.ts",
+        "basePath": "/api/diagnostics/market",
+        "status": "ACTIVE",
+        "endpoints": 4,
+        "description": "Market data diagnostics and quality checks",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/strategyTemplates.ts",
+        "basePath": "/api/strategies/templates",
+        "status": "ACTIVE",
+        "endpoints": 5,
+        "description": "Strategy template CRUD operations",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/strategyApply.ts",
+        "basePath": "/api/strategies/apply",
+        "status": "ACTIVE",
+        "endpoints": 2,
+        "description": "Template execution",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/backtest.ts",
+        "basePath": "/api/backtest",
+        "status": "ACTIVE",
+        "endpoints": 4,
+        "description": "Backtesting engine",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/hfRouter.ts",
+        "basePath": "/api/hf",
+        "status": "ACTIVE",
+        "endpoints": 11,
+        "description": "Hugging Face integration",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/resourceMonitor.ts",
+        "basePath": "/api/resources",
+        "status": "ACTIVE",
+        "endpoints": 7,
+        "description": "Server resource monitoring",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/optionalPublic.ts",
+        "basePath": "/api/optional/public",
+        "status": "ACTIVE",
+        "endpoints": 5,
+        "description": "Optional public data providers",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/optionalNews.ts",
+        "basePath": "/api/optional/news",
+        "status": "ACTIVE",
+        "endpoints": 5,
+        "description": "Alternative news sources",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/optionalMarket.ts",
+        "basePath": "/api/optional/market",
+        "status": "ACTIVE",
+        "endpoints": 5,
+        "description": "Alternative market data providers",
+        "mounted": true
+      },
+      {
+        "file": "src/routes/optionalOnchain.ts",
+        "basePath": "/api/optional/onchain",
+        "status": "ACTIVE",
+        "endpoints": 7,
+        "description": "On-chain analytics",
+        "mounted": true
+      }
+    ],
+    "serviceBasedRoutes": [
+      {
+        "service": "UnifiedProxyService",
+        "basePath": "/api/proxy",
+        "status": "ACTIVE",
+        "description": "Unified proxy for external APIs with caching and fallback",
+        "mounted": true,
+        "method": "getRouter()"
+      },
+      {
+        "service": "setupProxyRoutes",
+        "basePath": "Various (CORS proxy)",
+        "status": "ACTIVE",
+        "description": "CORS proxy routes for external APIs",
+        "mounted": true,
+        "method": "setupProxyRoutes(app)"
+      }
+    ],
+    "commentedOutRoutes": [
+      {
+        "route": "/.well-known",
+        "reason": "Missing route file (serverInfoRoutes)",
+        "location": "server.ts:365",
+        "status": "COMMENTED"
+      }
+    ]
+  },
+  "inlineRoutes": {
+    "healthAndMetrics": [
+      {
+        "method": "GET",
+        "path": "/status/health",
+        "description": "Simple health check for load balancers",
+        "category": "System"
+      },
+      {
+        "method": "GET",
+        "path": "/metrics",
+        "description": "Prometheus metrics endpoint",
+        "category": "System"
+      },
+      {
+        "method": "GET",
+        "path": "/api/health",
+        "description": "Comprehensive health check with service status",
+        "category": "System"
+      },
+      {
+        "method": "GET",
+        "path": "/health",
+        "description": "Basic health check (port 8000 unified)",
+        "category": "System"
+      }
+    ],
+    "dataPipeline": [
+      {
+        "method": "GET",
+        "path": "/api/data-pipeline/status",
+        "description": "Data pipeline status and quality report",
+        "category": "Data"
+      },
+      {
+        "method": "POST",
+        "path": "/api/data-pipeline/emergency-mode",
+        "description": "Toggle emergency fallback mode",
+        "category": "Data"
+      },
+      {
+        "method": "POST",
+        "path": "/api/data-pipeline/add-symbol",
+        "description": "Add symbol to watched list",
+        "category": "Data"
+      }
+    ],
+    "aiEndpoints": [
+      {
+        "method": "GET",
+        "path": "/api/ai/test-initialization",
+        "description": "Test network initialization",
+        "category": "AI"
+      },
+      {
+        "method": "GET",
+        "path": "/api/ai/test-activations",
+        "description": "Test activation functions",
+        "category": "AI"
+      },
+      {
+        "method": "POST",
+        "path": "/api/ai/create-network",
+        "description": "Create neural network",
+        "category": "AI"
+      },
+      {
+        "method": "POST",
+        "path": "/api/ai/train-step",
+        "description": "Run training step",
+        "category": "AI"
+      },
+      {
+        "method": "POST",
+        "path": "/api/ai/train-epoch",
+        "description": "Run training epoch",
+        "category": "AI"
+      },
+      {
+        "method": "POST",
+        "path": "/api/ai/predict",
+        "description": "Make predictions (duplicate - also in /api/ml)",
+        "category": "AI"
+      },
+      {
+        "method": "POST",
+        "path": "/api/ai/extract-features",
+        "description": "Extract features",
+        "category": "AI"
+      },
+      {
+        "method": "POST",
+        "path": "/api/ai/backtest",
+        "description": "Run AI backtest (duplicate endpoint)",
+        "category": "AI"
+      }
+    ],
+    "analysisEndpoints": [
+      {
+        "method": "POST",
+        "path": "/api/analysis/signals",
+        "description": "Analyze technical signals",
+        "category": "Analysis"
+      },
+      {
+        "method": "POST",
+        "path": "/api/analysis/smc",
+        "description": "Smart Money Concepts analysis",
+        "category": "Analysis"
+      },
+      {
+        "method": "POST",
+        "path": "/api/analysis/elliott",
+        "description": "Elliott Wave analysis",
+        "category": "Analysis"
+      },
+      {
+        "method": "POST",
+        "path": "/api/analysis/harmonic",
+        "description": "Harmonic pattern detection",
+        "category": "Analysis"
+      },
+      {
+        "method": "POST",
+        "path": "/api/analysis/sentiment",
+        "description": "Sentiment analysis",
+        "category": "Analysis"
+      },
+      {
+        "method": "POST",
+        "path": "/api/analysis/whale",
+        "description": "Whale activity analysis",
+        "category": "Analysis"
+      }
+    ],
+    "tradingEndpoints": [
+      {
+        "method": "GET",
+        "path": "/api/trading/portfolio",
+        "description": "Get portfolio status",
+        "category": "Trading"
+      },
+      {
+        "method": "GET",
+        "path": "/api/trading/market/:symbol",
+        "description": "Get market data for symbol",
+        "category": "Trading"
+      },
+      {
+        "method": "POST",
+        "path": "/api/trade/execute",
+        "description": "Execute trade",
+        "category": "Trading"
+      },
+      {
+        "method": "GET",
+        "path": "/api/trade/open-positions",
+        "description": "Get open positions",
+        "category": "Trading"
+      }
+    ],
+    "hfEngineEndpoints": [
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/health",
+        "description": "HF engine health check",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/status",
+        "description": "HF engine status",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/providers",
+        "description": "List HF providers",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/prices",
+        "description": "Get prices from HF",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/market/overview",
+        "description": "Market overview from HF",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/categories",
+        "description": "Get categories",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/rate-limits",
+        "description": "Rate limit information",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/logs",
+        "description": "Get logs",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/alerts",
+        "description": "Get alerts",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/hf/health",
+        "description": "HF service health",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "POST",
+        "path": "/api/hf-engine/hf/refresh",
+        "description": "Refresh HF cache",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf-engine/hf/registry",
+        "description": "List available models/datasets",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "POST",
+        "path": "/api/hf-engine/hf/sentiment",
+        "description": "Sentiment analysis via HF",
+        "category": "HuggingFace"
+      }
+    ],
+    "alertsEndpoints": [
+      {
+        "method": "POST",
+        "path": "/api/alerts",
+        "description": "Create new alert",
+        "category": "Alerts"
+      },
+      {
+        "method": "GET",
+        "path": "/api/alerts",
+        "description": "Get alerts",
+        "category": "Alerts"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/alerts/:id",
+        "description": "Delete alert",
+        "category": "Alerts"
+      },
+      {
+        "method": "GET",
+        "path": "/api/alerts/analytics",
+        "description": "Alert analytics",
+        "category": "Alerts"
+      },
+      {
+        "method": "POST",
+        "path": "/api/alerts/:id/success",
+        "description": "Mark alert successful",
+        "category": "Alerts"
+      },
+      {
+        "method": "POST",
+        "path": "/api/alerts/:id/false-positive",
+        "description": "Mark alert as false positive",
+        "category": "Alerts"
+      }
+    ],
+    "systemEndpoints": [
+      {
+        "method": "GET",
+        "path": "/api/system/health",
+        "description": "System health status",
+        "category": "System"
+      },
+      {
+        "method": "GET",
+        "path": "/api/system/config",
+        "description": "System configuration",
+        "category": "System"
+      },
+      {
+        "method": "GET",
+        "path": "/api/system/status",
+        "description": "System status",
+        "category": "System"
+      },
+      {
+        "method": "GET",
+        "path": "/api/system/cache/stats",
+        "description": "Cache statistics",
+        "category": "System"
+      },
+      {
+        "method": "POST",
+        "path": "/api/system/cache/clear",
+        "description": "Clear cache",
+        "category": "System"
+      }
+    ],
+    "marketDataEndpoints": [
+      {
+        "method": "GET",
+        "path": "/api/market-data/prices",
+        "description": "Get market prices",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/market/candlestick/:symbol",
+        "description": "Real candlestick data",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/market/ohlcv",
+        "description": "OHLCV data",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/market/ohlcv/ready",
+        "description": "OHLCV readiness check",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/market/prices",
+        "description": "Market prices",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/api/market/real-prices",
+        "description": "Real market prices",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/api/market/coingecko-prices",
+        "description": "CoinGecko prices",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/api/market/cryptocompare-prices",
+        "description": "CryptoCompare prices",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/api/market/prices",
+        "description": "Market prices (aggregated)",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/api/market-data/:symbol",
+        "description": "Market data for symbol",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/api/market/historical",
+        "description": "Historical market data",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/api/market",
+        "description": "Market overview",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/api/market/history",
+        "description": "Market history",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/api/price/:symbol",
+        "description": "Price for symbol",
+        "category": "MarketData"
+      },
+      {
+        "method": "GET",
+        "path": "/api/ticker/:symbol?",
+        "description": "Ticker data",
+        "category": "MarketData"
+      }
+    ],
+    "scoringEndpoints": [
+      {
+        "method": "GET",
+        "path": "/api/scoring/snapshot",
+        "description": "Scoring snapshot",
+        "category": "Scoring"
+      },
+      {
+        "method": "GET",
+        "path": "/api/scoring/verdict",
+        "description": "Scoring verdict",
+        "category": "Scoring"
+      },
+      {
+        "method": "GET",
+        "path": "/api/scoring/weights",
+        "description": "Get scoring weights",
+        "category": "Scoring"
+      },
+      {
+        "method": "POST",
+        "path": "/api/scoring/weights",
+        "description": "Update scoring weights",
+        "category": "Scoring"
+      },
+      {
+        "method": "POST",
+        "path": "/api/scoring/weights/reset",
+        "description": "Reset scoring weights",
+        "category": "Scoring"
+      },
+      {
+        "method": "GET",
+        "path": "/api/scoring/weights/history",
+        "description": "Scoring weights history",
+        "category": "Scoring"
+      },
+      {
+        "method": "GET",
+        "path": "/api/scoring/live/:symbol",
+        "description": "Live scoring for symbol",
+        "category": "Scoring"
+      },
+      {
+        "method": "GET",
+        "path": "/api/scoring/stream-status",
+        "description": "Scoring stream status",
+        "category": "Scoring"
+      },
+      {
+        "method": "POST",
+        "path": "/api/scoring/config",
+        "description": "Update scoring configuration",
+        "category": "Scoring"
+      }
+    ],
+    "otherEndpoints": [
+      {
+        "method": "POST",
+        "path": "/api/binance/toggle-testnet",
+        "description": "Toggle Binance testnet mode",
+        "category": "Exchange"
+      },
+      {
+        "method": "GET",
+        "path": "/api/binance/health",
+        "description": "Binance connection health",
+        "category": "Exchange"
+      },
+      {
+        "method": "POST",
+        "path": "/api/signals/analyze",
+        "description": "Analyze signals",
+        "category": "Signals"
+      },
+      {
+        "method": "POST",
+        "path": "/api/strategies/pipeline/run",
+        "description": "Run strategy pipeline",
+        "category": "Strategies"
+      },
+      {
+        "method": "GET",
+        "path": "/api/strategies/pipeline/status",
+        "description": "Strategy pipeline status",
+        "category": "Strategies"
+      },
+      {
+        "method": "POST",
+        "path": "/api/tuning/run",
+        "description": "Run hyperparameter tuning",
+        "category": "Tuning"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tuning/result/:id",
+        "description": "Get tuning result",
+        "category": "Tuning"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tuning/latest",
+        "description": "Get latest tuning result",
+        "category": "Tuning"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tuning/all",
+        "description": "List all tuning results",
+        "category": "Tuning"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/tuning/result/:id",
+        "description": "Delete tuning result",
+        "category": "Tuning"
+      },
+      {
+        "method": "GET",
+        "path": "/api/providers/status",
+        "description": "Provider status",
+        "category": "Providers"
+      },
+      {
+        "method": "POST",
+        "path": "/api/providers/reload",
+        "description": "Reload providers",
+        "category": "Providers"
+      },
+      {
+        "method": "GET",
+        "path": "/api/providers/categories",
+        "description": "Provider categories",
+        "category": "Providers"
+      },
+      {
+        "method": "GET",
+        "path": "/api/providers/:category",
+        "description": "Providers by category",
+        "category": "Providers"
+      },
+      {
+        "method": "GET",
+        "path": "/api/telegram/config",
+        "description": "Get Telegram configuration",
+        "category": "Telegram"
+      },
+      {
+        "method": "POST",
+        "path": "/api/telegram/config",
+        "description": "Update Telegram configuration",
+        "category": "Telegram"
+      },
+      {
+        "method": "POST",
+        "path": "/api/telegram/test",
+        "description": "Test Telegram connection",
+        "category": "Telegram"
+      },
+      {
+        "method": "POST",
+        "path": "/api/telegram/webhook",
+        "description": "Telegram webhook",
+        "category": "Telegram"
+      },
+      {
+        "method": "GET",
+        "path": "/api/news/latest",
+        "description": "Latest news",
+        "category": "News"
+      },
+      {
+        "method": "GET",
+        "path": "/api/news/crypto",
+        "description": "Crypto news",
+        "category": "News"
+      },
+      {
+        "method": "GET",
+        "path": "/api/sentiment",
+        "description": "Sentiment data",
+        "category": "Sentiment"
+      },
+      {
+        "method": "GET",
+        "path": "/api/market/analysis/:symbol",
+        "description": "Market analysis for symbol",
+        "category": "Analysis"
+      },
+      {
+        "method": "GET",
+        "path": "/api/test/real-data",
+        "description": "Test real data",
+        "category": "Testing"
+      },
+      {
+        "method": "GET",
+        "path": "/api/training-metrics",
+        "description": "Training metrics",
+        "category": "AI"
+      },
+      {
+        "method": "GET",
+        "path": "/api/opportunities",
+        "description": "Trading opportunities",
+        "category": "Trading"
+      },
+      {
+        "method": "GET",
+        "path": "/api/exchange-info",
+        "description": "Exchange information",
+        "category": "Exchange"
+      },
+      {
+        "method": "GET",
+        "path": "/api/hf/ohlcv",
+        "description": "HF OHLCV data",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "POST",
+        "path": "/api/hf/sentiment",
+        "description": "HF sentiment analysis",
+        "category": "HuggingFace"
+      },
+      {
+        "method": "GET",
+        "path": "/api/sentiment/fear-greed",
+        "description": "Fear & Greed index",
+        "category": "Sentiment"
+      },
+      {
+        "method": "GET",
+        "path": "/api/social/aggregate",
+        "description": "Social aggregation",
+        "category": "Social"
+      },
+      {
+        "method": "GET",
+        "path": "/api/weights/dynamic",
+        "description": "Dynamic weights",
+        "category": "Weights"
+      },
+      {
+        "method": "POST",
+        "path": "/api/continuous-learning/start",
+        "description": "Start continuous learning",
+        "category": "AI"
+      },
+      {
+        "method": "POST",
+        "path": "/api/continuous-learning/stop",
+        "description": "Stop continuous learning",
+        "category": "AI"
+      },
+      {
+        "method": "GET",
+        "path": "/api/continuous-learning/stats",
+        "description": "Continuous learning stats",
+        "category": "AI"
+      },
+      {
+        "method": "GET",
+        "path": "/api/continuous-learning/config",
+        "description": "Continuous learning config",
+        "category": "AI"
+      },
+      {
+        "method": "POST",
+        "path": "/api/signals/start",
+        "description": "Start signal generation",
+        "category": "Signals"
+      },
+      {
+        "method": "POST",
+        "path": "/api/signals/stop",
+        "description": "Stop signal generation",
+        "category": "Signals"
+      },
+      {
+        "method": "GET",
+        "path": "/api/signals/history",
+        "description": "Signal history",
+        "category": "Signals"
+      },
+      {
+        "method": "GET",
+        "path": "/api/signals",
+        "description": "Get signals",
+        "category": "Signals"
+      },
+      {
+        "method": "GET",
+        "path": "/api/signals/statistics",
+        "description": "Signal statistics",
+        "category": "Signals"
+      },
+      {
+        "method": "GET",
+        "path": "/api/signals/config",
+        "description": "Signal configuration",
+        "category": "Signals"
+      },
+      {
+        "method": "GET",
+        "path": "/api/signals/current",
+        "description": "Current signals",
+        "category": "Signals"
+      },
+      {
+        "method": "POST",
+        "path": "/api/orders/market",
+        "description": "Place market order",
+        "category": "Orders"
+      },
+      {
+        "method": "POST",
+        "path": "/api/orders/limit",
+        "description": "Place limit order",
+        "category": "Orders"
+      },
+      {
+        "method": "POST",
+        "path": "/api/orders/stop-loss",
+        "description": "Place stop-loss order",
+        "category": "Orders"
+      },
+      {
+        "method": "POST",
+        "path": "/api/orders/trailing-stop",
+        "description": "Place trailing stop order",
+        "category": "Orders"
+      },
+      {
+        "method": "POST",
+        "path": "/api/orders/oco",
+        "description": "Place OCO order",
+        "category": "Orders"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/orders/:id",
+        "description": "Cancel order",
+        "category": "Orders"
+      },
+      {
+        "method": "GET",
+        "path": "/api/orders/:id",
+        "description": "Get order",
+        "category": "Orders"
+      },
+      {
+        "method": "GET",
+        "path": "/api/orders",
+        "description": "List orders",
+        "category": "Orders"
+      },
+      {
+        "method": "GET",
+        "path": "/api/positions",
+        "description": "Get positions",
+        "category": "Trading"
+      },
+      {
+        "method": "GET",
+        "path": "/api/orders/portfolio",
+        "description": "Portfolio orders",
+        "category": "Trading"
+      },
+      {
+        "method": "GET",
+        "path": "/api/orchestrator/status",
+        "description": "Service orchestrator status",
+        "category": "System"
+      },
+      {
+        "method": "POST",
+        "path": "/api/orchestrator/configure",
+        "description": "Configure orchestrator",
+        "category": "System"
+      },
+      {
+        "method": "POST",
+        "path": "/api/orchestrator/start",
+        "description": "Start orchestrator",
+        "category": "System"
+      },
+      {
+        "method": "POST",
+        "path": "/api/orchestrator/stop",
+        "description": "Stop orchestrator",
+        "category": "System"
+      },
+      {
+        "method": "GET",
+        "path": "/api/whale/transactions",
+        "description": "Whale transactions",
+        "category": "Whale"
+      },
+      {
+        "method": "POST",
+        "path": "/api/blockchain/balances",
+        "description": "Blockchain balances",
+        "category": "Blockchain"
+      },
+      {
+        "method": "GET",
+        "path": "/api/portfolio",
+        "description": "Portfolio information",
+        "category": "Trading"
+      },
+      {
+        "method": "GET",
+        "path": "/api/risk/metrics",
+        "description": "Risk metrics",
+        "category": "Risk"
+      },
+      {
+        "method": "GET",
+        "path": "/api/stats",
+        "description": "Statistics",
+        "category": "Stats"
+      },
+      {
+        "method": "GET",
+        "path": "/signals/:symbol",
+        "description": "Signals for symbol",
+        "category": "Signals"
+      },
+      {
+        "method": "GET",
+        "path": "/proxy/news",
+        "description": "News proxy",
+        "category": "Proxy"
+      },
+      {
+        "method": "GET",
+        "path": "/proxy/fear-greed",
+        "description": "Fear & Greed proxy",
+        "category": "Proxy"
+      },
+      {
+        "method": "GET",
+        "path": "/providers/binance/ohlcv",
+        "description": "Binance OHLCV",
+        "category": "Providers"
+      }
+    ]
+  },
+  "controllers": {
+    "existingControllers": [
+      {
+        "name": "AIController",
+        "file": "src/controllers/AIController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/ai/* endpoints"]
+      },
+      {
+        "name": "AnalysisController",
+        "file": "src/controllers/AnalysisController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/analysis/* endpoints"]
+      },
+      {
+        "name": "TradingController",
+        "file": "src/controllers/TradingController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/trading/*, /api/trade/* endpoints"]
+      },
+      {
+        "name": "MarketDataController",
+        "file": "src/controllers/MarketDataController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/market-data/* endpoints"]
+      },
+      {
+        "name": "SystemController",
+        "file": "src/controllers/SystemController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/system/* endpoints"]
+      },
+      {
+        "name": "ScoringController",
+        "file": "src/controllers/ScoringController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/scoring/* endpoints"]
+      },
+      {
+        "name": "StrategyPipelineController",
+        "file": "src/controllers/StrategyPipelineController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/strategies/pipeline/* endpoints"]
+      },
+      {
+        "name": "TuningController",
+        "file": "src/controllers/TuningController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/tuning/* endpoints"]
+      },
+      {
+        "name": "SystemStatusController",
+        "file": "src/controllers/SystemStatusController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/system/status endpoint"]
+      },
+      {
+        "name": "HFDataEngineController",
+        "file": "src/controllers/HFDataEngineController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/hf-engine/* endpoints"]
+      },
+      {
+        "name": "FuturesController",
+        "file": "src/controllers/FuturesController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/futures/* route module"]
+      },
+      {
+        "name": "DataSourceController",
+        "file": "src/controllers/DataSourceController.ts",
+        "status": "ACTIVE",
+        "usedBy": ["/api/config route module"]
+      }
+    ]
+  },
+  "services": {
+    "exchangeServices": [
+      "BinanceService",
+      "KuCoinService",
+      "KuCoinFuturesService",
+      "KuCoinHealthService"
+    ],
+    "marketDataServices": [
+      "MarketDataIngestionService",
+      "RealMarketDataService",
+      "RealTimeDataService",
+      "ImprovedRealTimeDataService",
+      "EnhancedMarketDataService",
+      "MultiProviderMarketDataService",
+      "HistoricalDataService",
+      "UnifiedDataService",
+      "UnifiedDataSourceManager"
+    ],
+    "aiServices": [
+      "AICore",
+      "TrainingEngine",
+      "BacktestEngine",
+      "RealBacktestEngine",
+      "aiService",
+      "aiPredictionService",
+      "ContinuousLearningService"
+    ],
+    "analysisServices": [
+      "SMCAnalyzer",
+      "ElliottWaveAnalyzer",
+      "HarmonicPatternDetector",
+      "FibonacciDetector",
+      "ParabolicSARDetector",
+      "TechnicalAnalysisService",
+      "SentimentAnalysisService",
+      "SentimentNewsService",
+      "WhaleTrackerService",
+      "RegimeDetector"
+    ],
+    "huggingFaceServices": [
+      "HFSentimentService",
+      "HFOHLCVService",
+      "HuggingFaceService",
+      "hfService",
+      "HFDataEngineAdapter",
+      "HFDataEngineClient"
+    ],
+    "hfAdapters": [
+      "HFAnalysisAdapter",
+      "HFHealthAdapter",
+      "HFMarketAdapter",
+      "HFProxyAdapter",
+      "HFSignalsAdapter"
+    ],
+    "alertingServices": [
+      "AlertService",
+      "NotificationService",
+      "TelegramService"
+    ],
+    "proxyServices": [
+      "UnifiedProxyService",
+      "CORSProxyService",
+      "setupProxyRoutes"
+    ],
+    "dataServices": [
+      "DataValidationService",
+      "EmergencyDataFallbackService",
+      "FallbackDataManager",
+      "RealDataManager",
+      "dataManager",
+      "SyntheticOHLCV"
+    ],
+    "tradingServices": [
+      "FuturesService",
+      "RealTradingService",
+      "VirtualTradingService",
+      "OrderManagementService"
+    ],
+    "strategyServices": [
+      "StrategyPipelineService",
+      "SignalGeneratorService",
+      "SignalVisualizationWebSocketService"
+    ],
+    "otherServices": [
+      "RedisService",
+      "Database",
+      "ResourceMonitorService",
+      "ServiceOrchestrator",
+      "FrontendBackendIntegration",
+      "DynamicWeightingService",
+      "SocialAggregationService",
+      "FearGreedService",
+      "BlockchainDataService",
+      "CentralizedAPIManager",
+      "BootstrapOrchestrator",
+      "DataRefreshCoordinator",
+      "APIHealthChecker",
+      "APIIntegrationHelper",
+      "ProfessionalRiskEngine",
+      "WebSocketManager"
+    ],
+    "optionalServices": [
+      "AltFearGreedService",
+      "BinancePublicService",
+      "BitfinexPublicService",
+      "CoinMarketCapService",
+      "CryptoCompareService",
+      "KrakenPublicService",
+      "NewsApiService",
+      "NewsRssService",
+      "SantimentService",
+      "WhaleAlertService"
+    ]
+  },
+  "categorization": {
+    "ai": {
+      "routeModules": ["ml.ts"],
+      "inlineRoutes": 8,
+      "controllers": ["AIController"],
+      "services": ["AICore", "TrainingEngine", "BacktestEngine", "aiService", "aiPredictionService", "ContinuousLearningService"]
+    },
+    "analysis": {
+      "routeModules": [],
+      "inlineRoutes": 6,
+      "controllers": ["AnalysisController"],
+      "services": ["SMCAnalyzer", "ElliottWaveAnalyzer", "HarmonicPatternDetector", "TechnicalAnalysisService"]
+    },
+    "trading": {
+      "routeModules": ["futures.ts"],
+      "inlineRoutes": 4,
+      "controllers": ["TradingController", "FuturesController"],
+      "services": ["FuturesService", "RealTradingService", "OrderManagementService"]
+    },
+    "marketData": {
+      "routeModules": ["marketUniverse.ts", "marketReadiness.ts"],
+      "inlineRoutes": 15,
+      "controllers": ["MarketDataController"],
+      "services": ["MarketDataIngestionService", "RealMarketDataService", "MultiProviderMarketDataService"]
+    },
+    "systemHealth": {
+      "routeModules": ["systemDiagnostics.ts", "systemMetrics.ts", "resourceMonitor.ts"],
+      "inlineRoutes": 5,
+      "controllers": ["SystemController", "SystemStatusController"],
+      "services": ["ResourceMonitorService"]
+    },
+    "alerts": {
+      "routeModules": [],
+      "inlineRoutes": 6,
+      "controllers": [],
+      "services": ["AlertService", "NotificationService", "TelegramService"]
+    },
+    "huggingFace": {
+      "routeModules": ["hfRouter.ts"],
+      "inlineRoutes": 13,
+      "controllers": ["HFDataEngineController"],
+      "services": ["HFSentimentService", "HFOHLCVService", "HuggingFaceService", "HFDataEngineAdapter"]
+    },
+    "proxy": {
+      "routeModules": [],
+      "serviceBasedRoutes": ["UnifiedProxyService", "setupProxyRoutes"],
+      "inlineRoutes": 2,
+      "controllers": [],
+      "services": ["UnifiedProxyService", "CORSProxyService"]
+    },
+    "websocket": {
+      "routeModules": [],
+      "inlineRoutes": 0,
+      "controllers": [],
+      "services": ["WebSocketManager", "SignalVisualizationWebSocketService"]
+    },
+    "strategies": {
+      "routeModules": ["strategyTemplates.ts", "strategyApply.ts", "backtest.ts"],
+      "inlineRoutes": 2,
+      "controllers": ["StrategyPipelineController"],
+      "services": ["StrategyPipelineService", "SignalGeneratorService"]
+    },
+    "diagnostics": {
+      "routeModules": ["diagnosticsRoute.ts", "diagnosticsMarket.ts"],
+      "inlineRoutes": 0,
+      "controllers": [],
+      "services": []
+    },
+    "optionalProviders": {
+      "routeModules": ["optionalPublic.ts", "optionalNews.ts", "optionalMarket.ts", "optionalOnchain.ts"],
+      "inlineRoutes": 0,
+      "controllers": [],
+      "services": ["AltFearGreedService", "BinancePublicService", "CoinMarketCapService", "CryptoCompareService", "NewsApiService", "SantimentService", "WhaleAlertService"]
+    },
+    "offlineData": {
+      "routeModules": ["offline.ts"],
+      "inlineRoutes": 0,
+      "controllers": [],
+      "services": ["EmergencyDataFallbackService", "FallbackDataManager", "SyntheticOHLCV"]
+    },
+    "news": {
+      "routeModules": ["news.ts"],
+      "inlineRoutes": 2,
+      "controllers": [],
+      "services": ["SentimentNewsService", "UnifiedNewsService", "NewsApiService", "NewsRssService"]
+    }
+  },
+  "gapsAndIssues": {
+    "missingRouteModules": [],
+    "commentedOutRoutes": [
+      {
+        "route": "/.well-known",
+        "reason": "Missing route file (serverInfoRoutes)",
+        "impact": "LOW",
+        "recommendation": "Create serverInfoRoutes.ts if needed, or remove comment"
+      }
+    ],
+    "duplicateEndpoints": [
+      {
+        "endpoint": "/api/ai/backtest",
+        "occurrences": 2,
+        "locations": ["server.ts:790", "server.ts:922"],
+        "impact": "MEDIUM",
+        "recommendation": "Remove duplicate or consolidate into route module"
+      },
+      {
+        "endpoint": "/api/ai/predict",
+        "occurrences": 2,
+        "locations": ["server.ts:746", "ml.ts route module"],
+        "impact": "LOW",
+        "recommendation": "Consider deprecating inline route in favor of modular route"
+      }
+    ],
+    "potentialIssues": [
+      {
+        "issue": "Large number of inline routes (140+) in server.ts",
+        "impact": "MEDIUM",
+        "recommendation": "Consider migrating inline routes to modular route files for better maintainability",
+        "category": "Code Organization"
+      },
+      {
+        "issue": "Some endpoints have both inline and modular implementations",
+        "impact": "LOW",
+        "recommendation": "Standardize on modular routes for consistency",
+        "category": "Code Organization"
+      },
+      {
+        "issue": "HF endpoints exist in both /api/hf (modular) and /api/hf-engine (inline)",
+        "impact": "LOW",
+        "recommendation": "Document the difference or consolidate",
+        "category": "API Design"
+      }
+    ],
+    "missingImplementations": [],
+    "errorHandlingGaps": [
+      {
+        "note": "Most inline routes have try/catch blocks",
+        "status": "GOOD"
+      },
+      {
+        "note": "Route modules should have consistent error handling",
+        "status": "TO_VERIFY"
+      }
+    ]
+  },
+  "priorities": {
+    "high": [
+      {
+        "item": "Document the difference between /api/hf and /api/hf-engine endpoints",
+        "reason": "Potential confusion for API consumers"
+      }
+    ],
+    "medium": [
+      {
+        "item": "Consider migrating frequently used inline routes to modular routes",
+        "reason": "Better maintainability and testability"
+      },
+      {
+        "item": "Remove duplicate /api/ai/backtest endpoint",
+        "reason": "Code clarity and consistency"
+      }
+    ],
+    "low": [
+      {
+        "item": "Create serverInfoRoutes.ts if /.well-known endpoint is needed",
+        "reason": "Complete commented-out functionality"
+      },
+      {
+        "item": "Standardize on modular routes for new endpoints",
+        "reason": "Consistency going forward"
+      }
+    ]
+  },
+  "nextSteps": [
+    "Document API endpoint differences (HF routes)",
+    "Consider route migration strategy for inline routes",
+    "Review and consolidate duplicate endpoints",
+    "Ensure all route modules have consistent error handling",
+    "Update API documentation to reflect both modular and inline routes"
+  ]
+}
