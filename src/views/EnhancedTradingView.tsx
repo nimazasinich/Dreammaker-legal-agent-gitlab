@@ -166,7 +166,7 @@ export const EnhancedTradingView: React.FC = () => {
         </div>
 
         {/* Confluence */}
-        {confluence && (
+        {confluence && Object.keys(confluence).length > 0 && (
           <div className="border-t pt-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-semibold text-gray-700">Confluence Analysis</p>
@@ -180,70 +180,78 @@ export const EnhancedTradingView: React.FC = () => {
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
                   <div
                     className="h-full bg-purple-500"
-                    style={{ width: `${confluence.agreement * 100}%` }}
+                    style={{ width: `${(confluence.agreement ?? 0) * 100}%` }}
                   />
                 </div>
-                <p className="text-xs font-semibold mt-1">{(confluence.agreement * 100).toFixed(0)}%</p>
+                <p className="text-xs font-semibold mt-1">{((confluence.agreement ?? 0) * 100).toFixed(0)}%</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">AI</p>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
                   <div
                     className="h-full bg-blue-500"
-                    style={{ width: `${confluence.ai * 100}%` }}
+                    style={{ width: `${(confluence.ai ?? 0) * 100}%` }}
                   />
                 </div>
-                <p className="text-xs font-semibold mt-1">{(confluence.ai * 100).toFixed(0)}%</p>
+                <p className="text-xs font-semibold mt-1">{((confluence.ai ?? 0) * 100).toFixed(0)}%</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Tech</p>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
                   <div
                     className="h-full bg-indigo-500"
-                    style={{ width: `${confluence.tech * 100}%` }}
+                    style={{ width: `${(confluence.tech ?? 0) * 100}%` }}
                   />
                 </div>
-                <p className="text-xs font-semibold mt-1">{(confluence.tech * 100).toFixed(0)}%</p>
+                <p className="text-xs font-semibold mt-1">{((confluence.tech ?? 0) * 100).toFixed(0)}%</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Context</p>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
                   <div
                     className="h-full bg-teal-500"
-                    style={{ width: `${confluence.context * 100}%` }}
+                    style={{ width: `${(confluence.context ?? 0) * 100}%` }}
                   />
                 </div>
-                <p className="text-xs font-semibold mt-1">{(confluence.context * 100).toFixed(0)}%</p>
+                <p className="text-xs font-semibold mt-1">{((confluence.context ?? 0) * 100).toFixed(0)}%</p>
               </div>
             </div>
           </div>
         )}
 
         {/* Entry Plan Preview */}
-        {entryPlan && (
+        {entryPlan && Object.keys(entryPlan).length > 0 && (
           <div className="border-t pt-4">
             <p className="text-sm font-semibold text-gray-700 mb-2">Entry Plan Preview</p>
             <div className="grid grid-cols-3 gap-3 text-sm">
               <div>
                 <p className="text-xs text-gray-500">Mode</p>
-                <p className="font-semibold">{entryPlan.mode}</p>
+                <p className="font-semibold">{entryPlan.mode ?? 'MARKET'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Stop Loss</p>
-                <p className="font-semibold text-red-600">${entryPlan.sl.toFixed(2)}</p>
+                <p className="font-semibold text-red-600">
+                  {entryPlan.sl != null ? `$${entryPlan.sl.toFixed(2)}` : 'N/A'}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Leverage</p>
-                <p className="font-semibold text-purple-600">{entryPlan.leverage}x</p>
+                <p className="font-semibold text-purple-600">
+                  {entryPlan.leverage != null ? `${entryPlan.leverage}x` : 'N/A'}
+                </p>
               </div>
               <div className="col-span-3">
                 <p className="text-xs text-gray-500">Take Profit Levels</p>
                 <div className="flex gap-2 mt-1">
-                  {(entryPlan.tp || []).map((tp, idx) => (
-                    <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold">
-                      TP{idx + 1}: ${tp.toFixed(2)}
-                    </span>
-                  ))}
+                  {(entryPlan.tp && Array.isArray(entryPlan.tp) && entryPlan.tp.length > 0) ? (
+                    entryPlan.tp.map((tp, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold">
+                        TP{idx + 1}: ${tp != null ? tp.toFixed(2) : 'N/A'}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-500">No TP levels set</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -251,10 +259,12 @@ export const EnhancedTradingView: React.FC = () => {
         )}
 
         {/* Rationale */}
-        <div className="border-t pt-4">
-          <p className="text-sm font-semibold text-gray-700 mb-1">Rationale</p>
-          <p className="text-sm text-gray-600">{rationale}</p>
-        </div>
+        {rationale && (
+          <div className="border-t pt-4">
+            <p className="text-sm font-semibold text-gray-700 mb-1">Rationale</p>
+            <p className="text-sm text-gray-600">{rationale}</p>
+          </div>
+        )}
       </div>
     );
   };
