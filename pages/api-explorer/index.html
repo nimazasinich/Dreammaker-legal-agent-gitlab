@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Permissions-Policy"
+        content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">
+    <meta name="description" content="Crypto Monitor ULTIMATE - API Explorer">
+    <title>API Explorer | Crypto Monitor ULTIMATE</title>
+
+    <link rel="icon" type="image/svg+xml" href="/static/assets/icons/favicon.svg">
+
+    <link rel="stylesheet" href="/static/shared/css/design-system.css">
+    <link rel="stylesheet" href="/static/shared/css/global.css">
+    <link rel="stylesheet" href="/static/shared/css/components.css">
+    <link rel="stylesheet" href="/static/shared/css/layout.css">
+    <link rel="stylesheet" href="/static/shared/css/utilities.css">
+    <link rel="stylesheet" href="/static/pages/api-explorer/api-explorer.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside id="sidebar-container"></aside>
+
+        <main class="main-content">
+            <header id="header-container"></header>
+
+            <div class="page-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>
+                            <span class="page-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z">
+                                    </path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <line x1="10" y1="9" x2="8" y2="9"></line>
+                                </svg>
+                            </span>
+                            API Explorer
+                        </h1>
+                        <p class="page-subtitle">Interactive API Testing Tool</p>
+                    </div>
+                </div>
+
+                <div class="explorer-layout">
+                    <!-- Request Panel -->
+                    <div class="request-panel">
+                        <div class="panel-header">
+                            <h3>Request</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="method-select">Method</label>
+                                <select id="method-select" class="form-select">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="endpoint-select">Endpoint</label>
+                                <select id="endpoint-select" class="form-select">
+                                    <optgroup label="Health & Status">
+                                        <option value="/api/health">GET /api/health</option>
+                                        <option value="/api/status">GET /api/status</option>
+                                        <option value="/api/stats">GET /api/stats</option>
+                                    </optgroup>
+                                    <optgroup label="Market Data">
+                                        <option value="/api/market">GET /api/market</option>
+                                        <option value="/api/trending">GET /api/trending</option>
+                                        <option value="/api/sentiment">GET /api/sentiment</option>
+                                        <option value="/api/defi">GET /api/defi</option>
+                                        <option value="/api/coins/top">GET /api/coins/top</option>
+                                    </optgroup>
+                                    <optgroup label="AI/ML Models">
+                                        <option value="/api/models/list">GET /api/models/list</option>
+                                        <option value="/api/models/status">GET /api/models/status</option>
+                                        <option value="/api/models/data/stats">GET /api/models/data/stats</option>
+                                    </optgroup>
+                                    <optgroup label="Sentiment Analysis">
+                                        <option value="/api/sentiment/analyze" data-method="POST">POST
+                                            /api/sentiment/analyze</option>
+                                        <option value="/api/sentiment/global">GET /api/sentiment/global</option>
+                                    </optgroup>
+                                    <optgroup label="News">
+                                        <option value="/api/news/latest">GET /api/news/latest</option>
+                                        <option value="/api/news/summarize" data-method="POST">POST /api/news/summarize
+                                        </option>
+                                    </optgroup>
+                                    <optgroup label="Providers">
+                                        <option value="/api/providers">GET /api/providers</option>
+                                        <option value="/api/providers/config">GET /api/providers/config</option>
+                                    </optgroup>
+                                    <optgroup label="Logs & Diagnostics">
+                                        <option value="/api/logs">GET /api/logs</option>
+                                        <option value="/api/logs/recent">GET /api/logs/recent</option>
+                                        <option value="/api/logs/errors">GET /api/logs/errors</option>
+                                    </optgroup>
+                                    <optgroup label="Resources">
+                                        <option value="/api/resources">GET /api/resources</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="body-group" style="display: none;">
+                                <label for="request-body">Request Body (JSON)</label>
+                                <textarea id="request-body" class="form-textarea" rows="8"
+                                    placeholder='{"key": "value"}'></textarea>
+                            </div>
+
+                            <button id="send-btn" class="btn btn-primary btn-block">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                Send Request
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Response Panel -->
+                    <div class="response-panel">
+                        <div class="panel-header">
+                            <h3>Response</h3>
+                            <div class="response-meta" id="response-meta">
+                                <span class="status" id="response-status">--</span>
+                                <span class="time" id="response-time">--</span>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <pre class="response-content" id="response-content">
+{
+  "message": "Select an endpoint and click 'Send Request'"
+}
+              </pre>
+                            <div class="response-actions">
+                                <button id="copy-btn" class="btn btn-sm btn-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    Copy
+                                </button>
+                                <button id="clear-btn" class="btn btn-sm btn-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M3 6h18"></path>
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                    </svg>
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Providers List -->
+                <div class="providers-panel">
+                    <div class="panel-header">
+                        <h3>Available Providers</h3>
+                        <div class="providers-stats">
+                            <span id="providers-count" class="badge">0</span>
+                        </div>
+                    </div>
+                    <div class="providers-grid" id="providers-grid">
+                        <div class="empty-state">Loading providers...</div>
+                    </div>
+                </div>
+
+                <!-- Request History -->
+                <div class="history-panel">
+                    <div class="panel-header">
+                        <h3>Request History</h3>
+                        <button id="clear-history-btn" class="btn btn-sm btn-secondary">Clear All</button>
+                    </div>
+                    <div class="history-list" id="history-list">
+                        <div class="empty-state">No requests yet</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Initialize layout and page -->
+    <script type="module">
+        import { LayoutManager } from '/static/shared/js/core/layout-manager.js';
+        import ApiExplorerPage from './api-explorer.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await LayoutManager.init('api-explorer');
+            const apiExplorerPage = new ApiExplorerPage();
+            apiExplorerPage.init();
+            window.apiExplorerPage = apiExplorerPage;
+        });
+    </script>
+</body>
+
+</html>

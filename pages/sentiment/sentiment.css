@@ -1,0 +1,731 @@
+/**
+ * SENTIMENT ANALYSIS PAGE - ULTRA MODERN UI
+ * Glass-morphism, Gradients, Animations
+ */
+
+/* =============================================================================
+   GLOBAL STYLES & ANIMATIONS
+   ============================================================================= */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(45, 212, 191, 0.8);
+  }
+}
+
+/* =============================================================================
+   LOADING & ERROR STATES
+   ============================================================================= */
+
+.loading-state,
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1.5rem;
+  animation: fadeInUp 0.5s ease;
+}
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border: 4px solid rgba(45, 212, 191, 0.1);
+  border-top-color: #2dd4bf;
+  border-right-color: #2dd4bf;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-state p,
+.loading p {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.error-state,
+.error {
+  padding: 2.5rem;
+  text-align: center;
+  color: #ef4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(239, 68, 68, 0.1));
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 16px;
+  margin: 1.5rem;
+  animation: fadeInUp 0.5s ease;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  animation: fadeInUp 0.6s ease;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+/* =============================================================================
+   SENTIMENT HERO SECTION
+   ============================================================================= */
+
+.sentiment-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  padding: 2.5rem;
+  animation: fadeInUp 0.6s ease;
+}
+
+@media (max-width: 968px) {
+  .sentiment-hero {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+/* =============================================================================
+   FEAR & GREED GAUGE
+   ============================================================================= */
+
+.sentiment-gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sentiment-circle {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(45, 212, 191, 0.1), transparent 70%);
+  border: 10px solid rgba(255, 255, 255, 0.08);
+}
+
+.gauge-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 10px solid transparent;
+  border-top-color: var(--gauge-color, #2dd4bf);
+  border-right-color: var(--gauge-color, #2dd4bf);
+  transform: rotate(calc(var(--fill-percent, 50) * 3.6deg - 90deg));
+  filter: drop-shadow(0 0 30px var(--gauge-color, #2dd4bf));
+  animation: fillGauge 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fillGauge {
+  from {
+    transform: rotate(-90deg);
+  }
+}
+
+.gauge-content {
+  position: relative;
+  text-align: center;
+  z-index: 10;
+}
+
+.gauge-emoji {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.gauge-value {
+  font-size: 3.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #2dd4bf, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.gauge-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary, #94a3b8);
+}
+
+/* =============================================================================
+   FEAR & GREED SPECTRUM BAR
+   ============================================================================= */
+
+.fear-greed-spectrum {
+  width: 100%;
+  max-width: 500px;
+  padding: 1.5rem;
+}
+
+.spectrum-bar {
+  position: relative;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.segment {
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+.segment.extreme-fear {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+}
+
+.segment.fear {
+  background: linear-gradient(90deg, #ef4444, #f97316);
+}
+
+.segment.neutral {
+  background: linear-gradient(90deg, #f97316, #eab308);
+}
+
+.segment.greed {
+  background: linear-gradient(90deg, #eab308, #22c55e);
+}
+
+.segment.extreme-greed {
+  background: linear-gradient(90deg, #22c55e, #10b981);
+}
+
+.indicator {
+  position: absolute;
+  top: -8px;
+  left: var(--indicator-left, 50%);
+  width: 4px;
+  height: calc(100% + 16px);
+  transform: translateX(-50%);
+  transition: left 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.indicator-arrow {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 12px solid white;
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+}
+
+.spectrum-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+  font-weight: 600;
+}
+
+/* =============================================================================
+   SENTIMENT INFO CARDS
+   ============================================================================= */
+
+.sentiment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.info-card {
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.1), rgba(45, 212, 191, 0.05));
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  border-radius: 20px;
+  animation: slideInRight 0.6s ease;
+}
+
+.info-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.info-card h3 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #2dd4bf, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.info-card p {
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+/* =============================================================================
+   METRICS GRID
+   ============================================================================= */
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.metric {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  transition: all 0.3s ease;
+}
+
+.metric:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(45, 212, 191, 0.3);
+  transform: translateY(-2px);
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #94a3b8);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary, #f8fafc);
+}
+
+.metric-value.bullish {
+  color: #22c55e;
+}
+
+.metric-value.bearish {
+  color: #ef4444;
+}
+
+/* =============================================================================
+   ASSET SENTIMENT RESULT
+   ============================================================================= */
+
+.asset-sentiment {
+  padding: 2.5rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeInUp 0.5s ease;
+}
+
+.asset-sentiment.bullish {
+  border-color: rgba(34, 197, 94, 0.3);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(34, 197, 94, 0.02));
+}
+
+.asset-sentiment.bearish {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.02));
+}
+
+.asset-sentiment.neutral {
+  border-color: rgba(234, 179, 8, 0.3);
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.08), rgba(234, 179, 8, 0.02));
+}
+
+.asset-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.asset-icon {
+  font-size: 3.5rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.asset-info h3 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+
+.asset-symbol {
+  font-size: 1rem;
+  color: var(--text-secondary, #94a3b8);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.asset-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+}
+
+.metric-box {
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.metric-box:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: scale(1.05);
+}
+
+.metric-box span {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary, #94a3b8);
+  margin-bottom: 0.5rem;
+}
+
+.metric-box strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.metric-box .positive {
+  color: #22c55e;
+}
+
+.metric-box .negative {
+  color: #ef4444;
+}
+
+/* =============================================================================
+   TEXT SENTIMENT RESULT
+   ============================================================================= */
+
+.text-sentiment-result {
+  padding: 2.5rem;
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.1), rgba(45, 212, 191, 0.05));
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  border-radius: 20px;
+  animation: fadeInUp 0.5s ease;
+}
+
+.sentiment-badge {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+}
+
+.sentiment-badge.bullish {
+  background: linear-gradient(135deg, #22c55e, #10b981);
+  color: white;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4);
+}
+
+.sentiment-badge.bearish {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+}
+
+.sentiment-badge.neutral {
+  background: linear-gradient(135deg, #eab308, #f59e0b);
+  color: white;
+  box-shadow: 0 8px 24px rgba(234, 179, 8, 0.4);
+}
+
+.confidence-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2dd4bf, #818cf8);
+  border-radius: 999px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px rgba(45, 212, 191, 0.6);
+}
+
+/* =============================================================================
+   BUTTON STYLES (Missing in original)
+   ============================================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2dd4bf, #3b82f6);
+  color: white;
+  box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(45, 212, 191, 0.5);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary, #f8fafc);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+/* =============================================================================
+   TABS STYLING
+   ============================================================================= */
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+}
+
+.tab, .tab-btn, button[data-tab] {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px 12px 0 0;
+  color: var(--text-secondary, #94a3b8);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: none;
+  position: relative;
+}
+
+.tab:hover, .tab-btn:hover, button[data-tab]:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary, #f8fafc);
+  transform: translateY(-2px);
+}
+
+.tab.active, .tab-btn.active, button[data-tab].active {
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.2), rgba(59, 130, 246, 0.2));
+  border-color: rgba(45, 212, 191, 0.5);
+  color: var(--text-primary, #f8fafc);
+  box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
+}
+
+.tab.active::after, .tab-btn.active::after, button[data-tab].active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #2dd4bf, #3b82f6);
+}
+
+.tab svg, .tab-btn svg, button[data-tab] svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Tab Content */
+.tab-content {
+  position: relative;
+}
+
+.tab-pane {
+  display: none;
+  animation: fadeInUp 0.3s ease;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* Ribbon Buttons */
+.ribbon, .ribbon-btn, .ribbon-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-primary, #f8fafc);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.ribbon:hover, .ribbon-btn:hover, .ribbon-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(45, 212, 191, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ribbon.active, .ribbon-btn.active, .ribbon-button.active {
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.3), rgba(59, 130, 246, 0.3));
+  border-color: rgba(45, 212, 191, 0.5);
+  box-shadow: 0 4px 12px rgba(45, 212, 191, 0.4);
+}
+
+/* =============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================= */
+
+@media (max-width: 768px) {
+  .tabs {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .tab, .tab-btn, button[data-tab] {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .sentiment-circle {
+    width: 220px;
+    height: 220px;
+  }
+  
+  .gauge-emoji {
+    font-size: 3.5rem;
+  }
+  
+  .gauge-value {
+    font-size: 2.5rem;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .asset-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .sentiment-hero {
+    padding: 1.5rem;
+  }
+  
+  .sentiment-circle {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .asset-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .tab, .tab-btn, button[data-tab] {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+}

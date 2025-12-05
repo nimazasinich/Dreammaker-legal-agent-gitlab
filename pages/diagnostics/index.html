@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">
+  <meta name="description" content="Crypto Monitor ULTIMATE - System Diagnostics">
+  <title>Diagnostics | Crypto Monitor ULTIMATE</title>
+  
+  <link rel="icon" type="image/svg+xml" href="/static/assets/icons/favicon.svg">
+  
+  <link rel="stylesheet" href="/static/shared/css/design-system.css">
+  <link rel="stylesheet" href="/static/shared/css/global.css">
+  <link rel="stylesheet" href="/static/shared/css/components.css">
+  <link rel="stylesheet" href="/static/shared/css/layout.css">
+  <link rel="stylesheet" href="/static/shared/css/utilities.css">
+  <link rel="stylesheet" href="/static/pages/diagnostics/diagnostics.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside id="sidebar-container"></aside>
+    
+    <main class="main-content">
+      <header id="header-container"></header>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="page-title">
+            <h1>
+              <span class="page-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              Diagnostics
+            </h1>
+            <p class="page-subtitle">System Health & Logs</p>
+          </div>
+          <div class="page-actions">
+            <button id="refresh-btn" class="btn-icon" title="Refresh all" aria-label="Refresh all">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            </button>
+            <span id="last-update" class="last-update">Not loaded</span>
+          </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="health-section">
+          <div class="section-header">
+            <h2>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              System Health
+            </h2>
+            <button id="health-refresh" class="btn btn-sm btn-secondary">Refresh</button>
+          </div>
+          <div class="health-grid" id="health-grid">
+            <div class="loading-container"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div class="logs-section">
+          <div class="section-header">
+            <h2>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              System Logs
+            </h2>
+            <div class="log-actions">
+              <select id="log-type" class="form-select">
+                <option value="recent">Recent Logs</option>
+                <option value="errors">Errors Only</option>
+              </select>
+              <button id="logs-refresh" class="btn btn-sm btn-secondary">Refresh</button>
+              <button id="logs-clear" class="btn btn-sm btn-danger">Clear Logs</button>
+            </div>
+          </div>
+          <div class="logs-container" id="logs-container">
+            <div class="loading-container"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- API Requests Log -->
+        <div class="requests-section">
+          <div class="section-header">
+            <h2>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+              Recent API Requests
+            </h2>
+          </div>
+          <div class="requests-table" id="requests-table">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Method</th>
+                  <th>Endpoint</th>
+                  <th>Status</th>
+                  <th>Duration</th>
+                </tr>
+              </thead>
+              <tbody id="requests-tbody">
+                <tr><td colspan="5" class="text-center">No requests logged yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+  
+  <!-- Initialize layout and page -->
+  <script type="module">
+    import { LayoutManager } from '/static/shared/js/core/layout-manager.js';
+    
+    // Initialize layouts first
+    await LayoutManager.init('diagnostics');
+    
+    // Then load page module
+    await import('./diagnostics.js');
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">
+  <title>Data Sources | Crypto Intelligence Hub</title>
+  
+  <link rel="icon" type="image/svg+xml" href="/static/assets/icons/favicon.svg">
+  <link rel="stylesheet" href="/static/shared/css/design-system.css">
+  <link rel="stylesheet" href="/static/shared/css/global.css">
+  <link rel="stylesheet" href="/static/shared/css/components.css">
+  <link rel="stylesheet" href="/static/shared/css/layout.css">
+  <link rel="stylesheet" href="/static/pages/data-sources/data-sources.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside id="sidebar-container"></aside>
+    
+    <main class="main-content">
+      <header id="header-container"></header>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="page-title">
+            <h1>
+              <span class="page-icon">🔌</span>
+              Data Sources Hub
+            </h1>
+            <p class="page-subtitle">200+ Free API Endpoints & Resources</p>
+          </div>
+          <div class="page-actions">
+            <button id="refresh-btn" class="btn-gradient">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <div class="stat-label">Total Endpoints</div>
+              <div class="stat-value" id="total-endpoints">200+</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <div class="stat-label">Functional Resources</div>
+              <div class="stat-value" id="active-sources">55</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔑</div>
+            <div class="stat-content">
+              <div class="stat-label">API Keys</div>
+              <div class="stat-value" id="api-keys-count">11</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+              <div class="stat-label">Success Rate</div>
+              <div class="stat-value" id="success-rate">87.3%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="tabs">
+          <button class="tab active" data-category="all">All Sources</button>
+          <button class="tab" data-category="market">Market Data</button>
+          <button class="tab" data-category="ohlcv">OHLCV</button>
+          <button class="tab" data-category="sentiment">Sentiment</button>
+          <button class="tab" data-category="news">News</button>
+          <button class="tab" data-category="onchain">On-Chain</button>
+          <button class="tab" data-category="rpc">RPC Nodes</button>
+        </div>
+
+        <!-- Data Sources List -->
+        <div id="sources-container"></div>
+      </div>
+    </main>
+  </div>
+
+  
+  <!-- Initialize layout and page -->
+  <script type="module">
+    import { LayoutManager } from '/static/shared/js/core/layout-manager.js';
+    import DataSourcesPage from './data-sources.js';
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      await LayoutManager.init('data-sources');
+      const dataSourcesPage = new DataSourcesPage();
+      dataSourcesPage.init();
+      window.dataSourcesPage = dataSourcesPage;
+    });
+  </script>
+</body>
+</html>
+
+

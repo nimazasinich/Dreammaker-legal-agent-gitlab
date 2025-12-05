@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">
+  <meta name="description" content="Crypto Monitor ULTIMATE - Crypto API Hub with 74+ Services">
+  <title>Crypto API Hub | Crypto Monitor ULTIMATE</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/static/assets/icons/favicon.svg">
+
+  <!-- Shared CSS (in order) -->
+  <link rel="stylesheet" href="/static/shared/css/design-system.css">
+  <link rel="stylesheet" href="/static/shared/css/global.css">
+  <link rel="stylesheet" href="/static/shared/css/components.css">
+  <link rel="stylesheet" href="/static/shared/css/layout.css">
+  <link rel="stylesheet" href="/static/shared/css/utilities.css">
+
+  <!-- Page-specific CSS -->
+  <link rel="stylesheet" href="/static/pages/crypto-api-hub/crypto-api-hub.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation (injected by LayoutManager) -->
+    <aside id="sidebar-container"></aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Header (injected by LayoutManager) -->
+      <header id="header-container"></header>
+
+      <!-- Crypto API Hub Content -->
+      <div class="page-content">
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="page-title">
+            <h1>
+              <span class="page-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                  <path d="M2 17l10 5 10-5"></path>
+                  <path d="M2 12l10 5 10-5"></path>
+                </svg>
+              </span>
+              Crypto API Hub
+            </h1>
+            <p class="page-subtitle">Ultimate Resources Dashboard with 74+ Services</p>
+          </div>
+          <div class="page-actions">
+            <button id="api-tester-btn" class="btn btn-primary">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+              API Tester
+            </button>
+            <button id="export-btn" class="btn btn-secondary">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Export
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="total-services">74</div>
+              <div class="stat-label">Services</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="total-endpoints">150+</div>
+              <div class="stat-label">Endpoints</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="total-keys">10</div>
+              <div class="stat-label">API Keys</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">Online</div>
+              <div class="stat-label">Status</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="controls-section">
+          <div class="search-wrapper">
+            <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" class="search-input" id="api-search" placeholder="Search services, endpoints, or APIs...">
+          </div>
+          <div class="filter-tabs" id="filter-tabs">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="explorer">Explorers</button>
+            <button class="filter-btn" data-filter="market">Market</button>
+            <button class="filter-btn" data-filter="news">News</button>
+            <button class="filter-btn" data-filter="sentiment">Sentiment</button>
+            <button class="filter-btn" data-filter="analytics">Analytics</button>
+          </div>
+        </div>
+
+        <!-- Services Grid -->
+        <div class="services-grid" id="apis-container">
+          <!-- Services will be dynamically loaded here -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- API Tester Modal -->
+  <div class="modal" id="api-tester-modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>API Tester</h2>
+        <button class="modal-close" id="modal-close-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">HTTP Method</label>
+          <div class="method-buttons" id="method-buttons">
+            <button class="method-btn active" data-method="GET">GET</button>
+            <button class="method-btn" data-method="POST">POST</button>
+            <button class="method-btn" data-method="PUT">PUT</button>
+            <button class="method-btn" data-method="DELETE">DELETE</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Endpoint URL</label>
+          <input type="text" class="form-input" id="test-url" placeholder="https://api.example.com/endpoint">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Headers (JSON format)</label>
+          <textarea class="form-textarea" id="test-headers" placeholder='{"Authorization": "Bearer YOUR_KEY"}'></textarea>
+        </div>
+
+        <div class="form-group" id="body-group" style="display: none;">
+          <label class="form-label">Request Body (JSON)</label>
+          <textarea class="form-textarea" id="test-body" placeholder='{"key": "value"}'></textarea>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="send-request-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          Send Request
+        </button>
+
+        <div class="response-container" id="response-container" style="display: none;">
+          <h3>Response</h3>
+          <pre class="response-json" id="response-json"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container (managed by Toast component) -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Initialize layout and page -->
+  <script type="module">
+    import { LayoutManager } from '/static/shared/js/core/layout-manager.js';
+    import CryptoAPIHubPage from './crypto-api-hub.js';
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      await LayoutManager.init('crypto-api-hub');
+      const cryptoAPIHubPage = new CryptoAPIHubPage();
+      cryptoAPIHubPage.init();
+      window.cryptoAPIHubPage = cryptoAPIHubPage;
+    });
+  </script>
+</body>
+</html>
+

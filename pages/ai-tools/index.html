@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">
+  <meta name="description" content="Crypto Monitor ULTIMATE - AI Tools">
+  <title>AI Tools | Crypto Monitor ULTIMATE</title>
+  
+  <link rel="icon" type="image/svg+xml" href="/static/assets/icons/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/static/shared/css/design-system.css">
+  <link rel="stylesheet" href="/static/shared/css/global.css">
+  <link rel="stylesheet" href="/static/shared/css/components.css">
+  <link rel="stylesheet" href="/static/shared/css/layout.css">
+  <link rel="stylesheet" href="/static/shared/css/utilities.css">
+  <link rel="stylesheet" href="/static/shared/css/enhanced-resolution.css">
+  <link rel="stylesheet" href="/static/pages/ai-tools/ai-tools.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside id="sidebar-container"></aside>
+    <main class="main-content">
+      <header id="header-container"></header>
+      <div class="page-content">
+        <div class="page-header">
+          <div class="page-title">
+            <h1>
+              <span class="page-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"></path><path d="M18.4 6.6a9 9 0 1 1-12.77.04"></path></svg>
+              </span>
+              AI Tools
+            </h1>
+            <p class="page-subtitle">Comprehensive AI-Powered Analysis Suite</p>
+          </div>
+          <div class="page-actions">
+            <button id="refresh-all-btn" class="btn-icon" title="Refresh All">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card glass-card">
+            <div class="stat-icon success-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="models-loaded">--</div>
+              <div class="stat-label">Models Ready</div>
+              <div class="stat-trend success">Active</div>
+            </div>
+          </div>
+          <div class="stat-card glass-card">
+            <div class="stat-icon info-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="analyses-today">--</div>
+              <div class="stat-label">Analyses Today</div>
+              <div class="stat-trend info">Processing</div>
+            </div>
+          </div>
+          <div class="stat-card glass-card">
+            <div class="stat-icon models-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="hf-mode">--</div>
+              <div class="stat-label">HF Mode</div>
+              <div class="stat-trend neutral" id="hf-status">Checking...</div>
+            </div>
+          </div>
+          <div class="stat-card glass-card">
+            <div class="stat-icon warning-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="failed-models">--</div>
+              <div class="stat-label">Failed Models</div>
+              <div class="stat-trend warning">Needs attention</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs" id="ai-tools-tabs">
+          <button class="tab active" data-tab="sentiment">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Sentiment Analysis
+          </button>
+          <button class="tab" data-tab="summarize">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            Text Summarizer
+          </button>
+          <button class="tab" data-tab="news">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path></svg>
+            News Analysis
+          </button>
+          <button class="tab" data-tab="trading">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+            Trading Decisions
+          </button>
+          <button class="tab" data-tab="batch">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+            Batch Processing
+          </button>
+          <button class="tab" data-tab="history">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            History
+          </button>
+          <button class="tab" data-tab="models">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
+            Model Status
+          </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+          <!-- Sentiment Analysis Tab -->
+          <div class="tab-pane active" id="tab-sentiment">
+            <div class="card">
+              <h2 class="card-title">Sentiment Analysis</h2>
+              <div class="form-group">
+                <label class="form-label" for="sentiment-input">Enter Text</label>
+                <textarea 
+                  id="sentiment-input" 
+                  class="form-textarea" 
+                  placeholder="Enter text to analyze sentiment (tweets, news, or any text)..."
+                  rows="6"
+                ></textarea>
+              </div>
+              <div class="two-column">
+                <div class="form-group">
+                  <label class="form-label" for="sentiment-source">Analysis Mode</label>
+                  <select id="sentiment-source" class="form-select">
+                    <option value="auto">Auto (Crypto)</option>
+                    <option value="crypto">Crypto</option>
+                    <option value="financial">Financial</option>
+                    <option value="social">Social/Twitter</option>
+                    <option value="news">News</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="sentiment-symbol">Asset Symbol (Optional)</label>
+                  <input 
+                    type="text" 
+                    id="sentiment-symbol" 
+                    class="form-input" 
+                    placeholder="e.g., BTC, ETH"
+                    style="text-transform: uppercase;"
+                  />
+                </div>
+              </div>
+              <button id="analyze-sentiment-btn" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                Analyze Sentiment
+              </button>
+              <div id="sentiment-result" class="hidden"></div>
+            </div>
+          </div>
+
+          <!-- Text Summarizer Tab -->
+          <div class="tab-pane" id="tab-summarize">
+            <div class="card">
+              <h2 class="card-title">Text Summarizer</h2>
+              <div class="form-group">
+                <label class="form-label" for="summary-input">Enter Long Text</label>
+                <textarea 
+                  id="summary-input" 
+                  class="form-textarea" 
+                  placeholder="Paste article or long text to summarize..."
+                  rows="10"
+                ></textarea>
+              </div>
+              <div class="two-column">
+                <div class="form-group">
+                  <label class="form-label" for="max-sentences">Maximum Sentences</label>
+                  <select id="max-sentences" class="form-select">
+                    <option value="2">2 sentences</option>
+                    <option value="3" selected>3 sentences</option>
+                    <option value="4">4 sentences</option>
+                    <option value="5">5 sentences</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="summary-style">Summary Style</label>
+                  <select id="summary-style" class="form-select">
+                    <option value="concise">Concise</option>
+                    <option value="detailed" selected>Detailed</option>
+                    <option value="bullet">Bullet Points</option>
+                  </select>
+                </div>
+              </div>
+              <button id="summarize-btn" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                Summarize
+              </button>
+              <div id="summary-result" class="hidden"></div>
+            </div>
+          </div>
+
+          <!-- News Analysis Tab -->
+          <div class="tab-pane" id="tab-news">
+            <div class="card">
+              <h2 class="card-title">News Analysis</h2>
+              <div class="form-group">
+                <label class="form-label" for="news-input">News Article Text</label>
+                <textarea 
+                  id="news-input" 
+                  class="form-textarea" 
+                  placeholder="Paste news article text to analyze..."
+                  rows="8"
+                ></textarea>
+              </div>
+              <div class="two-column">
+                <div class="form-group">
+                  <label class="form-label" for="news-symbol">Related Asset (Optional)</label>
+                  <input 
+                    type="text" 
+                    id="news-symbol" 
+                    class="form-input" 
+                    placeholder="e.g., BTC, ETH"
+                    style="text-transform: uppercase;"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="analysis-type">Analysis Type</label>
+                  <select id="analysis-type" class="form-select">
+                    <option value="full" selected>Full Analysis</option>
+                    <option value="sentiment">Sentiment Only</option>
+                    <option value="summary">Summary Only</option>
+                  </select>
+                </div>
+              </div>
+              <button id="analyze-news-btn" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path></svg>
+                Analyze News
+              </button>
+              <div id="news-result" class="hidden"></div>
+            </div>
+          </div>
+
+          <!-- Trading Decisions Tab -->
+          <div class="tab-pane" id="tab-trading">
+            <div class="card">
+              <h2 class="card-title">Trading Decision Assistant</h2>
+              <div class="two-column">
+                <div class="form-group">
+                  <label class="form-label" for="trading-symbol">Asset Symbol</label>
+                  <input 
+                    type="text" 
+                    id="trading-symbol" 
+                    class="form-input" 
+                    placeholder="BTC, ETH, SOL..."
+                    value="BTC"
+                    style="text-transform: uppercase;"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="trading-timeframe">Timeframe</label>
+                  <select id="trading-timeframe" class="form-select">
+                    <option value="1h">1 Hour</option>
+                    <option value="4h">4 Hours</option>
+                    <option value="24h" selected>24 Hours</option>
+                    <option value="7d">7 Days</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="trading-context">Additional Context (Optional)</label>
+                <textarea 
+                  id="trading-context" 
+                  class="form-textarea" 
+                  placeholder="Add any additional context, news, or market conditions..."
+                  rows="4"
+                ></textarea>
+              </div>
+              <button id="get-trading-decision-btn" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                Get Trading Decision
+              </button>
+              <div id="trading-result" class="hidden"></div>
+            </div>
+          </div>
+
+          <!-- Batch Processing Tab -->
+          <div class="tab-pane" id="tab-batch">
+            <div class="card">
+              <h2 class="card-title">Batch Processing</h2>
+              <div class="info-box">
+                <strong>Batch Processing:</strong> Analyze multiple texts at once. Enter one text per line.
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="batch-input">Enter Multiple Texts (one per line)</label>
+                <textarea 
+                  id="batch-input" 
+                  class="form-textarea" 
+                  placeholder="Text 1&#10;Text 2&#10;Text 3..."
+                  rows="10"
+                ></textarea>
+              </div>
+              <div class="two-column">
+                <div class="form-group">
+                  <label class="form-label" for="batch-operation">Operation</label>
+                  <select id="batch-operation" class="form-select">
+                    <option value="sentiment">Sentiment Analysis</option>
+                    <option value="summarize">Summarization</option>
+                    <option value="both">Both</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="batch-format">Export Format</label>
+                  <select id="batch-format" class="form-select">
+                    <option value="json" selected>JSON</option>
+                    <option value="csv">CSV</option>
+                    <option value="table">Table View</option>
+                  </select>
+                </div>
+              </div>
+              <button id="process-batch-btn" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                Process Batch
+              </button>
+              <div id="batch-result" class="hidden"></div>
+            </div>
+          </div>
+
+          <!-- History Tab -->
+          <div class="tab-pane" id="tab-history">
+            <div class="card">
+              <h2 class="card-title">Analysis History</h2>
+              <div class="history-controls">
+                <button id="clear-history-btn" class="btn btn-secondary">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  Clear History
+                </button>
+                <button id="export-history-btn" class="btn btn-secondary">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Export
+                </button>
+              </div>
+              <div id="history-list" class="history-list">
+                <div class="empty-state">
+                  <p>No analysis history yet. Start analyzing to see your history here.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Model Status Tab -->
+          <div class="tab-pane" id="tab-models">
+            <div class="card">
+              <h2 class="card-title">Model Status & Diagnostics</h2>
+              <div class="card-header-actions">
+                <button id="refresh-status-btn" class="btn btn-secondary">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                  Refresh
+                </button>
+              </div>
+              <div id="registry-status"></div>
+              <h3 style="color: var(--text-secondary); font-size: 1.2rem; margin: 30px 0 15px 0;">Models Table</h3>
+              <div id="models-table"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Initialize layout and page -->
+  <script type="module">
+    import { LayoutManager } from '/static/shared/js/core/layout-manager.js';
+    
+    // Initialize layouts first
+    await LayoutManager.init('ai-tools');
+    
+    // Then load page module
+    const AIToolsPage = (await import('./ai-tools.js')).default;
+    const page = new AIToolsPage();
+    window.aiToolsPage = page;
+  </script>
+</body>
+</html>
+

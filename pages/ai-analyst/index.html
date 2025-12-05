@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">
+  <meta name="description" content="Crypto Monitor ULTIMATE - AI Analyst">
+  <title>AI Analyst | Crypto Monitor ULTIMATE</title>
+  
+  <link rel="icon" type="image/svg+xml" href="/static/assets/icons/favicon.svg">
+  
+  <link rel="stylesheet" href="/static/shared/css/design-system.css">
+  <link rel="stylesheet" href="/static/shared/css/global.css">
+  <link rel="stylesheet" href="/static/shared/css/components.css">
+  <link rel="stylesheet" href="/static/shared/css/layout.css">
+  <link rel="stylesheet" href="/static/shared/css/utilities.css">
+  <link rel="stylesheet" href="/static/pages/ai-analyst/ai-analyst.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside id="sidebar-container"></aside>
+    
+    <main class="main-content">
+      <header id="header-container"></header>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="page-title">
+            <h1>
+              <span class="page-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2z"></path></svg>
+              </span>
+              AI Analyst
+            </h1>
+            <p class="page-subtitle">AI Trading Advisor & Decision Support</p>
+          </div>
+        </div>
+
+        <div class="analyst-layout">
+          <!-- Input Form -->
+          <div class="input-panel">
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                  Analysis Parameters
+                </h3>
+              </div>
+              <div class="panel-body">
+                <div class="form-group">
+                  <label for="symbol-input">Cryptocurrency Symbol</label>
+                  <input type="text" id="symbol-input" class="form-input" placeholder="BTC, ETH, SOL..." value="BTC">
+                </div>
+                
+                <div class="form-group">
+                  <label for="horizon-select">Investment Horizon</label>
+                  <select id="horizon-select" class="form-select">
+                    <option value="short">Short-term (1-7 days)</option>
+                    <option value="medium" selected>Medium-term (1-4 weeks)</option>
+                    <option value="long">Long-term (1+ months)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="risk-select">Risk Tolerance</label>
+                  <select id="risk-select" class="form-select">
+                    <option value="low">Low (Conservative)</option>
+                    <option value="medium" selected>Medium (Balanced)</option>
+                    <option value="high">High (Aggressive)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="model-select">AI Model</label>
+                  <select id="model-select" class="form-select">
+                    <option value="default">Default (Best Available)</option>
+                  </select>
+                  <div id="model-status-indicator" class="model-status" style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="status-dot inactive"></span>
+                    <span>Loading models...</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="context-input">Additional Context (Optional)</label>
+                  <textarea id="context-input" class="form-textarea" rows="3" placeholder="Any specific factors to consider..."></textarea>
+                </div>
+
+                <button id="analyze-btn" class="btn btn-primary btn-block">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2z"></path></svg>
+                  Get AI Analysis
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                  Quick Analysis
+                </h3>
+              </div>
+              <div class="panel-body">
+                <div class="quick-actions">
+                  <button class="btn btn-secondary" onclick="window.analystPage.quickAnalyze('BTC')">
+                    <span class="coin-icon">₿</span> Bitcoin
+                  </button>
+                  <button class="btn btn-secondary" onclick="window.analystPage.quickAnalyze('ETH')">
+                    <span class="coin-icon">Ξ</span> Ethereum
+                  </button>
+                  <button class="btn btn-secondary" onclick="window.analystPage.quickAnalyze('SOL')">
+                    <span class="coin-icon">◎</span> Solana
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Results Panel -->
+          <div class="results-panel">
+            <div class="panel-card" id="results-container">
+              <div class="panel-header">
+                <h3>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                  Analysis Results
+                </h3>
+              </div>
+              <div class="panel-body" id="results-body">
+                <div class="empty-state">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2z"></path></svg>
+                  <p>Enter parameters and click "Get AI Analysis" to receive trading insights.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+  
+  <!-- Initialize layout and page -->
+  <script type="module">
+    import { LayoutManager } from '/static/shared/js/core/layout-manager.js';
+    import AiAnalystPage from './ai-analyst.js';
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      await LayoutManager.init('ai-analyst');
+      const aiAnalystPage = new AiAnalystPage();
+      aiAnalystPage.init();
+      window.aiAnalystPage = aiAnalystPage;
+    });
+  </script>
+</body>
+</html>
+

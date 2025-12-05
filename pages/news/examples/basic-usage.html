@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic News API Usage Example</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0f172a;
+            color: #f8fafc;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #2dd4bf;
+            margin-top: 0;
+        }
+
+        button {
+            background: linear-gradient(135deg, #2dd4bf, #818cf8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(45, 212, 191, 0.4);
+        }
+
+        .article {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 10px 0;
+        }
+
+        .article h3 {
+            margin-top: 0;
+            color: #f8fafc;
+        }
+
+        .article a {
+            color: #2dd4bf;
+            text-decoration: none;
+        }
+
+        .sentiment {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .sentiment.positive {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .sentiment.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .sentiment.neutral {
+            background: rgba(234, 179, 8, 0.2);
+            color: #eab308;
+        }
+
+        pre {
+            background: #1e293b;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📰 News API Usage Examples</h1>
+        <p>Click the buttons below to see different ways to query the news API:</p>
+
+        <div>
+            <button onclick="loadAllNews()">Load All News</button>
+            <button onclick="loadPositiveNews()">Positive News Only</button>
+            <button onclick="loadNegativeNews()">Negative News Only</button>
+            <button onclick="searchBitcoin()">Search "Bitcoin"</button>
+            <button onclick="limitResults()">Limit to 5 Results</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Request Details</h2>
+        <pre id="request-info">Click a button to see request details...</pre>
+    </div>
+
+    <div class="container">
+        <h2>Results (<span id="result-count">0</span> articles)</h2>
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        /**
+         * Example 1: Load all news
+         */
+        window.loadAllNews = async function () {
+            const url = '/api/news?limit=100';
+            showRequestInfo('GET', url, {});
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayResults(data.articles);
+            } catch (error) {
+                showError(error);
+            }
+        };
+
+        /**
+         * Example 2: Load positive sentiment news only
+         */
+        window.loadPositiveNews = async function () {
+            const url = '/api/news?sentiment=positive&limit=50';
+            showRequestInfo('GET', url, { sentiment: 'positive' });
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const filtered = data.articles.filter(a => a.sentiment === 'positive');
+                displayResults(filtered);
+            } catch (error) {
+                showError(error);
+            }
+        };
+
+        /**
+         * Example 3: Load negative sentiment news only
+         */
+        window.loadNegativeNews = async function () {
+            const url = '/api/news?sentiment=negative&limit=50';
+            showRequestInfo('GET', url, { sentiment: 'negative' });
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const filtered = data.articles.filter(a => a.sentiment === 'negative');
+                displayResults(filtered);
+            } catch (error) {
+                showError(error);
+            }
+        };
+
+        /**
+         * Example 4: Search for specific keyword (client-side)
+         */
+        window.searchBitcoin = async function () {
+            const url = '/api/news?limit=100';
+            showRequestInfo('GET', url, { clientFilter: 'bitcoin' });
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // Client-side filtering
+                const filtered = data.articles.filter(article => {
+                    const searchText = `${article.title} ${article.content}`.toLowerCase();
+                    return searchText.includes('bitcoin');
+                });
+
+                displayResults(filtered);
+            } catch (error) {
+                showError(error);
+            }
+        };
+
+        /**
+         * Example 5: Limit number of results
+         */
+        window.limitResults = async function () {
+            const url = '/api/news?limit=5';
+            showRequestInfo('GET', url, { limit: 5 });
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayResults(data.articles.slice(0, 5));
+            } catch (error) {
+                showError(error);
+            }
+        };
+
+        /**
+         * Display request information
+         */
+        function showRequestInfo(method, url, params) {
+            const info = {
+                method: method,
+                url: url,
+                parameters: params,
+                timestamp: new Date().toISOString()
+            };
+
+            document.getElementById('request-info').textContent =
+                JSON.stringify(info, null, 2);
+        }
+
+        /**
+         * Display results
+         */
+        function displayResults(articles) {
+            const container = document.getElementById('results');
+            const count = document.getElementById('result-count');
+
+            if (!articles || articles.length === 0) {
+                container.innerHTML = '<p class="loading">No articles found</p>';
+                count.textContent = '0';
+                return;
+            }
+
+            count.textContent = articles.length;
+
+            container.innerHTML = articles.map(article => `
+        <div class="article">
+          <h3>${escapeHtml(article.title)}</h3>
+          <p>${escapeHtml(article.content || article.body || 'No description')}</p>
+          <div>
+            <span class="sentiment ${article.sentiment || 'neutral'}">
+              ${article.sentiment || 'neutral'}
+            </span>
+            <strong>Source:</strong> ${escapeHtml(article.source?.title || 'Unknown')}
+            <br>
+            <strong>Published:</strong> ${formatDate(article.published_at)}
+            ${article.url && article.url !== '#' ?
+                    `<br><a href="${escapeHtml(article.url)}" target="_blank">Read Full Article →</a>`
+                    : ''}
+          </div>
+        </div>
+      `).join('');
+        }
+
+        /**
+         * Show error message
+         */
+        function showError(error) {
+            const container = document.getElementById('results');
+            container.innerHTML = `
+        <div class="error">
+          <strong>Error:</strong> ${error.message}
+          <br>
+          <small>Check the console for more details.</small>
+        </div>
+      `;
+            console.error('Error loading news:', error);
+        }
+
+        /**
+         * Escape HTML to prevent XSS
+         */
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        /**
+         * Format date
+         */
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Unknown';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        // Load all news on page load
+        window.addEventListener('load', () => {
+            loadAllNews();
+        });
+    </script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

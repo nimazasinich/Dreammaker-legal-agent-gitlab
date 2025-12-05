@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">
+  <meta name="description" content="Crypto Monitor ULTIMATE - AI Models Management">
+  <title>AI Models | Crypto Monitor ULTIMATE</title>
+  
+  <link rel="icon" type="image/svg+xml" href="/static/assets/icons/favicon.svg">
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/static/shared/css/design-system.css">
+  <link rel="stylesheet" href="/static/shared/css/global.css">
+  <link rel="stylesheet" href="/static/shared/css/components.css">
+  <link rel="stylesheet" href="/static/shared/css/layout.css">
+  <link rel="stylesheet" href="/static/shared/css/utilities.css">
+  <link rel="stylesheet" href="/static/pages/models/models.css">
+</head>
+<body>
+  <!-- Background Effects -->
+  <div class="background-effects">
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+  </div>
+
+  <div class="app-container">
+    <aside id="sidebar-container"></aside>
+    
+    <main class="main-content">
+      <header id="header-container"></header>
+      
+      <div class="page-content">
+        <!-- Page Header -->
+        <div class="page-header glass-panel">
+          <div class="page-title">
+            <div class="title-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2z"></path></svg>
+            </div>
+            <div class="title-content">
+              <h1>AI Models Hub</h1>
+              <p class="page-subtitle">Hugging Face Models • Sentiment Analysis • Self-Healing</p>
+            </div>
+          </div>
+          <div class="page-actions">
+            <button id="refresh-btn" class="btn-gradient" title="Refresh models">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              <span>Refresh</span>
+            </button>
+            <span id="last-update" class="last-update">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Summary Stats Cards -->
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card glass-card">
+            <div class="stat-icon models-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="total-models">--</div>
+              <div class="stat-label">Total Models</div>
+              <div class="stat-trend neutral">Available in Registry</div>
+            </div>
+          </div>
+          <div class="stat-card glass-card">
+            <div class="stat-icon success-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="active-models">--</div>
+              <div class="stat-label">Loaded & Ready</div>
+              <div class="stat-trend success">Active pipelines</div>
+            </div>
+          </div>
+          <div class="stat-card glass-card">
+            <div class="stat-icon warning-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="failed-models">--</div>
+              <div class="stat-label">Failed / Unavailable</div>
+              <div class="stat-trend warning">Needs attention</div>
+            </div>
+          </div>
+          <div class="stat-card glass-card">
+            <div class="stat-icon info-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="hf-mode">--</div>
+              <div class="stat-label">HF Mode</div>
+              <div class="stat-trend info" id="hf-status">Checking...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tabs-container glass-panel">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="models-list">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span>Models List</span>
+            </button>
+            <button class="tab-btn" data-tab="test-model">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span>Test Model</span>
+            </button>
+            <button class="tab-btn" data-tab="health-monitor">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              <span>Health Monitor</span>
+            </button>
+            <button class="tab-btn" data-tab="model-catalog">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              <span>Catalog</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Content: Models List -->
+        <div id="tab-models-list" class="tab-content active">
+          <div class="section-header">
+            <h2>Available AI Models</h2>
+            <div class="filter-controls">
+              <select id="category-filter" class="select-modern">
+                <option value="all">All Categories</option>
+                <option value="sentiment_crypto">Crypto Sentiment</option>
+                <option value="sentiment_financial">Financial Sentiment</option>
+                <option value="sentiment_social">Social Sentiment</option>
+                <option value="sentiment_news">News Sentiment</option>
+                <option value="analysis_generation">AI Generation</option>
+                <option value="trading_signal">Trading Signals</option>
+                <option value="summarization">Summarization</option>
+              </select>
+              <select id="status-filter" class="select-modern">
+                <option value="all">All Status</option>
+                <option value="loaded">Loaded</option>
+                <option value="available">Available</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+          </div>
+          <div class="models-grid" id="models-grid">
+            <div class="loading-state">
+              <div class="loading-spinner"></div>
+              <p class="loading-text">Loading models...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Test Model -->
+        <div id="tab-test-model" class="tab-content">
+          <div class="test-panel glass-panel">
+            <div class="test-header">
+              <h2>🧪 Test AI Models</h2>
+              <p>Enter text to analyze with our Hugging Face models</p>
+            </div>
+            
+            <div class="test-form">
+              <div class="form-group">
+                <label class="form-label">Select Model</label>
+                <select id="test-model-select" class="select-modern large">
+                  <option value="">Loading models...</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Text to Analyze</label>
+                <textarea id="test-input" class="textarea-modern" rows="5" placeholder="Enter text to analyze...&#10;&#10;Example: Bitcoin is showing strong bullish momentum with increasing volume."></textarea>
+              </div>
+              
+              <div class="test-actions">
+                <button id="run-test-btn" class="btn-gradient large">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  <span>Run Analysis</span>
+                </button>
+                <button id="clear-test-btn" class="btn-secondary">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path></svg>
+                  <span>Clear</span>
+                </button>
+              </div>
+
+              <div class="example-texts">
+                <p class="example-label">Quick examples:</p>
+                <div class="example-buttons">
+                  <button class="example-btn" data-text="Bitcoin is showing strong bullish momentum with increasing volume">📈 Bullish</button>
+                  <button class="example-btn" data-text="Market crash expected due to regulatory concerns and sell-off pressure">📉 Bearish</button>
+                  <button class="example-btn" data-text="Ethereum network upgrade completed successfully, community positive">✅ Positive News</button>
+                  <button class="example-btn" data-text="BTC price consolidating around support levels with low volatility">➡️ Neutral</button>
+                </div>
+              </div>
+            </div>
+            
+            <div id="test-result" class="test-result hidden">
+              <div class="result-header">
+                <h3>Analysis Result</h3>
+                <span class="result-time" id="result-time"></span>
+              </div>
+              <div class="result-body">
+                <div class="sentiment-display" id="sentiment-display">
+                  <div class="sentiment-emoji" id="sentiment-emoji">📊</div>
+                  <div class="sentiment-label" id="sentiment-label">--</div>
+                  <div class="sentiment-confidence" id="sentiment-confidence">--</div>
+                </div>
+                <div class="result-details" id="result-details">
+                  <pre class="result-json"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Health Monitor -->
+        <div id="tab-health-monitor" class="tab-content">
+          <div class="health-panel glass-panel">
+            <div class="health-header">
+              <h2>🏥 Model Health Monitor</h2>
+              <p>Track model status, errors, and self-healing capabilities</p>
+              <button id="reinit-all-btn" class="btn-gradient">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M21 14a9 9 0 0 1-18 0 9 9 0 0 1 18 0"></path></svg>
+                <span>Re-initialize All</span>
+              </button>
+            </div>
+            
+            <div class="health-grid" id="health-grid">
+              <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Loading health data...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Model Catalog -->
+        <div id="tab-model-catalog" class="tab-content">
+          <div class="catalog-panel glass-panel">
+            <div class="catalog-header">
+              <h2>📚 Model Catalog</h2>
+              <p>Complete reference of available AI models organized by category</p>
+            </div>
+            
+            <div class="catalog-grid" id="catalog-grid">
+              <!-- Crypto Sentiment -->
+              <div class="catalog-category">
+                <div class="category-header crypto">
+                  <span class="category-icon">₿</span>
+                  <h3>Crypto Sentiment</h3>
+                </div>
+                <div class="category-models" id="catalog-crypto">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+              
+              <!-- Financial Sentiment -->
+              <div class="catalog-category">
+                <div class="category-header financial">
+                  <span class="category-icon">💹</span>
+                  <h3>Financial Sentiment</h3>
+                </div>
+                <div class="category-models" id="catalog-financial">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+              
+              <!-- Social Sentiment -->
+              <div class="catalog-category">
+                <div class="category-header social">
+                  <span class="category-icon">💬</span>
+                  <h3>Social Sentiment</h3>
+                </div>
+                <div class="category-models" id="catalog-social">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+              
+              <!-- Trading Signals -->
+              <div class="catalog-category">
+                <div class="category-header trading">
+                  <span class="category-icon">📊</span>
+                  <h3>Trading Signals</h3>
+                </div>
+                <div class="category-models" id="catalog-trading">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+              
+              <!-- Generation -->
+              <div class="catalog-category">
+                <div class="category-header generation">
+                  <span class="category-icon">🤖</span>
+                  <h3>AI Generation</h3>
+                </div>
+                <div class="category-models" id="catalog-generation">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+              
+              <!-- Summarization -->
+              <div class="catalog-category">
+                <div class="category-header summarization">
+                  <span class="category-icon">📝</span>
+                  <h3>Summarization</h3>
+                </div>
+                <div class="category-models" id="catalog-summarization">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+  
+  <!-- Initialize layout and page -->
+  <script type="module">
+    import { LayoutManager } from '/static/shared/js/core/layout-manager.js';
+    
+    // Initialize layouts first
+    await LayoutManager.init('models');
+    
+    // Then load page module
+    await import('/static/pages/models/models.js');
+  </script>
+</body>
+</html>

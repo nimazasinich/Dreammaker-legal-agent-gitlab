@@ -1,0 +1,104 @@
+/**
+ * Help Page Styles - Hugging Face Setup Guide
+ */
+
+.help-section {
+  background: var(--surface-glass);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  padding: var(--space-6);
+  margin-bottom: var(--space-5);
+}
+
+.help-section h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--space-3);
+  color: var(--text-strong);
+}
+
+.help-section p {
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.help-list {
+  padding-left: var(--space-5);
+  margin-bottom: var(--space-3);
+  color: var(--text-weak);
+}
+
+.help-list li {
+  margin-bottom: var(--space-1);
+}
+
+.help-steps {
+  padding-left: var(--space-5);
+  margin-bottom: var(--space-3);
+  color: var(--text-weak);
+}
+
+.help-steps li {
+  margin-bottom: var(--space-1);
+}
+
+.help-note {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  border-left: 3px solid var(--brand-blue);
+  padding-left: var(--space-3);
+}
+
+code {
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: var(--radius-sm);
+  padding: 0 0.3rem;
+  font-size: 0.9em;
+}
+
+.code-block {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+  overflow-x: auto;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+.code-block code {
+  color: var(--text-strong);
+  background: transparent;
+  padding: 0;
+  border: none;
+  font-size: inherit;
+}
+
+.code-block pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  overflow: visible;
+}
+
+.resources-summary {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+}
+
+.resources-summary h3 {
+  color: var(--text-strong);
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+

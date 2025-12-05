@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">
+  <meta name="description" content="Crypto Monitor ULTIMATE - API Provider Management">
+  <title>Providers | Crypto Monitor ULTIMATE</title>
+  
+  <link rel="icon" type="image/svg+xml" href="/static/assets/icons/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/static/shared/css/design-system.css">
+  <link rel="stylesheet" href="/static/shared/css/global.css">
+  <link rel="stylesheet" href="/static/shared/css/components.css">
+  <link rel="stylesheet" href="/static/shared/css/layout.css">
+  <link rel="stylesheet" href="/static/shared/css/utilities.css">
+  <link rel="stylesheet" href="/static/pages/providers/providers.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside id="sidebar-container"></aside>
+    <main class="main-content">
+      <header id="header-container"></header>
+      <div class="page-content">
+        <div class="page-header">
+          <div class="page-title">
+            <h1>
+              <span class="page-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"></path><path d="M18.4 6.6a9 9 0 1 1-12.77.04"></path></svg>
+              </span>
+              Providers
+            </h1>
+            <p class="page-subtitle">API Provider Management</p>
+          </div>
+          <div class="page-actions">
+            <button id="refresh-btn" class="btn-icon" title="Refresh">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            </button>
+            <span id="last-update" class="last-update">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards" id="summary-cards">
+          <div class="summary-card">
+            <div class="summary-value">55</div>
+            <div class="summary-label">Functional Resources</div>
+          </div>
+          <div class="summary-card healthy">
+            <div class="summary-value">11</div>
+            <div class="summary-label">API Keys</div>
+          </div>
+          <div class="summary-card issues">
+            <div class="summary-value">200+</div>
+            <div class="summary-label">Endpoints</div>
+          </div>
+          <div class="summary-card new">
+            <div class="summary-value">87.3%</div>
+            <div class="summary-label">Success Rate</div>
+          </div>
+        </div>
+        
+        <!-- Resources Stats -->
+        <div id="resources-stats" class="resources-stats-container" style="margin: 20px 0; padding: 20px; background: var(--card-bg); border-radius: 12px;">
+          <h3 style="margin-bottom: 15px;">Resources Statistics</h3>
+          <div class="resources-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div class="stat-item">
+              <span class="stat-label">Total Identified:</span>
+              <span class="stat-value">63</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Functional:</span>
+              <span class="stat-value">55</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">API Keys:</span>
+              <span class="stat-value">11</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Endpoints:</span>
+              <span class="stat-value">200+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+          <div class="search-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="search-input" class="form-input" placeholder="Search providers by name, category, or endpoint..." />
+          </div>
+          <select id="category-select" class="form-select">
+            <option value="">All Categories</option>
+            <option value="market_data">Market Data</option>
+            <option value="sentiment">Sentiment</option>
+            <option value="news">News</option>
+            <option value="ai-ml">AI & ML</option>
+            <option value="analytics">Analytics</option>
+            <option value="blockchain_explorers">Blockchain Explorers</option>
+            <option value="defi">DeFi</option>
+          </select>
+          <button id="clear-filters-btn" class="btn-secondary" title="Clear all filters">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            Clear
+          </button>
+        </div>
+
+        <!-- Providers Table -->
+        <div class="table-container">
+          <table class="data-table" id="providers-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Latency (ms)</th>
+                <th>Error/Status</th>
+              </tr>
+            </thead>
+            <tbody id="providers-tbody">
+              <tr><td colspan="5" class="text-center">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container"></div>
+  
+  <!-- Initialize layout and page -->
+  <script type="module">
+    import { LayoutManager } from '/static/shared/js/core/layout-manager.js';
+    
+    // Initialize layouts first
+    await LayoutManager.init('providers');
+    
+    // Then load page module
+    await import('./providers.js');
+  </script>
+</body>
+</html>
+

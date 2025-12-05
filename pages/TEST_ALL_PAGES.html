@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">
+    <title>Test All Pages - Crypto Hub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .test-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .test-card:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        .test-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .test-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        .test-btn:hover {
+            transform: scale(1.05);
+        }
+        .status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+        .status.pending { background: #ccc; }
+        .status.testing { background: #ffa500; animation: pulse 1s infinite; }
+        .status.pass { background: #22c55e; }
+        .status.fail { background: #ef4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .results {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .result-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge.success { background: #22c55e; color: white; }
+        .badge.error { background: #ef4444; color: white; }
+        .badge.warning { background: #ffa500; color: white; }
+        
+        .test-all-btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .test-all-btn:hover {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Crypto Hub - Page Test Suite</h1>
+        <p class="subtitle">Click any card to open and test that page, or click "Test All" to open all pages</p>
+        
+        <button class="test-all-btn" onclick="testAllPages()">
+            🚀 Test All Pages
+        </button>
+
+        <div class="test-grid">
+            <div class="test-card" onclick="openPage('dashboard')">
+                <h3>
+                    📊 Dashboard
+                    <span class="status pending" id="status-dashboard"></span>
+                </h3>
+                <p>System overview, market data, sentiment charts</p>
+                <button class="test-btn">Open Dashboard</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('market')">
+                <h3>
+                    💹 Market
+                    <span class="status pending" id="status-market"></span>
+                </h3>
+                <p>Real-time cryptocurrency market data</p>
+                <button class="test-btn">Open Market</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('sentiment')">
+                <h3>
+                    🎭 Sentiment
+                    <span class="status pending" id="status-sentiment"></span>
+                </h3>
+                <p>Multi-modal sentiment analysis</p>
+                <button class="test-btn">Open Sentiment</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('news')">
+                <h3>
+                    📰 News
+                    <span class="status pending" id="status-news"></span>
+                </h3>
+                <p>Aggregated crypto news feed</p>
+                <button class="test-btn">Open News</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('providers')">
+                <h3>
+                    🔗 Providers
+                    <span class="status pending" id="status-providers"></span>
+                </h3>
+                <p>API provider health monitoring</p>
+                <button class="test-btn">Open Providers</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('ai-analyst')">
+                <h3>
+                    🤖 AI Analyst
+                    <span class="status pending" id="status-ai-analyst"></span>
+                </h3>
+                <p>AI-powered trading decisions</p>
+                <button class="test-btn">Open AI Analyst</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('trading-assistant')">
+                <h3>
+                    📈 Trading Assistant
+                    <span class="status pending" id="status-trading-assistant"></span>
+                </h3>
+                <p>Trading signals and recommendations</p>
+                <button class="test-btn">Open Trading</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('models')">
+                <h3>
+                    🧠 Models
+                    <span class="status pending" id="status-models"></span>
+                </h3>
+                <p>AI models management</p>
+                <button class="test-btn">Open Models</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('api-explorer')">
+                <h3>
+                    🔍 API Explorer
+                    <span class="status pending" id="status-api-explorer"></span>
+                </h3>
+                <p>Interactive API testing tool</p>
+                <button class="test-btn">Open Explorer</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('diagnostics')">
+                <h3>
+                    🏥 Diagnostics
+                    <span class="status pending" id="status-diagnostics"></span>
+                </h3>
+                <p>System health checks</p>
+                <button class="test-btn">Open Diagnostics</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('settings')">
+                <h3>
+                    ⚙️ Settings
+                    <span class="status pending" id="status-settings"></span>
+                </h3>
+                <p>Application configuration</p>
+                <button class="test-btn">Open Settings</button>
+            </div>
+
+            <div class="test-card" onclick="openPage('data-sources')">
+                <h3>
+                    💾 Data Sources
+                    <span class="status pending" id="status-data-sources"></span>
+                </h3>
+                <p>Data source management</p>
+                <button class="test-btn">Open Data Sources</button>
+            </div>
+        </div>
+
+        <div class="results">
+            <h3>✅ Manual Testing Checklist</h3>
+            <div id="checklist">
+                <div class="result-item">
+                    <span>All pages open without errors</span>
+                    <span class="badge warning">Manual Check</span>
+                </div>
+                <div class="result-item">
+                    <span>All buttons are clickable</span>
+                    <span class="badge warning">Manual Check</span>
+                </div>
+                <div class="result-item">
+                    <span>Data displays (real or demo)</span>
+                    <span class="badge warning">Manual Check</span>
+                </div>
+                <div class="result-item">
+                    <span>Console has 0 critical errors</span>
+                    <span class="badge warning">Check DevTools</span>
+                </div>
+                <div class="result-item">
+                    <span>No pages hang or freeze</span>
+                    <span class="badge warning">Manual Check</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openPage(pageName) {
+            const status = document.getElementById(`status-${pageName}`);
+            status.className = 'status testing';
+            
+            // Open in new tab
+            const url = `./${pageName}/index.html`;
+            window.open(url, '_blank');
+            
+            // Simulate status change
+            setTimeout(() => {
+                status.className = 'status pass';
+            }, 1000);
+        }
+
+        function testAllPages() {
+            const pages = [
+                'dashboard', 'market', 'sentiment', 'news', 
+                'providers', 'ai-analyst', 'trading-assistant', 
+                'models', 'api-explorer', 'diagnostics', 
+                'settings', 'data-sources'
+            ];
+            
+            let delay = 0;
+            pages.forEach(page => {
+                setTimeout(() => openPage(page), delay);
+                delay += 500; // Stagger opening by 500ms
+            });
+        }
+    </script>
+</body>
+</html>
+

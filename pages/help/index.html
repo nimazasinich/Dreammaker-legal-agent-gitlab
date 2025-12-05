@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">
+  <meta name="description" content="Help & Setup Guide for Crypto Monitor ULTIMATE on Hugging Face">
+  <title>Help | Crypto Monitor ULTIMATE</title>
+
+  <link rel="icon" type="image/svg+xml" href="/static/assets/icons/favicon.svg">
+
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="/static/shared/css/design-system.css">
+  <link rel="stylesheet" href="/static/shared/css/global.css">
+  <link rel="stylesheet" href="/static/shared/css/components.css">
+  <link rel="stylesheet" href="/static/shared/css/layout.css">
+  <link rel="stylesheet" href="/static/shared/css/utilities.css">
+  <link rel="stylesheet" href="/static/shared/css/enhanced-resolution.css">
+
+  <!-- Page-specific CSS -->
+  <link rel="stylesheet" href="/static/pages/help/help.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside id="sidebar-container"></aside>
+
+    <main class="main-content">
+      <header id="header-container"></header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <div class="page-title">
+            <h1>
+              <span class="page-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              </span>
+              Help & Setup (Hugging Face)
+            </h1>
+            <p class="page-subtitle">
+              Quick guide for configuring API keys, endpoints, and troubleshooting on Hugging Face Spaces.
+              <br>
+              <strong>Space URL:</strong> 
+              <a href="https://huggingface.co/spaces/Really-amin/Datasourceforcryptocurrency-2" 
+                 target="_blank" 
+                 style="color: var(--color-primary); text-decoration: underline;">
+                https://huggingface.co/spaces/Really-amin/Datasourceforcryptocurrency-2
+              </a>
+              <br>
+              <strong>API Base:</strong> <code>https://Really-amin-Datasourceforcryptocurrency-2.hf.space</code>
+            </p>
+          </div>
+        </div>
+
+        <section class="help-section" id="connect-service">
+          <h2>1. Connecting to the Service</h2>
+          <p>
+            The app needs a running FastAPI backend (locally or on Hugging Face) with all required
+            routes and environment variables configured.
+          </p>
+          <ul class="help-list">
+            <li><strong>Start server locally</strong>:
+              <code>python -m uvicorn production_server:app --host 0.0.0.0 --port 7860</code>
+              or
+              <code>python -m uvicorn hf_unified_server:app --host 0.0.0.0 --port 7860</code>.
+            </li>
+            <li><strong>HF Spaces</strong>: configure the Space command to start <code>hf_unified_server:app</code>
+              and set API keys in <strong>Settings → Variables and secrets</strong>.</li>
+            <li><strong>Required model routes</strong>:
+              <code>/api/models/list</code>, <code>/api/models/status</code>,
+              <code>/api/models/health</code>, <code>/api/models/reinit-all</code>.
+            </li>
+          </ul>
+          <p class="help-note">
+            Open <code>/docs</code> (Swagger UI) to confirm these routes exist and respond with HTTP 200.
+          </p>
+        </section>
+
+        <section class="help-section" id="api-keys">
+          <h2>2. Environment Variables & API Keys</h2>
+          <p>
+            System uses <strong>55 functional resources</strong> with <strong>11 active API keys</strong>.
+            Many features use external services with automatic fallback to backup providers.
+          </p>
+          <div class="resources-summary">
+            <h3>Available Resources:</h3>
+            <ul class="help-list">
+              <li><strong>Total Functional Resources:</strong> 55 (87.3% success rate)</li>
+              <li><strong>Total API Keys:</strong> 11 active keys</li>
+              <li><strong>Total Endpoints:</strong> 200+ endpoints</li>
+              <li><strong>Market Data:</strong> 13 providers (3 with keys, 10 free)</li>
+              <li><strong>News:</strong> 10 providers (2 with keys, 8 free)</li>
+              <li><strong>Sentiment:</strong> 6 providers (all free)</li>
+              <li><strong>Analytics:</strong> 13 providers (all free)</li>
+              <li><strong>Block Explorers:</strong> 6 providers (5 with keys)</li>
+            </ul>
+          </div>
+          <h3>API Keys Configuration:</h3>
+          <ul class="help-list">
+            <li><strong>HF Inference</strong>: <code>HF_TOKEN</code> or <code>HF_API_TOKEN</code></li>
+            <li><strong>CoinMarketCap</strong>: <code>COINMARKETCAP_KEY_1</code>, <code>COINMARKETCAP_KEY_2</code></li>
+            <li><strong>NewsAPI</strong>: <code>NEWSAPI_KEY</code></li>
+            <li><strong>CryptoCompare</strong>: <code>CRYPTOCOMPARE_KEY</code></li>
+            <li><strong>Alpha Vantage</strong>: <code>ALPHA_VANTAGE_KEY</code></li>
+            <li><strong>Etherscan</strong>: <code>ETHERSCAN_KEY</code>, <code>ETHERSCAN_BACKUP_KEY</code></li>
+            <li><strong>BscScan</strong>: <code>BSCSCAN_KEY</code></li>
+            <li><strong>TronScan</strong>: <code>TRONSCAN_KEY</code></li>
+          </ul>
+          <p class="help-note">
+            System automatically uses fallback providers if primary source fails. After changing variables on Hugging Face, restart the Space.
+          </p>
+        </section>
+
+        <section class="help-section" id="dashboard-usage">
+          <h2>3. Dashboard & Prices</h2>
+          <p>
+            The Dashboard pulls real-time data from endpoints like
+            <code>/api/status</code>, <code>/api/resources</code>,
+            <code>/api/trending</code>, <code>/api/coins/top</code>,
+            and <code>/api/sentiment/global</code>.
+          </p>
+          <ul class="help-list">
+            <li><strong>Top coins</strong>:
+              <code>GET /api/coins/top?limit=50</code> returns prices, market cap and volume.</li>
+            <li><strong>Global sentiment</strong>:
+              <code>GET /api/sentiment/global</code> returns overall market mood and history.</li>
+            <li><strong>No sentiment / categories data</strong>:
+              check the Network tab for these endpoints and ensure they return non-empty JSON.</li>
+          </ul>
+        </section>
+
+        <section class="help-section" id="models-usage">
+          <h2>4. Models, AI Analyst & Sentiment Testing</h2>
+          <p>
+            The Models and AI Analyst pages use backend AI routes for model management,
+            sentiment analysis and trading decisions.
+          </p>
+          <ul class="help-list">
+            <li><strong>Re-initialize models</strong>:
+              <code>POST /api/models/reinit-all</code> (triggered by the “Re-initialize All” button).</li>
+            <li><strong>List & health</strong>:
+              <code>GET /api/models/list</code>, <code>/api/models/status</code>,
+              <code>/api/models/health</code> power the model cards and health monitor.</li>
+            <li><strong>Sentiment analysis</strong>:
+              <code>POST /api/sentiment/analyze</code> with a payload such as
+              <code>{"text": "...", "mode": "crypto", "model_key": "CryptoBERT"}</code>.</li>
+            <li><strong>AI Analyst decisions</strong>:
+              <code>POST /api/ai/decision</code> returns structured buy / sell / hold style
+              recommendations with confidence, signals, risks and price targets for the
+              AI Analyst page.</li>
+            <li><strong>WebSocket (OPTIONAL) vs HTTP (Recommended)</strong>:
+              <ul>
+                <li><strong>HTTP REST API (Recommended):</strong> All data is available via HTTP endpoints. 
+                  This is the primary and most reliable method. Use endpoints like 
+                  <code>GET /api/market</code>, <code>GET /api/models/status</code>, etc.</li>
+                <li><strong>WebSocket (Optional Alternative):</strong> Provided as an optional alternative for 
+                  users who prefer real-time streaming. Not required - HTTP works perfectly.</li>
+                <li>If WebSocket is unavailable or blocked, the app automatically uses HTTP polling (30s intervals).</li>
+                <li>All features work identically with HTTP - WebSocket is just a different transport method.</li>
+              </ul>
+            </li>
+            <li><strong>WebSocket Connection Issues (Non-Critical)</strong>:
+              If you see WebSocket errors (403, connection refused, etc.), this is expected and non-critical:
+              <ul>
+                <li>HuggingFace Spaces may limit WebSocket connections - this is normal</li>
+                <li>Network/firewall may block WebSocket - use HTTP instead</li>
+                <li>The application automatically falls back to HTTP polling - no action needed</li>
+                <li><strong>All functionality works via HTTP endpoints - WebSocket is completely optional</strong></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="help-section" id="providers-usage">
+          <h2>5. Providers & Resources</h2>
+          <p>
+            System has <strong>55 functional resources</strong> organized in backup providers.
+            All resources are automatically loaded from <code>functional_backup_resources.py</code>.
+          </p>
+          <ul class="help-list">
+            <li><strong>List providers</strong>:
+              <code>GET /api/providers</code> returns configured data sources and their status.</li>
+            <li><strong>Resources stats</strong>:
+              <code>GET /api/resources/stats</code> returns total resources, API keys count, and success rate.</li>
+            <li><strong>Automatic Fallback</strong>: System automatically switches to backup providers if primary fails.</li>
+            <li><strong>Error Handling</strong>: All endpoints have timeout (10s) and fallback mechanisms.</li>
+            <li>Use the UI Providers page to inspect availability, auth requirements, and categories.</li>
+          </ul>
+          <h3>Available Endpoints:</h3>
+          <ul class="help-list">
+            <li><code>GET /api/ohlcv?symbol=BTC&timeframe=1h&limit=500</code> - OHLCV data (Binance + cache)</li>
+            <li><code>GET /api/klines?symbol=BTCUSDT&interval=1h&limit=500</code> - Alias to OHLCV</li>
+            <li><code>GET /api/historical?symbol=BTC&days=30</code> - Historical data</li>
+            <li><code>GET /api/signals</code> - Trading signals (empty array, client-side generation)</li>
+            <li><code>GET /api/fear-greed</code> - Fear & Greed Index (alias to sentiment)</li>
+            <li><code>GET /api/whale</code> - Whale transactions (from cache)</li>
+            <li><code>GET /api/market?limit=100</code> - Market data (with fallback providers)</li>
+            <li><code>GET /api/news?limit=20</code> - News articles (with fallback providers)</li>
+          </ul>
+        </section>
+
+        <section class="help-section" id="troubleshooting">
+          <h2>6. Troubleshooting</h2>
+          <ol class="help-steps">
+            <li><strong>WebSocket Connection Errors</strong>: If you see WebSocket connection failures:
+              <ul>
+                <li>This is <strong>expected and non-critical</strong> on Hugging Face Spaces</li>
+                <li>The application automatically falls back to HTTP polling (30s intervals)</li>
+                <li>All features work perfectly without WebSocket - no action needed</li>
+                <li>See <code>docs/WEBSOCKET_TROUBLESHOOTING.md</code> for detailed information</li>
+              </ul>
+            </li>
+            <li>If you see 404 or 500, confirm the server process (production or unified) is running
+              and that the endpoint appears in <code>/docs</code>.</li>
+            <li>If a page shows "No data", open DevTools → Network and inspect failing calls such as
+              <code>/api/resources</code>, <code>/api/sentiment/global</code>, or model routes.</li>
+            <li>If responses are empty, verify your API keys and upstream providers, then restart the server or Space.</li>
+            <li><strong>Model Loading Failures</strong>: If models fail to load with "not a valid model identifier" errors:
+              <ul>
+                <li>Verify the model exists on Hugging Face Hub (check the model page URL)</li>
+                <li>For private/gated models, ensure <code>HF_TOKEN</code> or <code>HF_API_TOKEN</code> is set</li>
+                <li>Some models may require authentication even if marked as public</li>
+                <li>The system will use fallback lexical analysis if models fail to load</li>
+              </ul>
+            </li>
+            <li>Hard-refresh the browser (<code>Ctrl+Shift+R</code>) to bypass stale caches.</li>
+            <li>Warnings about <code>ambient-light-sensor</code> or <code>battery</code> can be ignored unless features visibly break.</li>
+          </ol>
+        </section>
+
+        <section class="help-section" id="websocket-config">
+          <h2>7. WebSocket (Optional) - Alternative Data Retrieval Method</h2>
+          <p class="help-note" style="margin-bottom: var(--space-4); padding: var(--space-3); background: var(--surface-elevated); border-left: 4px solid var(--color-primary);">
+            <strong>⚠️ IMPORTANT:</strong> WebSocket is <strong>completely optional</strong>. All data can be retrieved via HTTP REST API endpoints.
+            WebSocket is just an alternative method for users who prefer real-time streaming. If WebSocket is unavailable or you prefer HTTP,
+            the application automatically uses HTTP polling (30-second intervals) and all features work perfectly.
+          </p>
+          <p>
+            The system supports WebSocket connections as an <strong>optional alternative</strong> for real-time data streaming.
+            WebSocket is <strong>not required</strong> - the application automatically falls back to HTTP polling if WebSocket is unavailable.
+            This is just another option users can choose if they prefer real-time updates over polling.
+          </p>
+          
+          <h3>Available WebSocket Endpoints (Optional - Use HTTP if Preferred):</h3>
+          <p class="help-note">
+            <strong>For HuggingFace Space:</strong> <code>wss://Really-amin-Datasourceforcryptocurrency-2.hf.space/ws/...</code>
+            <br><strong>Note:</strong> WebSocket may be limited on HuggingFace Spaces. HTTP endpoints are recommended and work perfectly.
+          </p>
+          <ul class="help-list">
+            <li><strong>Master Endpoint</strong>: <code>wss://Really-amin-Datasourceforcryptocurrency-2.hf.space/ws/master</code>
+              <ul>
+                <li>Access to all services (market data, news, sentiment, monitoring, HuggingFace)</li>
+                <li>Supports subscription/unsubscription to specific services</li>
+                <li>Send JSON messages: <code>{"action": "subscribe", "service": "market_data"}</code></li>
+                <li><strong>Alternative HTTP:</strong> Use <code>GET /api/market</code>, <code>GET /api/news</code>, etc.</li>
+              </ul>
+            </li>
+            <li><strong>Live Data</strong>: <code>wss://Really-amin-Datasourceforcryptocurrency-2.hf.space/ws/live</code>
+              <ul>
+                <li>Real-time price updates, market snapshots, and OHLCV data</li>
+                <li>Automatic heartbeat/ping-pong for connection health</li>
+                <li><strong>Alternative HTTP:</strong> Use <code>GET /api/ohlcv</code> with polling (30s intervals)</li>
+              </ul>
+            </li>
+            <li><strong>AI Data</strong>: <code>wss://Really-amin-Datasourceforcryptocurrency-2.hf.space/ws/ai/data</code>
+              <ul>
+                <li>Real-time AI model status, sentiment analysis results</li>
+                <li>HuggingFace model loading/unloading notifications</li>
+                <li><strong>Alternative HTTP:</strong> Use <code>GET /api/models/status</code> with polling</li>
+              </ul>
+            </li>
+            <li><strong>Data Collection</strong>: <code>wss://Really-amin-Datasourceforcryptocurrency-2.hf.space/ws/data</code>
+              <ul>
+                <li>Market data, news, sentiment, whale tracking streams</li>
+                <li><strong>Alternative HTTP:</strong> Use <code>GET /api/market</code>, <code>GET /api/news</code>, etc.</li>
+              </ul>
+            </li>
+            <li><strong>Monitoring</strong>: <code>wss://Really-amin-Datasourceforcryptocurrency-2.hf.space/ws/monitoring</code>
+              <ul>
+                <li>Health checks, pool manager status, scheduler status</li>
+                <li><strong>Alternative HTTP:</strong> Use <code>GET /api/status</code>, <code>GET /api/resources/stats</code></li>
+              </ul>
+            </li>
+            <li><strong>Integration</strong>: <code>wss://Really-amin-Datasourceforcryptocurrency-2.hf.space/ws/integration</code>
+              <ul>
+                <li>HuggingFace integration status, persistence updates</li>
+                <li><strong>Alternative HTTP:</strong> Use <code>GET /api/resources/stats/combined</code></li>
+              </ul>
+            </li>
+          </ul>
+          
+          <h3>WebSocket Usage Example (Optional):</h3>
+          <pre class="code-block"><code>// OPTIONAL: WebSocket connection for real-time updates
+// If WebSocket fails, use HTTP endpoints instead (recommended)
+
+const ws = new WebSocket('wss://Really-amin-Datasourceforcryptocurrency-2.hf.space/ws/master');
+
+ws.onopen = () => {
+  console.log('WebSocket connected (optional)');
+  // Subscribe to market data
+  ws.send(JSON.stringify({
+    action: 'subscribe',
+    service: 'market_data'
+  }));
+};
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Real-time update:', data);
+};
+
+ws.onerror = (error) => {
+  console.warn('WebSocket error (non-critical):', error);
+  // Fallback to HTTP polling
+  setInterval(() => {
+    fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/market')
+      .then(r => r.json())
+      .then(data => console.log('HTTP poll result:', data));
+  }, 30000);
+};
+
+// ALTERNATIVE: Use HTTP polling (recommended, works everywhere)
+setInterval(async () => {
+  const response = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/market?limit=100');
+  const data = await response.json();
+  console.log('Market data:', data);
+}, 30000); // Poll every 30 seconds
+</code></pre>
+
+          <h3>WebSocket Error Handling:</h3>
+          <ul class="help-list">
+            <li><strong>Automatic Reconnection</strong>: Client automatically reconnects with exponential backoff (1s → 16s max)</li>
+            <li><strong>Connection State Management</strong>: Tracks connection status (connecting, connected, disconnected)</li>
+            <li><strong>Error Logging</strong>: All WebSocket errors are logged with client ID and timestamp</li>
+            <li><strong>Graceful Degradation</strong>: If WebSocket fails, app falls back to HTTP polling (30s intervals)</li>
+            <li><strong>Timeout Handling</strong>: 30-second timeout for WebSocket operations</li>
+            <li><strong>Message Validation</strong>: Invalid JSON messages are caught and logged without crashing</li>
+            <li><strong>Connection Cleanup</strong>: Proper cleanup on disconnect prevents memory leaks</li>
+          </ul>
+
+          <h3>WebSocket Configuration:</h3>
+          <ul class="help-list">
+            <li><strong>Protocol Detection</strong>: Automatically uses <code>wss://</code> for HTTPS and <code>ws://</code> for HTTP</li>
+            <li><strong>Heartbeat</strong>: Ping messages every 30 seconds to keep connection alive</li>
+            <li><strong>Max Connections</strong>: No hard limit, but rate limiting applies per client</li>
+            <li><strong>CORS</strong>: WebSocket connections respect CORS settings from main server</li>
+            <li><strong>Authentication</strong>: Optional - can require <code>HF_TOKEN</code> for protected endpoints</li>
+          </ul>
+
+          <h3>Troubleshooting WebSocket Issues:</h3>
+          <ol class="help-steps">
+            <li><strong>Connection Refused (403/404)</strong>:
+              <ul>
+                <li>Check if WebSocket endpoint exists in <code>/docs</code></li>
+                <li>Verify server is running and WebSocket routes are registered</li>
+                <li>On Hugging Face Spaces, WebSocket may be limited - this is normal and non-critical</li>
+              </ul>
+            </li>
+            <li><strong>Connection Timeout</strong>:
+              <ul>
+                <li>Check network connectivity</li>
+                <li>Verify firewall/proxy allows WebSocket connections</li>
+                <li>Application will automatically fall back to HTTP polling</li>
+              </ul>
+            </li>
+            <li><strong>Message Parsing Errors</strong>:
+              <ul>
+                <li>Ensure messages are valid JSON</li>
+                <li>Check message format matches expected schema</li>
+                <li>Errors are logged but don't crash the connection</li>
+              </ul>
+            </li>
+            <li><strong>High Memory Usage</strong>:
+              <ul>
+                <li>Connection manager automatically cleans up disconnected clients</li>
+                <li>Event logs are limited to last 100 events per client</li>
+                <li>Old connections are removed after timeout</li>
+              </ul>
+            </li>
+          </ol>
+
+          <p class="help-note" style="margin-top: var(--space-4);">
+            <strong>📌 Summary:</strong> WebSocket is <strong>completely optional</strong> and just an alternative method.
+            All features work perfectly via HTTP REST API endpoints. WebSocket is only useful if you prefer
+            real-time streaming over HTTP polling. For HuggingFace Spaces, HTTP endpoints are recommended
+            as they are more reliable and work in all environments.
+          </p>
+          
+          <h3>Recommended Approach:</h3>
+          <ul class="help-list">
+            <li><strong>Primary Method (Recommended):</strong> Use HTTP REST API endpoints with polling (30s intervals)</li>
+            <li><strong>Optional Alternative:</strong> Use WebSocket for real-time streaming (if available and preferred)</li>
+            <li><strong>Automatic Fallback:</strong> Application automatically uses HTTP if WebSocket fails</li>
+            <li><strong>No Configuration Needed:</strong> Both methods work out of the box - choose what you prefer</li>
+          </ul>
+        </section>
+
+        <section class="help-section" id="huggingface-data">
+          <h2>8. Retrieving Data from HuggingFace</h2>
+          <p>
+            This application runs on Hugging Face Spaces and provides multiple ways to retrieve data
+            from the backend API. All endpoints are accessible via HTTP REST API.
+          </p>
+
+          <h3>Base URL Configuration:</h3>
+          <ul class="help-list">
+            <li><strong>Local Development</strong>: <code>http://localhost:7860</code></li>
+            <li><strong>Hugging Face Space (Production)</strong>: 
+              <code>https://huggingface.co/spaces/Really-amin/Datasourceforcryptocurrency-2</code>
+              <br>API Base: <code>https://Really-amin-Datasourceforcryptocurrency-2.hf.space</code>
+            </li>
+            <li><strong>Custom Domain</strong>: Your configured domain URL</li>
+          </ul>
+          <p class="help-note">
+            <strong>Note:</strong> The application automatically detects the environment and uses the correct base URL.
+            When running on HuggingFace Spaces, it uses relative URLs for seamless operation.
+          </p>
+
+          <h3>How to Retrieve Data:</h3>
+          
+          <h4>1. Market Data & Prices:</h4>
+          <pre class="code-block"><code>// JavaScript/TypeScript
+// Using HuggingFace Space URL
+const response = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/market?limit=100');
+const data = await response.json();
+// Returns: { success: true, items: [{symbol, name, price, change_24h, ...}] }
+
+// Or use relative URL when on the same domain
+const response = await fetch('/api/market?limit=100');
+const data = await response.json();
+
+// Python
+import requests
+response = requests.get('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/market?limit=100')
+data = response.json()
+</code></pre>
+
+          <h4>2. OHLCV/Candlestick Data:</h4>
+          <pre class="code-block"><code>// Get OHLCV data for charting
+const response = await fetch(
+  'https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/ohlcv?symbol=BTC&timeframe=1h&limit=500'
+);
+const data = await response.json();
+// Returns: { success: true, data: [{t, o, h, l, c, v}, ...] }
+
+// Historical data
+const historical = await fetch(
+  'https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/historical?symbol=BTC&days=30'
+);
+</code></pre>
+
+          <h4>3. News Articles:</h4>
+          <pre class="code-block"><code>const response = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/news?limit=20');
+const data = await response.json();
+// Returns: { success: true, articles: [{title, content, source, ...}] }
+</code></pre>
+
+          <h4>4. Sentiment Analysis:</h4>
+          <pre class="code-block"><code>// Global sentiment
+const global = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/sentiment/global');
+const globalData = await global.json();
+
+// Analyze text
+const analysis = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/sentiment/analyze', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    text: 'Bitcoin is going to the moon!',
+    mode: 'crypto'
+  })
+});
+const sentimentData = await analysis.json();
+// Returns: { ok: true, label: 'bullish', score: 0.85, ... }
+</code></pre>
+
+          <h4>5. HuggingFace Models Status:</h4>
+          <pre class="code-block"><code>// Get all models
+const models = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/models/list');
+const modelsData = await models.json();
+
+// Get model status
+const status = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/models/status');
+const statusData = await status.json();
+// Returns: { models_loaded: 8, hf_mode: 'public', models: {...} }
+
+// Get resources stats (includes HF models)
+const resources = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/resources/stats/combined');
+const resourcesData = await resources.json();
+</code></pre>
+
+          <h4>6. Resources & Providers:</h4>
+          <pre class="code-block"><code>// Get resources statistics
+const stats = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/resources/stats');
+const statsData = await stats.json();
+// Returns: { success: true, data: { total_functional: 55, total_api_keys: 11, ... } }
+
+// Get all functional APIs
+const apis = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/resources/apis');
+const apisData = await apis.json();
+</code></pre>
+
+          <h4>7. AI Analysis & Trading Signals:</h4>
+          <pre class="code-block"><code>// Get AI trading decision
+const decision = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/ai/decision', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    symbol: 'BTC',
+    timeframe: '1h'
+  })
+});
+const decisionData = await decision.json();
+
+// Get trading signals
+const signals = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/signals');
+const signalsData = await signals.json();
+</code></pre>
+
+          <h3>Authentication (Optional):</h3>
+          <p>
+            Most endpoints work without authentication. For protected endpoints or HuggingFace model access,
+            include the token in headers:
+          </p>
+          <pre class="code-block"><code>const response = await fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/protected-endpoint', {
+  headers: {
+    'Authorization': `Bearer ${HF_TOKEN}`,
+    'Content-Type': 'application/json'
+  }
+});
+</code></pre>
+
+          <h3>Error Handling:</h3>
+          <ul class="help-list">
+            <li><strong>404 Not Found</strong>: Endpoint doesn't exist - check URL and server routes</li>
+            <li><strong>503 Service Unavailable</strong>: Backend service is down or rate limited</li>
+            <li><strong>500 Internal Server Error</strong>: Server error - check logs</li>
+            <li><strong>Timeout</strong>: Request took too long - increase timeout or check network</li>
+            <li><strong>CORS Errors</strong>: Cross-origin requests blocked - ensure CORS is enabled</li>
+          </ul>
+
+          <h3>Best Practices:</h3>
+          <ul class="help-list">
+            <li>Always check <code>response.ok</code> or status code before parsing JSON</li>
+            <li>Use try-catch blocks for error handling</li>
+            <li>Implement retry logic with exponential backoff for failed requests</li>
+            <li>Cache responses when appropriate (OHLCV data, model status)</li>
+            <li>Use WebSocket for real-time updates, HTTP for one-time queries</li>
+            <li>Respect rate limits (1200 requests/minute for Binance, etc.)</li>
+          </ul>
+
+          <h3>Example: Complete Data Retrieval Flow</h3>
+          <pre class="code-block"><code>// Complete example: Fetch market data with error handling
+// Using HuggingFace Space: https://Really-amin-Datasourceforcryptocurrency-2.hf.space
+const API_BASE = 'https://Really-amin-Datasourceforcryptocurrency-2.hf.space';
+
+async function fetchMarketData(symbol = 'BTC') {
+  try {
+    // 1. Get current price
+    const priceRes = await fetch(
+      `${API_BASE}/api/market?limit=1&symbol=${symbol}`
+    );
+    if (!priceRes.ok) throw new Error(`Price API failed: ${priceRes.status}`);
+    const priceData = await priceRes.json();
+
+    // 2. Get OHLCV for chart
+    const ohlcvRes = await fetch(
+      `${API_BASE}/api/ohlcv?symbol=${symbol}&timeframe=1h&limit=100`
+    );
+    if (!ohlcvRes.ok) throw new Error(`OHLCV API failed: ${ohlcvRes.status}`);
+    const ohlcvData = await ohlcvRes.json();
+
+    // 3. Get sentiment
+    const sentimentRes = await fetch(`${API_BASE}/api/sentiment/global`);
+    const sentimentData = await sentimentRes.json();
+
+    // 4. Get AI analysis
+    const aiRes = await fetch(`${API_BASE}/api/ai/decision`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbol, timeframe: '1h' })
+    });
+    const aiData = await aiRes.json();
+
+    return {
+      price: priceData.items[0],
+      ohlcv: ohlcvData.data,
+      sentiment: sentimentData,
+      aiDecision: aiData
+    };
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    // Fallback to cached data or show error message
+    return null;
+  }
+}
+</code></pre>
+
+          <p class="help-note">
+            <strong>Tip:</strong> Use the <code>/docs</code> endpoint (Swagger UI) to explore all available
+            endpoints, test requests, and see response schemas interactively.
+          </p>
+        </section>
+
+        <section class="help-section" id="unified-service-api">
+          <h2>9. Unified Service API - Complete Endpoint Guide</h2>
+          <p>
+            The <strong>Unified Service API</strong> provides a single entry point for all cryptocurrency data needs.
+            These endpoints are the primary way to access market data, prices, sentiment, whales, and blockchain information.
+          </p>
+
+          <h3>Base URL:</h3>
+          <p class="help-note">
+            <strong>HuggingFace Space:</strong> <code>https://Really-amin-Datasourceforcryptocurrency-2.hf.space</code>
+            <br>
+            <strong>Local:</strong> <code>http://localhost:7860</code>
+          </p>
+
+          <h3>Available Endpoints:</h3>
+
+          <h4>1. Exchange Rates (جفت ارزها)</h4>
+          <pre class="code-block"><code>// Get single exchange rate
+GET /api/service/rate?pair=BTC/USDT
+
+// Response:
+{
+  "data": {
+    "pair": "BTC/USDT",
+    "price": 50234.12,
+    "quote": "USDT",
+    "ts": "2025-01-15T12:00:00Z"
+  },
+  "meta": {
+    "source": "hf",
+    "generated_at": "2025-01-15T12:00:00Z",
+    "cache_ttl_seconds": 10
+  }
+}
+
+// Get multiple rates (batch)
+GET /api/service/rate/batch?pairs=BTC/USDT,ETH/USDT,BNB/USDT
+
+// Get pair metadata
+GET /api/service/pair/BTC-USDT
+// or
+GET /api/service/pair/BTC/USDT</code></pre>
+
+          <h4>2. Market Data</h4>
+          <pre class="code-block"><code>// Market status
+GET /api/service/market-status
+
+// Top coins
+GET /api/service/top?n=10  // or n=50
+
+// Price history
+GET /api/service/history?symbol=BTC&interval=60</code></pre>
+
+          <h4>3. Sentiment Analysis</h4>
+          <pre class="code-block"><code>// Get sentiment for a symbol
+GET /api/service/sentiment?symbol=BTC
+
+// Analyze text
+POST /api/sentiment/analyze
+Content-Type: application/json
+{
+  "text": "Bitcoin is going to the moon! 🚀"
+}
+
+// Response:
+{
+  "label": "positive",
+  "score": 0.85,
+  "confidence": 0.92
+}</code></pre>
+
+          <h4>4. Whale Tracking (نهنگ‌ها)</h4>
+          <pre class="code-block"><code>// Get whale transactions
+GET /api/service/whales?chain=ethereum&min_amount_usd=1000000&limit=50
+
+// Response:
+{
+  "data": [
+    {
+      "from": "0x...",
+      "to": "0x...",
+      "amount": 100.5,
+      "amount_usd": 1500000,
+      "chain": "ethereum",
+      "ts": "2025-01-15T12:00:00Z"
+    }
+  ],
+  "meta": {
+    "source": "whale_alert",
+    "generated_at": "2025-01-15T12:00:00Z"
+  }
+}
+
+// Alternative endpoint
+GET /api/whales/transactions?limit=50&chain=ethereum
+GET /api/whales/stats?hours=24</code></pre>
+
+          <h4>5. On-Chain Data (بلاکچین)</h4>
+          <pre class="code-block"><code>// Get on-chain data for an address
+GET /api/service/onchain?address=0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb&chain=ethereum&limit=50
+
+// Get gas prices
+GET /api/blockchain/gas?chain=ethereum
+
+// Response:
+{
+  "slow": 20,
+  "standard": 25,
+  "fast": 30,
+  "unit": "gwei"
+}</code></pre>
+
+          <h4>6. Generic Query Endpoint</h4>
+          <pre class="code-block"><code>// Universal query endpoint
+POST /api/service/query
+Content-Type: application/json
+{
+  "type": "rate",  // or: history, sentiment, econ, whales, onchain, pair
+  "payload": {
+    "pair": "BTC/USDT"
+  },
+  "options": {
+    "prefer_hf": true,
+    "persist": true
+  }
+}</code></pre>
+
+          <h3>Complete Usage Examples:</h3>
+
+          <h4>JavaScript Example:</h4>
+          <pre class="code-block"><code>// Complete client example
+const API_BASE = 'https://Really-amin-Datasourceforcryptocurrency-2.hf.space';
+
+class CryptoAPIClient {
+  constructor(baseUrl = API_BASE) {
+    this.baseUrl = baseUrl;
+  }
+
+  // Get exchange rate
+  async getRate(pair) {
+    const response = await fetch(`${this.baseUrl}/api/service/rate?pair=${pair}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  }
+
+  // Get multiple rates
+  async getBatchRates(pairs) {
+    const pairsStr = Array.isArray(pairs) ? pairs.join(',') : pairs;
+    const response = await fetch(`${this.baseUrl}/api/service/rate/batch?pairs=${pairsStr}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  }
+
+  // Get whale transactions
+  async getWhales(chain = 'ethereum', minAmount = 1000000) {
+    const response = await fetch(
+      `${this.baseUrl}/api/service/whales?chain=${chain}&min_amount_usd=${minAmount}&limit=50`
+    );
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  }
+
+  // Analyze sentiment
+  async analyzeSentiment(text) {
+    const response = await fetch(`${this.baseUrl}/api/sentiment/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  }
+
+  // Get on-chain data
+  async getOnChainData(address, chain = 'ethereum') {
+    const response = await fetch(
+      `${this.baseUrl}/api/service/onchain?address=${address}&chain=${chain}&limit=50`
+    );
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  }
+}
+
+// Usage
+const client = new CryptoAPIClient();
+
+// Get BTC price
+const btcRate = await client.getRate('BTC/USDT');
+console.log(`BTC Price: $${btcRate.data.price}`);
+
+// Get multiple prices
+const rates = await client.getBatchRates(['BTC/USDT', 'ETH/USDT', 'BNB/USDT']);
+rates.data.forEach(rate => {
+  console.log(`${rate.pair}: $${rate.price}`);
+});
+
+// Get whale transactions
+const whales = await client.getWhales('ethereum', 1000000);
+console.log(`Found ${whales.data.length} whale transactions`);
+
+// Analyze sentiment
+const sentiment = await client.analyzeSentiment('Bitcoin is bullish!');
+console.log(`Sentiment: ${sentiment.label} (${sentiment.score})`);</code></pre>
+
+          <h4>Python Example:</h4>
+          <pre class="code-block"><code>import requests
+from typing import Optional, Dict, Any
+
+class CryptoAPIClient:
+    def __init__(self, base_url: str = "https://Really-amin-Datasourceforcryptocurrency-2.hf.space"):
+        self.base_url = base_url
+    
+    def get_rate(self, pair: str) -> Dict[str, Any]:
+        """Get exchange rate for a pair"""
+        url = f"{self.base_url}/api/service/rate"
+        params = {"pair": pair}
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    
+    def get_batch_rates(self, pairs: list) -> Dict[str, Any]:
+        """Get rates for multiple pairs"""
+        url = f"{self.base_url}/api/service/rate/batch"
+        params = {"pairs": ",".join(pairs)}
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    
+    def get_whales(self, chain: str = "ethereum", min_amount: int = 1000000) -> Dict[str, Any]:
+        """Get whale transactions"""
+        url = f"{self.base_url}/api/service/whales"
+        params = {
+            "chain": chain,
+            "min_amount_usd": min_amount,
+            "limit": 50
+        }
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    
+    def analyze_sentiment(self, text: str) -> Dict[str, Any]:
+        """Analyze sentiment"""
+        url = f"{self.base_url}/api/sentiment/analyze"
+        payload = {"text": text}
+        response = requests.post(url, json=payload, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    
+    def get_onchain_data(self, address: str, chain: str = "ethereum") -> Dict[str, Any]:
+        """Get on-chain data"""
+        url = f"{self.baseUrl}/api/service/onchain"
+        params = {
+            "address": address,
+            "chain": chain,
+            "limit": 50
+        }
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
+        return response.json()
+
+# Usage
+client = CryptoAPIClient()
+
+# Get BTC price
+btc_rate = client.get_rate("BTC/USDT")
+print(f"BTC Price: ${btc_rate['data']['price']}")
+
+# Get multiple prices
+rates = client.get_batch_rates(["BTC/USDT", "ETH/USDT", "BNB/USDT"])
+for rate in rates['data']:
+    print(f"{rate['pair']}: ${rate['price']}")
+
+# Get whales
+whales = client.get_whales("ethereum", 1000000)
+print(f"Found {len(whales['data'])} whale transactions")
+
+# Analyze sentiment
+sentiment = client.analyze_sentiment("Bitcoin is bullish!")
+print(f"Sentiment: {sentiment['label']} ({sentiment['score']})")</code></pre>
+
+          <h3>cURL Examples:</h3>
+          <pre class="code-block"><code># Get BTC/USDT rate
+curl "https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/service/rate?pair=BTC/USDT"
+
+# Get multiple rates
+curl "https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/service/rate/batch?pairs=BTC/USDT,ETH/USDT"
+
+# Get whale transactions
+curl "https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/service/whales?chain=ethereum&min_amount_usd=1000000"
+
+# Analyze sentiment
+curl -X POST "https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/sentiment/analyze" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Bitcoin is rising!"}'
+
+# Get gas prices
+curl "https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/blockchain/gas?chain=ethereum"</code></pre>
+        </section>
+
+        <section class="help-section" id="common-errors">
+          <h2>10. Common Errors & Solutions</h2>
+          <p>
+            This section covers the most common errors users encounter and how to fix them.
+          </p>
+
+          <h3>Error 1: 404 Not Found - /api/service/* endpoints</h3>
+          <div class="help-note" style="background: #fee; border-left: 4px solid #f44; padding: 1rem; margin: 1rem 0;">
+            <strong>Problem:</strong> Getting 404 errors when calling <code>/api/service/rate</code>, <code>/api/service/whales</code>, etc.
+            <br><strong>Cause:</strong> Unified Service API router not loaded in server
+            <br><strong>Solution:</strong> Ensure <code>app_unified.py</code> or <code>hf_unified_server.py</code> includes the router
+          </div>
+          <pre class="code-block"><code>// Check if router is loaded
+GET /api/routers
+
+// Should return:
+{
+  "routers": {
+    "unified_service_api": "loaded"  // ✅ Should be "loaded"
+  }
+}
+
+// If "not_available", the router needs to be added to server file</code></pre>
+          <p><strong>Fix:</strong> Make sure your server file includes:</p>
+          <pre class="code-block"><code>from backend.routers.unified_service_api import router as unified_service_router
+app.include_router(unified_service_router)</code></pre>
+
+          <h3>Error 2: 503 Service Unavailable - OHLC Data</h3>
+          <div class="help-note" style="background: #fee; border-left: 4px solid #f44; padding: 1rem; margin: 1rem 0;">
+            <strong>Problem:</strong> <code>GET /api/market/ohlc</code> returns 503: "All OHLC sources failed"
+            <br><strong>Cause:</strong> All OHLC providers (Binance, CoinGecko) are failing or rate limited
+            <br><strong>Solution:</strong> Check API keys, wait for rate limit reset, or use alternative endpoints
+          </div>
+          <pre class="code-block"><code>// Alternative: Use market tickers instead
+GET /api/market/tickers?limit=100
+
+// Or use direct API
+GET /api/v1/binance/klines?symbol=BTC&timeframe=1h&limit=100</code></pre>
+
+          <h3>Error 3: 500 Internal Server Error - HuggingFace Models</h3>
+          <div class="help-note" style="background: #fee; border-left: 4px solid #f44; padding: 1rem; margin: 1rem 0;">
+            <strong>Problem:</strong> <code>POST /api/sentiment/analyze</code> or <code>POST /api/news/summarize</code> returns 500
+            <br><strong>Error Message:</strong> "404 Not Found for url 'https://router.huggingface.co/models/...'"
+            <br><strong>Cause:</strong> Model not found on HuggingFace Hub or requires authentication
+            <br><strong>Solution:</strong> System uses fallback analysis, but you can configure alternative models
+          </div>
+          <pre class="code-block"><code>// Check model status
+GET /api/models/status
+
+// If models fail, system uses fallback lexical analysis
+// You can also use direct sentiment endpoint
+POST /api/v1/hf/sentiment
+{
+  "text": "Your text here",
+  "model": "ProsusAI/finbert"  // Alternative model
+}</code></pre>
+
+          <h3>Error 4: Timeout Errors</h3>
+          <div class="help-note" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1rem 0;">
+            <strong>Problem:</strong> Requests timeout after 10-30 seconds
+            <br><strong>Cause:</strong> HuggingFace Space may be slow or sleeping
+            <br><strong>Solution:</strong> Increase timeout, add retry logic, or wake up the Space
+          </div>
+          <pre class="code-block"><code>// JavaScript - Increase timeout
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds
+
+try {
+  const response = await fetch(url, {
+    signal: controller.signal,
+    // ... other options
+  });
+  clearTimeout(timeoutId);
+  // ... handle response
+} catch (error) {
+  clearTimeout(timeoutId);
+  if (error.name === 'AbortError') {
+    console.error('Request timeout');
+  }
+}
+
+// Python - Increase timeout
+import requests
+response = requests.get(url, timeout=60)  # 60 seconds</code></pre>
+
+          <h3>Error 5: CORS Errors</h3>
+          <div class="help-note" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1rem 0;">
+            <strong>Problem:</strong> "CORS policy blocked" errors in browser console
+            <br><strong>Cause:</strong> CORS not configured properly
+            <br><strong>Solution:</strong> Server should have CORS enabled (already configured), but check if you're using correct URL
+          </div>
+          <pre class="code-block"><code>// Make sure you're using the correct base URL
+// ✅ Correct:
+const API_BASE = 'https://Really-amin-Datasourceforcryptocurrency-2.hf.space';
+
+// ❌ Wrong (will cause CORS):
+const API_BASE = 'http://localhost:7860';  // If running from different origin</code></pre>
+
+          <h3>Error 6: Empty Responses</h3>
+          <div class="help-note" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1rem 0;">
+            <strong>Problem:</strong> Endpoint returns 200 but data is empty
+            <br><strong>Cause:</strong> No data available, provider failed, or cache issue
+            <br><strong>Solution:</strong> Check response structure, try different endpoint, or wait for data refresh
+          </div>
+          <pre class="code-block"><code>// Check response structure
+const response = await fetch('/api/news/latest?symbol=BTC&limit=10');
+const data = await response.json();
+
+// Response might be:
+{
+  "success": true,
+  "news": [],  // Empty array - no news available
+  "meta": {
+    "source": "newsapi",
+    "total": 0
+  }
+}
+
+// Try alternative endpoint
+const altResponse = await fetch('/api/news?limit=10');</code></pre>
+
+          <h3>Error 7: Rate Limit Exceeded (429)</h3>
+          <div class="help-note" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1rem 0;">
+            <strong>Problem:</strong> Getting 429 "Rate limit exceeded" errors
+            <br><strong>Cause:</strong> Too many requests in short time
+            <br><strong>Solution:</strong> Implement rate limiting, add delays, or use caching
+          </div>
+          <pre class="code-block"><code>// Check rate limit headers
+const response = await fetch('/api/service/rate?pair=BTC/USDT');
+console.log('Limit:', response.headers.get('X-RateLimit-Limit'));
+console.log('Remaining:', response.headers.get('X-RateLimit-Remaining'));
+console.log('Reset:', response.headers.get('X-RateLimit-Reset'));
+
+// Implement client-side rate limiting
+let lastRequest = 0;
+const MIN_DELAY = 100; // 100ms between requests
+
+async function rateLimitedFetch(url, options) {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequest;
+  
+  if (timeSinceLastRequest < MIN_DELAY) {
+    await new Promise(resolve => setTimeout(resolve, MIN_DELAY - timeSinceLastRequest));
+  }
+  
+  lastRequest = Date.now();
+  return fetch(url, options);
+}</code></pre>
+
+          <h3>Quick Diagnostic Checklist:</h3>
+          <ol class="help-steps">
+            <li><strong>Check Health:</strong>
+              <code>GET /api/health</code> - Should return 200 with "healthy" status
+            </li>
+            <li><strong>Check Routers:</strong>
+              <code>GET /api/routers</code> - Verify <code>unified_service_api</code> is "loaded"
+            </li>
+            <li><strong>Check Status:</strong>
+              <code>GET /api/status</code> - See overall system status
+            </li>
+            <li><strong>Check Docs:</strong>
+              Visit <code>/docs</code> - See all available endpoints
+            </li>
+            <li><strong>Test Simple Endpoint:</strong>
+              <code>GET /api/market/tickers?limit=10</code> - Should work if system is running
+            </li>
+            <li><strong>Check Network Tab:</strong>
+              Open browser DevTools → Network tab to see actual requests and responses
+            </li>
+            <li><strong>Check Server Logs:</strong>
+              If on HuggingFace Space, check Space logs for errors
+            </li>
+          </ol>
+        </section>
+
+        <section class="help-section" id="technical-analysis">
+          <h2>11. Technical Analysis - Advanced Trading Tools</h2>
+          <p>
+            صفحه Technical Analysis ابزارهای پیشرفته تحلیل تکنیکال را با 5 حالت مختلف تحلیل ارائه می‌دهد.
+            این صفحه شامل تشخیص الگوهای هارمونیک، تحلیل Elliott Wave، اندیکاتورهای پیشرفته و توصیه‌های معاملاتی است.
+          </p>
+
+          <h3>5 حالت تحلیل (Analysis Modes):</h3>
+          
+          <h4>1. Quick Technical Analysis (TA_QUICK)</h4>
+          <p>تحلیل سریع روند کوتاه‌مدت و مومنتوم:</p>
+          <pre class="code-block"><code>// JavaScript
+const response = await fetch('/api/technical/ta-quick', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    symbol: 'BTC',
+    timeframe: '4h',
+    ohlcv: [...] // Array of OHLCV candles
+  })
+});
+const data = await response.json();
+// Returns: { success: true, trend: 'Bullish', rsi: 65.5, macd: {...}, support_resistance: {...}, entry_range: {...}, exit_range: {...} }
+
+// Python
+import requests
+response = requests.post(
+    'https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/technical/ta-quick',
+    json={
+        'symbol': 'BTC',
+        'timeframe': '4h',
+        'ohlcv': [...]  # List of OHLCV dictionaries
+    }
+)
+data = response.json()</code></pre>
+
+          <h4>2. Fundamental Evaluation (FA_EVAL)</h4>
+          <p>ارزیابی بنیادی پروژه و پتانسیل بلندمدت:</p>
+          <pre class="code-block"><code>// JavaScript
+const response = await fetch('/api/technical/fa-eval', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    symbol: 'BTC',
+    whitepaper_summary: 'Bitcoin is a decentralized digital currency...',
+    team_credibility_score: 9,
+    token_utility_description: 'Store of value and digital gold...',
+    total_supply_mechanism: 'Fixed supply of 21 million coins'
+  })
+});
+const data = await response.json();
+// Returns: { success: true, fundamental_score: 8.5, justification: '...', risks: [...], growth_potential: 'High' }
+
+// Python
+import requests
+response = requests.post(
+    'https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/technical/fa-eval',
+    json={
+        'symbol': 'BTC',
+        'whitepaper_summary': 'Bitcoin is a decentralized digital currency...',
+        'team_credibility_score': 9,
+        'token_utility_description': 'Store of value and digital gold...',
+        'total_supply_mechanism': 'Fixed supply of 21 million coins'
+    }
+)
+data = response.json()</code></pre>
+
+          <h4>3. On-Chain Network Health (ON_CHAIN_HEALTH)</h4>
+          <p>تحلیل سلامت شبکه و رفتار نهنگ‌ها:</p>
+          <pre class="code-block"><code>// JavaScript
+const response = await fetch('/api/technical/onchain-health', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    symbol: 'BTC',
+    active_addresses_7day_avg: 850000,
+    exchange_net_flow_24h: -150000000,  // Negative = outflow (bullish)
+    mrvv_z_score: -0.5
+  })
+});
+const data = await response.json();
+// Returns: { success: true, network_phase: 'Accumulation', cycle_position: 'Bottom Zone', health_status: 'Healthy' }
+
+// Python
+import requests
+response = requests.post(
+    'https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/technical/onchain-health',
+    json={
+        'symbol': 'BTC',
+        'active_addresses_7day_avg': 850000,
+        'exchange_net_flow_24h': -150000000,
+        'mrvv_z_score': -0.5
+    }
+)
+data = response.json()</code></pre>
+
+          <h4>4. Risk & Volatility Assessment (RISK_ASSESSMENT)</h4>
+          <p>ارزیابی ریسک و نوسانات:</p>
+          <pre class="code-block"><code>// JavaScript
+const response = await fetch('/api/technical/risk-assessment', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    symbol: 'BTC',
+    historical_daily_prices: [...],  // Last 90 days
+    max_drawdown_percentage: 25.5
+  })
+});
+const data = await response.json();
+// Returns: { success: true, risk_level: 'Medium', volatility: 0.045, max_drawdown: 25.5, justification: '...' }
+
+// Python
+import requests
+response = requests.post(
+    'https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/technical/risk-assessment',
+    json={
+        'symbol': 'BTC',
+        'historical_daily_prices': [...],  # List of prices for last 90 days
+        'max_drawdown_percentage': 25.5
+    }
+)
+data = response.json()</code></pre>
+
+          <h4>5. Comprehensive Analysis (COMPREHENSIVE)</h4>
+          <p>تحلیل جامع ترکیبی از همه حالت‌ها:</p>
+          <pre class="code-block"><code>// JavaScript
+const response = await fetch('/api/technical/comprehensive', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    symbol: 'BTC',
+    timeframe: '4h',
+    ohlcv: [...],
+    fundamental_data: {...},
+    onchain_data: {...}
+  })
+});
+const data = await response.json();
+// Returns: { success: true, recommendation: 'BUY', confidence: 0.85, executive_summary: '...', ta_score: 8, fa_score: 7.5, onchain_score: 9 }
+
+// Python
+import requests
+response = requests.post(
+    'https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/technical/comprehensive',
+    json={
+        'symbol': 'BTC',
+        'timeframe': '4h',
+        'ohlcv': [...],
+        'fundamental_data': {...},
+        'onchain_data': {...}
+    }
+)
+data = response.json()</code></pre>
+
+          <h3>API Endpoint اصلی - تحلیل تکنیکال جامع:</h3>
+          <pre class="code-block"><code>// JavaScript - تحلیل تکنیکال کامل با همه اندیکاتورها و الگوها
+const response = await fetch('/api/technical/analyze', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    symbol: 'BTC',
+    timeframe: '4h',
+    ohlcv: [
+      { t: 1234567890000, o: 50000, h: 51000, l: 49500, c: 50500, v: 1000000 },
+      // ... more candles
+    ],
+    indicators: {
+      rsi: true,
+      macd: true,
+      volume: true,
+      ichimoku: false,
+      elliott: true
+    },
+    patterns: {
+      gartley: true,
+      butterfly: true,
+      bat: true,
+      crab: true,
+      candlestick: true
+    }
+  })
+});
+const analysis = await response.json();
+// Returns: {
+//   success: true,
+//   support_resistance: { support: 49500, resistance: 51000, levels: [...] },
+//   harmonic_patterns: [{ type: 'Gartley', pattern: 'Bullish', confidence: 0.75 }],
+//   elliott_wave: { wave_count: 5, current_wave: 3, direction: 'up' },
+//   candlestick_patterns: [{ type: 'Hammer', signal: 'Bullish' }],
+//   indicators: { rsi: 65.5, macd: {...}, sma20: 50200, sma50: 49800 },
+//   signals: [{ type: 'BUY', source: 'RSI Oversold', strength: 'Strong' }],
+//   trade_recommendations: { entry: 50000, tp: 52000, sl: 49000 }
+// }
+
+// Python
+import requests
+response = requests.post(
+    'https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/technical/analyze',
+    json={
+        'symbol': 'BTC',
+        'timeframe': '4h',
+        'ohlcv': [
+            {'t': 1234567890000, 'o': 50000, 'h': 51000, 'l': 49500, 'c': 50500, 'v': 1000000},
+            # ... more candles
+        ],
+        'indicators': {
+            'rsi': True,
+            'macd': True,
+            'volume': True,
+            'ichimoku': False,
+            'elliott': True
+        },
+        'patterns': {
+            'gartley': True,
+            'butterfly': True,
+            'bat': True,
+            'crab': True,
+            'candlestick': True
+        }
+    }
+)
+analysis = response.json()</code></pre>
+
+          <h3>دریافت داده‌های OHLCV برای تحلیل:</h3>
+          <pre class="code-block"><code>// JavaScript - دریافت داده‌های OHLCV
+const ohlcvResponse = await fetch('/api/ohlcv?symbol=BTC&timeframe=4h&limit=200');
+const ohlcvData = await ohlcvResponse.json();
+// Returns: { success: true, data: [{ t, o, h, l, c, v }, ...] }
+
+// استفاده از داده‌ها در تحلیل
+const analysisResponse = await fetch('/api/technical/ta-quick', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    symbol: 'BTC',
+    timeframe: '4h',
+    ohlcv: ohlcvData.data  // استفاده از داده‌های دریافت شده
+  })
+});
+
+// Python
+import requests
+
+# دریافت داده‌های OHLCV
+ohlcv_response = requests.get(
+    'https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/ohlcv',
+    params={'symbol': 'BTC', 'timeframe': '4h', 'limit': 200}
+)
+ohlcv_data = ohlcv_response.json()
+
+# استفاده در تحلیل
+analysis_response = requests.post(
+    'https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/technical/ta-quick',
+    json={
+        'symbol': 'BTC',
+        'timeframe': '4h',
+        'ohlcv': ohlcv_data['data']
+    }
+)
+analysis = analysis_response.json()</code></pre>
+
+          <h3>مثال کامل: تحلیل جامع یک ارز:</h3>
+          <pre class="code-block"><code>// JavaScript - مثال کامل
+async function analyzeCrypto(symbol = 'BTC') {
+  const API_BASE = window.location.origin; // یا URL کامل HuggingFace Space
+  
+  try {
+    // 1. دریافت داده‌های OHLCV
+    const ohlcvRes = await fetch(`${API_BASE}/api/ohlcv?symbol=${symbol}&timeframe=4h&limit=200`);
+    if (!ohlcvRes.ok) throw new Error('Failed to fetch OHLCV');
+    const ohlcvData = await ohlcvRes.json();
+    
+    // 2. تحلیل تکنیکال سریع
+    const taQuickRes = await fetch(`${API_BASE}/api/technical/ta-quick`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        symbol: symbol,
+        timeframe: '4h',
+        ohlcv: ohlcvData.data
+      })
+    });
+    const taQuick = await taQuickRes.json();
+    
+    // 3. تحلیل بنیادی (اگر داده‌ها موجود باشد)
+    const faRes = await fetch(`${API_BASE}/api/technical/fa-eval`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        symbol: symbol,
+        whitepaper_summary: '...',  // داده‌های پروژه
+        team_credibility_score: 8,
+        token_utility_description: '...',
+        total_supply_mechanism: '...'
+      })
+    });
+    const faData = await faRes.json();
+    
+    // 4. تحلیل جامع
+    const comprehensiveRes = await fetch(`${API_BASE}/api/technical/comprehensive`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        symbol: symbol,
+        timeframe: '4h',
+        ohlcv: ohlcvData.data,
+        fundamental_data: faData,
+        onchain_data: {}  // اگر داده‌های on-chain موجود باشد
+      })
+    });
+    const comprehensive = await comprehensiveRes.json();
+    
+    return {
+      taQuick: taQuick,
+      fundamental: faData,
+      comprehensive: comprehensive
+    };
+  } catch (error) {
+    console.error('Analysis error:', error);
+    return null;
+  }
+}
+
+// استفاده
+analyzeCrypto('BTC').then(results => {
+  console.log('TA Quick:', results.taQuick);
+  console.log('Fundamental:', results.fundamental);
+  console.log('Comprehensive:', results.comprehensive);
+  console.log('Recommendation:', results.comprehensive.recommendation);
+});
+
+// Python
+import requests
+
+def analyze_crypto(symbol='BTC'):
+    API_BASE = 'https://Really-amin-Datasourceforcryptocurrency-2.hf.space'
+    
+    try:
+        # 1. دریافت داده‌های OHLCV
+        ohlcv_res = requests.get(
+            f'{API_BASE}/api/ohlcv',
+            params={'symbol': symbol, 'timeframe': '4h', 'limit': 200}
+        )
+        ohlcv_data = ohlcv_res.json()
+        
+        # 2. تحلیل تکنیکال سریع
+        ta_quick_res = requests.post(
+            f'{API_BASE}/api/technical/ta-quick',
+            json={
+                'symbol': symbol,
+                'timeframe': '4h',
+                'ohlcv': ohlcv_data['data']
+            }
+        )
+        ta_quick = ta_quick_res.json()
+        
+        # 3. تحلیل جامع
+        comprehensive_res = requests.post(
+            f'{API_BASE}/api/technical/comprehensive',
+            json={
+                'symbol': symbol,
+                'timeframe': '4h',
+                'ohlcv': ohlcv_data['data']
+            }
+        )
+        comprehensive = comprehensive_res.json()
+        
+        return {
+            'ta_quick': ta_quick,
+            'comprehensive': comprehensive
+        }
+    except Exception as e:
+        print(f'Analysis error: {e}')
+        return None
+
+# استفاده
+results = analyze_crypto('BTC')
+print(f"Recommendation: {results['comprehensive']['recommendation']}")</code></pre>
+
+          <h3>اندیکاتورها و الگوهای پشتیبانی شده:</h3>
+          <ul class="help-list">
+            <li><strong>اندیکاتورها:</strong> RSI (14), MACD, Volume, Ichimoku Cloud, Elliott Wave, SMA 20/50</li>
+            <li><strong>الگوهای هارمونیک:</strong> Gartley, Butterfly, Bat, Crab</li>
+            <li><strong>الگوهای کندل استیک:</strong> Doji, Hammer, Engulfing (Bullish/Bearish)</li>
+            <li><strong>سطوح Support/Resistance:</strong> محاسبه خودکار بر اساس Pivot Points</li>
+            <li><strong>توصیه‌های معاملاتی:</strong> Entry, Take Profit (TP), Stop Loss (SL)</li>
+          </ul>
+
+          <h3>نکات مهم:</h3>
+          <ul class="help-list">
+            <li>برای تحلیل دقیق‌تر، حداقل 100-200 کندل داده نیاز است</li>
+            <li>Timeframe پیشنهادی برای TA_QUICK: 4h</li>
+            <li>سیستم به صورت خودکار از محاسبات محلی استفاده می‌کند اگر API در دسترس نباشد</li>
+            <li>همه endpointها از retry logic با exponential backoff استفاده می‌کنند</li>
+            <li>برای تحلیل جامع، داده‌های TA، FA و On-Chain را ترکیب کنید</li>
+          </ul>
+
+          <h3>Error Handling:</h3>
+          <pre class="code-block"><code>// JavaScript - مدیریت خطا با retry
+async function fetchWithRetry(url, options, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok) return await response.json();
+      
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+        continue;
+      }
+      
+      throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+        continue;
+      }
+      throw error;
+    }
+  }
+}
+
+// استفاده
+try {
+  const analysis = await fetchWithRetry('/api/technical/ta-quick', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ symbol: 'BTC', timeframe: '4h', ohlcv: [...] })
+  });
+  console.log('Analysis:', analysis);
+} catch (error) {
+  console.error('Analysis failed after retries:', error);
+  // استفاده از fallback calculations
+}</code></pre>
+
+          <p class="help-note">
+            <strong>💡 نکته:</strong> برای مشاهده تمام endpointها و تست آنها، به <code>/docs</code> (Swagger UI) مراجعه کنید.
+            همچنین می‌توانید از صفحه Technical Analysis در UI استفاده کنید که همه این تحلیل‌ها را به صورت بصری نمایش می‌دهد.
+          </p>
+        </section>
+
+        <section class="help-section" id="quick-start">
+          <h2>12. Quick Start Guide for Average Users</h2>
+          <p>
+            This section provides simple, step-by-step examples for average users who want to quickly start using the API.
+          </p>
+
+          <h3>Step 1: Get a Single Price</h3>
+          <pre class="code-block"><code>// Simplest example - Get BTC price
+fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/service/rate?pair=BTC/USDT')
+  .then(r => r.json())
+  .then(data => {
+    console.log(`BTC Price: $${data.data.price}`);
+  })
+  .catch(err => console.error('Error:', err));</code></pre>
+
+          <h3>Step 2: Get Multiple Prices</h3>
+          <pre class="code-block"><code>// Get prices for multiple coins
+fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/service/rate/batch?pairs=BTC/USDT,ETH/USDT,BNB/USDT')
+  .then(r => r.json())
+  .then(data => {
+    data.data.forEach(rate => {
+      console.log(`${rate.pair}: $${rate.price}`);
+    });
+  });</code></pre>
+
+          <h3>Step 3: Get Latest News</h3>
+          <pre class="code-block"><code>// Get latest crypto news
+fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/news/latest?symbol=BTC&limit=5')
+  .then(r => r.json())
+  .then(data => {
+    data.news.forEach(article => {
+      console.log(`- ${article.title}`);
+      console.log(`  Source: ${article.source}`);
+      console.log(`  URL: ${article.url}\n`);
+    });
+  });</code></pre>
+
+          <h3>Step 4: Get Whale Transactions</h3>
+          <pre class="code-block"><code>// Get large transactions (whales)
+fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/service/whales?chain=ethereum&min_amount_usd=1000000&limit=20')
+  .then(r => r.json())
+  .then(data => {
+    console.log(`Found ${data.data.length} whale transactions:`);
+    data.data.forEach(tx => {
+      console.log(`From: ${tx.from}`);
+      console.log(`To: ${tx.to}`);
+      console.log(`Amount: $${tx.amount_usd.toLocaleString()}\n`);
+    });
+  });</code></pre>
+
+          <h3>Step 5: Analyze Sentiment</h3>
+          <pre class="code-block"><code>// Analyze text sentiment
+fetch('https://Really-amin-Datasourceforcryptocurrency-2.hf.space/api/sentiment/analyze', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    text: 'Bitcoin is going to the moon! 🚀'
+  })
+})
+  .then(r => r.json())
+  .then(data => {
+    console.log(`Sentiment: ${data.label}`);
+    console.log(`Score: ${data.score}`);
+    console.log(`Confidence: ${data.confidence || 'N/A'}`);
+  });</code></pre>
+
+          <h3>Complete Working Example:</h3>
+          <pre class="code-block"><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Crypto API Example&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Crypto Data&lt;/h1&gt;
+  &lt;div id="prices"&gt;Loading...&lt;/div&gt;
+  &lt;div id="news"&gt;Loading...&lt;/div&gt;
+
+  &lt;script&gt;
+    const API_BASE = 'https://Really-amin-Datasourceforcryptocurrency-2.hf.space';
+
+    // Get prices
+    async function loadPrices() {
+      try {
+        const response = await fetch(`${API_BASE}/api/service/rate/batch?pairs=BTC/USDT,ETH/USDT,BNB/USDT`);
+        const data = await response.json();
+        
+        const pricesHtml = data.data.map(rate => 
+          `&lt;p&gt;&lt;strong&gt;${rate.pair}:&lt;/strong&gt; $${rate.price.toFixed(2)}&lt;/p&gt;`
+        ).join('');
+        
+        document.getElementById('prices').innerHTML = pricesHtml;
+      } catch (error) {
+        document.getElementById('prices').innerHTML = `Error: ${error.message}`;
+      }
+    }
+
+    // Get news
+    async function loadNews() {
+      try {
+        const response = await fetch(`${API_BASE}/api/news/latest?symbol=BTC&limit=5`);
+        const data = await response.json();
+        
+        const newsHtml = data.news.map(article => 
+          `&lt;div&gt;
+            &lt;h3&gt;${article.title}&lt;/h3&gt;
+            &lt;p&gt;${article.summary}&lt;/p&gt;
+            &lt;a href="${article.url}" target="_blank"&gt;Read more&lt;/a&gt;
+          &lt;/div&gt;`
+        ).join('');
+        
+        document.getElementById('news').innerHTML = newsHtml;
+      } catch (error) {
+        document.getElementById('news').innerHTML = `Error: ${error.message}`;
+      }
+    }
+
+    // Load data on page load
+    loadPrices();
+    loadNews();
+
+    // Refresh every 30 seconds
+    setInterval(() => {
+      loadPrices();
+      loadNews();
+    }, 30000);
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+          <h3>Python Quick Start:</h3>
+          <pre class="code-block"><code>import requests
+
+API_BASE = "https://Really-amin-Datasourceforcryptocurrency-2.hf.space"
+
+# Get BTC price
+response = requests.get(f"{API_BASE}/api/service/rate?pair=BTC/USDT")
+data = response.json()
+print(f"BTC Price: ${data['data']['price']}")
+
+# Get multiple prices
+response = requests.get(f"{API_BASE}/api/service/rate/batch?pairs=BTC/USDT,ETH/USDT")
+data = response.json()
+for rate in data['data']:
+    print(f"{rate['pair']}: ${rate['price']}")
+
+# Get news
+response = requests.get(f"{API_BASE}/api/news/latest?symbol=BTC&limit=5")
+data = response.json()
+for article in data['news']:
+    print(f"- {article['title']}")
+
+# Analyze sentiment
+response = requests.post(
+    f"{API_BASE}/api/sentiment/analyze",
+    json={"text": "Bitcoin is bullish!"}
+)
+data = response.json()
+print(f"Sentiment: {data['label']} ({data['score']})")</code></pre>
+        </section>
+
+        <section class="help-section" id="meta">
+          <h2>13. Summary</h2>
+          <p>
+            This system provides real-time market data, global sentiment, model management and
+            analysis tools. Ensure the correct backend server is running with valid environment
+            variables, then use the Dashboard, Models and Providers pages to explore data and
+            run analyses from the UI.
+          </p>
+          
+          <h3>Available API Endpoints:</h3>
+          <ul class="help-list">
+            <li><strong>Unified Service API:</strong> <code>/api/service/*</code> - Primary endpoints for all data needs
+              <ul>
+                <li><code>/api/service/rate</code> - Exchange rates</li>
+                <li><code>/api/service/whales</code> - Whale transactions</li>
+                <li><code>/api/service/sentiment</code> - Sentiment analysis</li>
+                <li><code>/api/service/onchain</code> - Blockchain data</li>
+                <li><code>/api/service/market-status</code> - Market overview</li>
+              </ul>
+            </li>
+            <li><strong>Market Data:</strong> <code>/api/market/*</code> - Prices, tickers, OHLCV</li>
+            <li><strong>News:</strong> <code>/api/news/*</code> - Crypto news articles</li>
+            <li><strong>Sentiment:</strong> <code>/api/sentiment/*</code> - Sentiment analysis</li>
+            <li><strong>Blockchain:</strong> <code>/api/blockchain/*</code> - Gas prices, transactions</li>
+            <li><strong>AI Models:</strong> <code>/api/models/*</code> - Model management</li>
+            <li><strong>Technical Analysis:</strong> <code>/api/technical/*</code> - Advanced trading analysis</li>
+          </ul>
+
+          <p>
+            <strong>Key Points:</strong>
+          </p>
+          <ul class="help-list">
+            <li>All data is accessible via HTTP REST API endpoints</li>
+            <li><strong>Unified Service API</strong> (<code>/api/service/*</code>) is the primary way to access data</li>
+            <li>WebSocket is optional for real-time updates (automatic fallback to HTTP polling)</li>
+            <li>55 functional resources with automatic fallback system</li>
+            <li>11 active API keys for enhanced features</li>
+            <li>Comprehensive error handling and retry mechanisms</li>
+            <li>Full documentation available at <code>/docs</code> endpoint</li>
+            <li>Check <code>/api/routers</code> to see which endpoints are available</li>
+            <li>Use <code>/api/health</code> to verify system status</li>
+          </ul>
+
+          <h3>Common Use Cases:</h3>
+          <ul class="help-list">
+            <li><strong>Get Prices:</strong> Use <code>/api/service/rate</code> or <code>/api/market/tickers</code></li>
+            <li><strong>Get News:</strong> Use <code>/api/news/latest</code> or <code>/api/news</code></li>
+            <li><strong>Track Whales:</strong> Use <code>/api/service/whales</code></li>
+            <li><strong>Analyze Sentiment:</strong> Use <code>/api/sentiment/analyze</code> or <code>/api/service/sentiment</code></li>
+            <li><strong>Get Blockchain Data:</strong> Use <code>/api/service/onchain</code> or <code>/api/blockchain/gas</code></li>
+            <li><strong>Technical Analysis:</strong> Use <code>/api/technical/analyze</code> or other TA endpoints</li>
+          </ul>
+
+          <h3>If You Encounter Errors:</h3>
+          <ol class="help-steps">
+            <li>Check <code>/api/health</code> - System should be "healthy"</li>
+            <li>Check <code>/api/routers</code> - Verify endpoints are loaded</li>
+            <li>Check <code>/docs</code> - See all available endpoints</li>
+            <li>See <strong>Section 10: Common Errors & Solutions</strong> for specific fixes</li>
+            <li>Check browser DevTools → Network tab for actual error messages</li>
+            <li>Verify Space is running and not sleeping</li>
+          </ol>
+
+          <h3>Getting Help:</h3>
+          <ul class="help-list">
+            <li><strong>API Documentation:</strong> Visit <code>/docs</code> for interactive Swagger UI</li>
+            <li><strong>OpenAPI Spec:</strong> <code>/openapi.json</code> for complete API specification</li>
+            <li><strong>Router Status:</strong> <code>/api/routers</code> to see loaded endpoints</li>
+            <li><strong>System Status:</strong> <code>/api/status</code> for detailed system information</li>
+            <li><strong>This Help Page:</strong> Complete guide with examples and troubleshooting</li>
+          </ul>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Shared JS -->
+  <script type="module" src="../../shared/js/core/layout-manager.js"></script>
+  
+  <!-- Initialize layout and page -->
+  <script type="module">
+    import { LayoutManager } from '/static/shared/js/core/layout-manager.js';
+    import HelpPage from './help.js';
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      await LayoutManager.init('help');
+      const helpPage = new HelpPage();
+      helpPage.init();
+    });
+  </script>
+</body>
+</html>
+
+
+
