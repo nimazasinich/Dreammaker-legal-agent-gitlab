@@ -1,0 +1,767 @@
+{
+  "pages": [
+    {
+      "page_number": 1,
+      "name": "EnhancedDashboardView",
+      "file_location": "src/views/EnhancedDashboardView.tsx",
+      "route": "/dashboard",
+      "component_name": "EnhancedDashboardView",
+      "primary_purpose": "Main overview page displaying portfolio summary, market statistics, top signals, and quick market data for key symbols (BTC, ETH, SOL).",
+      "api_dependencies": [
+        "`/api/portfolio`, `/api/health`, `/api/market/prices`",
+        "WebSocket: `price_update` (10s cadence), `sentiment_update` (60s cadence)"
+      ],
+      "websocket_events": [
+        "price_update",
+        "sentiment_update"
+      ],
+      "key_features": [
+        "Portfolio value and PnL display with real-time updates",
+        "Market statistics cards (total value, change %, active positions)",
+        "Top signals panel with AI-generated trading signals",
+        "Modern symbol ribbon for quick symbol selection",
+        "Real-time price charts for selected symbols",
+        "Health status indicator"
+      ],
+      "user_intent": "Quick overview of portfolio performance and market status. Entry point for daily trading activities.",
+      "usage_frequency": "- ✅ Primary daily use (Dashboard-level)",
+      "technical_complexity": "- ✅ High (Real-time WS, complex state management, multiple data sources)",
+      "current_issues": [
+        "Overlaps with MarketView for market data display",
+        "Could potentially absorb MarketView functionality as a tab"
+      ],
+      "category": "Dashboard",
+      "status": "Keep Standalone",
+      "merge_target": null,
+      "tab_name": null,
+      "priority": "HIGH"
+    },
+    {
+      "page_number": 2,
+      "name": "TradingViewDashboard",
+      "file_location": "src/views/TradingViewDashboard.tsx",
+      "route": "/tradingview-dashboard",
+      "component_name": "TradingViewDashboard",
+      "primary_purpose": "Premium charting interface with TradingView widgets, screener, calendar, and news. Focus on professional chart analysis.",
+      "api_dependencies": [
+        "Market data via TradingView widgets (external)",
+        "WebSocket: None (TradingView handles its own data)"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "TradingView Advanced Chart widget integration",
+        "Market screener with filtering",
+        "Forex calendar integration",
+        "Advanced news feed",
+        "Strategy management panel",
+        "Drawing tools panel",
+        "Quick actions panel",
+        "Tab-based interface (Chart, Screener, Calendar, News)"
+      ],
+      "user_intent": "Professional chart analysis using TradingView's advanced charting capabilities. For users who prefer TradingView's interface.",
+      "usage_frequency": "- ✅ Regular use (Multiple times per day) - for chart-focused traders",
+      "technical_complexity": "- ✅ Very High (External widget integration, complex state management, multiple tabs)",
+      "current_issues": [
+        "Overlaps significantly with other trading interfaces",
+        "TradingView widgets are external dependency",
+        "Could be a \"mode\" within unified trading interface"
+      ],
+      "category": "Trading",
+      "status": "Merge into Hub",
+      "merge_target": "UnifiedTradingHubView",
+      "tab_name": "charts",
+      "priority": "HIGH"
+    },
+    {
+      "page_number": 3,
+      "name": "MarketAnalysisHub",
+      "file_location": "src/views/MarketAnalysisHub.tsx",
+      "route": "/market-analysis",
+      "component_name": "MarketAnalysisHub",
+      "primary_purpose": "Unified hub combining market overview, scanner, and technical analysis. Phase 2 consolidation page.",
+      "api_dependencies": [
+        "Delegated to child components (MarketView, ScannerView, TechnicalAnalysisView)",
+        "WebSocket: Delegated to child components"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Tab-based interface (Market, Scanner, Technical)",
+        "Deep linking support via URL parameters",
+        "Keyboard shortcuts (Cmd/Ctrl + 1/2/3)",
+        "Independent tab state management",
+        "Wraps MarketView, ScannerView, TechnicalAnalysisView"
+      ],
+      "user_intent": "Single entry point for all market analysis activities. Reduces navigation between related pages.",
+      "usage_frequency": "- ✅ Regular use (Multiple times per day)",
+      "technical_complexity": "- ✅ Medium (Tab management, URL routing, component composition)",
+      "current_issues": [
+        "Good consolidation, but MarketView and ScannerView still exist as standalone pages",
+        "Could potentially merge Dashboard market data here"
+      ],
+      "category": "Market Analysis",
+      "status": "Keep Standalone",
+      "merge_target": null,
+      "tab_name": null,
+      "priority": "MEDIUM"
+    },
+    {
+      "page_number": 4,
+      "name": "MarketView",
+      "file_location": "src/views/MarketView.tsx",
+      "route": "/market` (redirects to `/market-analysis?tab=market`)  \n**Component Name:** `MarketView`\n\n**Primary Purpose:**\nReal-time market data display with price charts, market ticker, news feed, and AI predictions.\n\n**API Dependencies:**\n- Fetches: `/api/market/prices`, `/api/market-data/:symbol`, `/api/market/historical`, `/api/hf/ohlcv`\n- WebSocket: `price_update` (10s cadence)\n\n**Key Features:**\n1. Real-time price charts with OHLCV data\n2. Market ticker with top coins\n3. News feed integration\n4. AI predictor component\n5. Symbol search and selection\n6. Exchange selector\n7. Backtest button integration\n8. Multiple data source support (mock/real)\n\n**User Intent:**\nView real-time market prices and trends. Analyze price movements with charts.\n\n**Data Display Type:**\n- ✅ Real-time streaming data (primary)\n- ✅ Historical/static data (charts)\n- ✅ Analysis/computation results (AI predictions)\n\n**Interaction Model:**\n- ✅ Interactive controls (symbol selection, exchange selector)\n- ✅ Chart/visualization interaction\n- ✅ WebSocket live updates\n\n**Usage Frequency:**\n- ✅ Regular use (Multiple times per day)\n\n**Technical Complexity:**\n- ✅ High (Real-time WS, multiple data sources, chart rendering)\n\n**Current Issues/Pain Points:**\n- Already integrated into MarketAnalysisHub as a tab\n- Still accessible as standalone (redundant)\n- Overlaps with Dashboard market data\n\n---\n\n#### PAGE 5: ScannerView\n\n**File Location:** `src/views/ScannerView.tsx`  \n**Route:** `/scanner` (redirects to `/market-analysis?tab=scanner`)  \n**Component Name:** `ScannerView`\n\n**Primary Purpose:**\nAI-powered market scanner with multiple scanning modes: AI signals, technical patterns, smart money, news sentiment, whale activity.\n\n**API Dependencies:**\n- Fetches: `/api/signals/analyze`, `/api/signals/history`\n- WebSocket: `signal_update` (3s cadence, on-demand subscription)\n\n**Key Features:**\n1. Multi-tab scanner interface (Overview, AI Signals, Patterns, Smart Money, Sentiment, Whales, Feed)\n2. Real-time signal scanning\n3. Symbol search and filtering\n4. Watchlist management\n5. Scanner feed panel with live updates\n6. Multiple scanner types (AISignalsScanner, TechnicalPatternsScanner, SmartMoneyScanner, NewsSentimentScanner, WhaleActivityScanner)\n\n**User Intent:**\nFind trading opportunities by scanning markets for signals, patterns, and anomalies.\n\n**Data Display Type:**\n- ✅ Real-time streaming data (signals)\n- ✅ Analysis/computation results (scanner results)\n\n**Interaction Model:**\n- ✅ Interactive controls (filters, search, tabs)\n- ✅ Form submission (symbol watchlist)\n- ✅ WebSocket live updates\n\n**Usage Frequency:**\n- ✅ Regular use (Multiple times per day)\n\n**Technical Complexity:**\n- ✅ Very High (Multiple scanner engines, real-time WS, complex filtering)\n\n**Current Issues/Pain Points:**\n- Already integrated into MarketAnalysisHub as a tab\n- Still accessible as standalone (redundant)\n- Distinct enough to warrant separate tab\n\n---\n\n#### PAGE 6: EnhancedTradingView\n\n**File Location:** `src/views/EnhancedTradingView.tsx`  \n**Route:** `/enhanced-trading",
+      "component_name": "EnhancedTradingView",
+      "primary_purpose": "Scoring-based trading interface with spot/futures tabs, multi-timeframe analysis, and confluence scoring.",
+      "api_dependencies": [
+        "`/api/scoring/snapshot`",
+        "WebSocket: `scoring_snapshot` (30s cadence)"
+      ],
+      "websocket_events": [
+        "scoring_snapshot"
+      ],
+      "key_features": [
+        "Spot/Futures tab toggle",
+        "Multi-timeframe scoring (15m, 1h, 4h)",
+        "Confluence analysis display",
+        "Entry plan visualization (SL, TP, leverage)",
+        "Strategy enable/disable toggle",
+        "Order placement interface",
+        "Real-time scoring updates"
+      ],
+      "user_intent": "Trade based on AI scoring system with multi-timeframe confluence analysis.",
+      "usage_frequency": "- ✅ Regular use (Multiple times per day)",
+      "technical_complexity": "- ✅ High (Real-time WS, complex scoring display, order management)",
+      "current_issues": [
+        "Overlaps 75%+ with FuturesTradingView",
+        "Similar functionality to TradingHubView",
+        "Should be merged into unified trading interface"
+      ],
+      "category": "Market Analysis",
+      "status": "Redundant (already in hub)",
+      "merge_target": "MarketAnalysisHub",
+      "tab_name": "market",
+      "priority": "MEDIUM"
+    },
+    {
+      "page_number": 5,
+      "name": "ScannerView",
+      "file_location": "src/views/ScannerView.tsx",
+      "route": "/scanner` (redirects to `/market-analysis?tab=scanner`)  \n**Component Name:** `ScannerView`\n\n**Primary Purpose:**\nAI-powered market scanner with multiple scanning modes: AI signals, technical patterns, smart money, news sentiment, whale activity.\n\n**API Dependencies:**\n- Fetches: `/api/signals/analyze`, `/api/signals/history`\n- WebSocket: `signal_update` (3s cadence, on-demand subscription)\n\n**Key Features:**\n1. Multi-tab scanner interface (Overview, AI Signals, Patterns, Smart Money, Sentiment, Whales, Feed)\n2. Real-time signal scanning\n3. Symbol search and filtering\n4. Watchlist management\n5. Scanner feed panel with live updates\n6. Multiple scanner types (AISignalsScanner, TechnicalPatternsScanner, SmartMoneyScanner, NewsSentimentScanner, WhaleActivityScanner)\n\n**User Intent:**\nFind trading opportunities by scanning markets for signals, patterns, and anomalies.\n\n**Data Display Type:**\n- ✅ Real-time streaming data (signals)\n- ✅ Analysis/computation results (scanner results)\n\n**Interaction Model:**\n- ✅ Interactive controls (filters, search, tabs)\n- ✅ Form submission (symbol watchlist)\n- ✅ WebSocket live updates\n\n**Usage Frequency:**\n- ✅ Regular use (Multiple times per day)\n\n**Technical Complexity:**\n- ✅ Very High (Multiple scanner engines, real-time WS, complex filtering)\n\n**Current Issues/Pain Points:**\n- Already integrated into MarketAnalysisHub as a tab\n- Still accessible as standalone (redundant)\n- Distinct enough to warrant separate tab\n\n---\n\n#### PAGE 6: EnhancedTradingView\n\n**File Location:** `src/views/EnhancedTradingView.tsx`  \n**Route:** `/enhanced-trading",
+      "component_name": "EnhancedTradingView",
+      "primary_purpose": "Scoring-based trading interface with spot/futures tabs, multi-timeframe analysis, and confluence scoring.",
+      "api_dependencies": [
+        "`/api/scoring/snapshot`",
+        "WebSocket: `scoring_snapshot` (30s cadence)"
+      ],
+      "websocket_events": [
+        "scoring_snapshot"
+      ],
+      "key_features": [
+        "Spot/Futures tab toggle",
+        "Multi-timeframe scoring (15m, 1h, 4h)",
+        "Confluence analysis display",
+        "Entry plan visualization (SL, TP, leverage)",
+        "Strategy enable/disable toggle",
+        "Order placement interface",
+        "Real-time scoring updates"
+      ],
+      "user_intent": "Trade based on AI scoring system with multi-timeframe confluence analysis.",
+      "usage_frequency": "- ✅ Regular use (Multiple times per day)",
+      "technical_complexity": "- ✅ High (Real-time WS, complex scoring display, order management)",
+      "current_issues": [
+        "Overlaps 75%+ with FuturesTradingView",
+        "Similar functionality to TradingHubView",
+        "Should be merged into unified trading interface"
+      ],
+      "category": "Market Analysis",
+      "status": "Redundant (already in hub)",
+      "merge_target": "MarketAnalysisHub",
+      "tab_name": "scanner",
+      "priority": "MEDIUM"
+    },
+    {
+      "page_number": 6,
+      "name": "EnhancedTradingView",
+      "file_location": "src/views/EnhancedTradingView.tsx",
+      "route": "/enhanced-trading",
+      "component_name": "EnhancedTradingView",
+      "primary_purpose": "Scoring-based trading interface with spot/futures tabs, multi-timeframe analysis, and confluence scoring.",
+      "api_dependencies": [
+        "`/api/scoring/snapshot`",
+        "WebSocket: `scoring_snapshot` (30s cadence)"
+      ],
+      "websocket_events": [
+        "scoring_snapshot"
+      ],
+      "key_features": [
+        "Spot/Futures tab toggle",
+        "Multi-timeframe scoring (15m, 1h, 4h)",
+        "Confluence analysis display",
+        "Entry plan visualization (SL, TP, leverage)",
+        "Strategy enable/disable toggle",
+        "Order placement interface",
+        "Real-time scoring updates"
+      ],
+      "user_intent": "Trade based on AI scoring system with multi-timeframe confluence analysis.",
+      "usage_frequency": "- ✅ Regular use (Multiple times per day)",
+      "technical_complexity": "- ✅ High (Real-time WS, complex scoring display, order management)",
+      "current_issues": [
+        "Overlaps 75%+ with FuturesTradingView",
+        "Similar functionality to TradingHubView",
+        "Should be merged into unified trading interface"
+      ],
+      "category": "Trading",
+      "status": "Merge into Hub",
+      "merge_target": "UnifiedTradingHubView",
+      "tab_name": "spot",
+      "priority": "HIGH"
+    },
+    {
+      "page_number": 7,
+      "name": "FuturesTradingView",
+      "file_location": "src/views/FuturesTradingView.tsx",
+      "route": "/futures",
+      "component_name": "FuturesTradingView",
+      "primary_purpose": "Full-featured futures trading interface with positions management, order book, balance display, and entry plan calculation.",
+      "api_dependencies": [
+        "`/api/scoring/snapshot`, `/api/positions`, `/api/futures/positions`, `/api/futures/orders`, `/api/futures/balance`, `/api/futures/orderbook`",
+        "WebSocket: `scoring_snapshot` (30s), `signal_update` (3s)"
+      ],
+      "websocket_events": [
+        "scoring_snapshot",
+        "signal_update"
+      ],
+      "key_features": [
+        "Trading mode toggle (signals-only vs auto-trade)",
+        "Real-time positions display",
+        "Order book visualization",
+        "Balance and margin display",
+        "Entry plan calculator",
+        "Manual order placement",
+        "Position management (close, modify)",
+        "Real-time price updates",
+        "Leverage adjustment",
+        "Stop loss / Take profit configuration"
+      ],
+      "user_intent": "Execute futures trades with full position and order management. Monitor open positions and manage risk.",
+      "usage_frequency": "- ✅ Primary daily use (for active traders)",
+      "technical_complexity": "- ✅ Very High (Real-time WS, complex order management, position tracking)",
+      "current_issues": [
+        "Overlaps significantly with EnhancedTradingView and TradingHubView",
+        "Core functionality should be in unified trading hub",
+        "Currently used as tab in TradingHubView (good!)"
+      ],
+      "category": "Trading",
+      "status": "Merge into Hub",
+      "merge_target": "UnifiedTradingHubView",
+      "tab_name": "futures",
+      "priority": "HIGH"
+    },
+    {
+      "page_number": 8,
+      "name": "TradingHubView",
+      "file_location": "src/views/TradingHubView.tsx",
+      "route": "/trading-hub",
+      "component_name": "TradingHubView",
+      "primary_purpose": "Unified trading hub combining futures trading, technical analysis, risk management, positions, and portfolio in tabbed interface.",
+      "api_dependencies": [
+        "Delegated to child components",
+        "WebSocket: Delegated to child components"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Tab-based interface (Futures, Technical, Risk, Positions, Portfolio)",
+        "Deep linking support",
+        "Keyboard shortcuts (Cmd/Ctrl + 1/2/3/4/5)",
+        "Wraps FuturesTradingView, TechnicalAnalysisView, RiskManagementView, PositionsView, PortfolioPage",
+        "Independent tab state management"
+      ],
+      "user_intent": "Single entry point for all trading activities. Reduces navigation between trading-related pages.",
+      "usage_frequency": "- ✅ Primary daily use (for active traders)",
+      "technical_complexity": "- ✅ Medium (Tab management, URL routing, component composition)",
+      "current_issues": [
+        "Good consolidation, but TradingViewDashboard and EnhancedTradingView still exist separately",
+        "Should absorb all trading interfaces"
+      ],
+      "category": "Trading",
+      "status": "To be Created (new unified hub)",
+      "merge_target": null,
+      "tab_name": null,
+      "priority": "HIGH"
+    },
+    {
+      "page_number": 9,
+      "name": "PositionsView",
+      "file_location": "src/views/PositionsView.tsx",
+      "route": "/positions` (redirects to `/trading-hub?tab=positions`)  \n**Component Name:** `PositionsView`\n\n**Primary Purpose:**\nDisplay and manage open positions, pending orders, and trade history.\n\n**API Dependencies:**\n- Fetches: `/api/positions`, `/api/orders`\n- WebSocket: `positions_update` (via useWebSocket hook)\n\n**Key Features:**\n1. Open positions table with PnL\n2. Pending orders display\n3. Trade history\n4. Position closing interface\n5. Real-time position updates\n6. Tab interface (Positions, Orders, History)\n\n**User Intent:**\nMonitor and manage open trading positions. Review trade history.\n\n**Data Display Type:**\n- ✅ Real-time streaming data (positions)\n- ✅ Historical/static data (trade history)\n\n**Interaction Model:**\n- ✅ Interactive controls (close position, cancel order)\n- ✅ Form submission (position management)\n- ✅ WebSocket live updates\n\n**Usage Frequency:**\n- ✅ Regular use (Multiple times per day)\n\n**Technical Complexity:**\n- ✅ Medium (Real-time WS, position management)\n\n**Current Issues/Pain Points:**\n- Already integrated into TradingHubView as a tab\n- Still accessible as standalone (redundant)\n- Good as tab within trading hub\n\n---\n\n#### PAGE 10: PortfolioPage\n\n**File Location:** `src/views/PortfolioPage.tsx`  \n**Route:** `/portfolio` (redirects to `/trading-hub?tab=portfolio`)  \n**Component Name:** `PortfolioPage`\n\n**Primary Purpose:**\nPortfolio overview with holdings, risk center, and market data integration.\n\n**API Dependencies:**\n- Fetches: `/api/positions/open`, market data via DatasourceClient\n- WebSocket: None\n\n**Key Features:**\n1. Portfolio value and PnL\n2. Holdings display\n3. Risk center integration\n4. Market data for holdings\n5. Position closing interface\n\n**User Intent:**\nView overall portfolio performance and holdings. Assess portfolio risk.\n\n**Data Display Type:**\n- ✅ Real-time streaming data (market prices)\n- ✅ Historical/static data (holdings)\n\n**Interaction Model:**\n- ✅ Interactive controls (position management)\n- ✅ Form submission (close position)\n\n**Usage Frequency:**\n- ✅ Regular use (Multiple times per day)\n\n**Technical Complexity:**\n- ✅ Medium (Data aggregation, risk calculations)\n\n**Current Issues/Pain Points:**\n- Already integrated into TradingHubView as a tab\n- Overlaps with Dashboard portfolio display\n- Good as tab within trading hub\n\n---\n\n#### PAGE 11: TrainingView\n\n**File Location:** `src/views/TrainingView.tsx`  \n**Route:** `/training",
+      "component_name": "TrainingView",
+      "primary_purpose": "AI model training interface with configuration, metrics display, and training execution.",
+      "api_dependencies": [
+        "`/api/ai/train`, `/api/trainingmetrics`",
+        "WebSocket: None"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Training configuration (epochs, batch size, learning rate, optimizer)",
+        "Training execution with progress tracking",
+        "Real-time metrics display (loss, accuracy, validation metrics)",
+        "Model information display",
+        "Training history",
+        "Dataset size configuration"
+      ],
+      "user_intent": "Train and configure AI models for trading signal generation.",
+      "usage_frequency": "- ✅ Occasional use (Few times per week)",
+      "technical_complexity": "- ✅ High (ML training pipeline, real-time metrics)",
+      "current_issues": [
+        "Should be merged with EnhancedStrategyLabView (Backtest tab)",
+        "Part of AI/ML workflow"
+      ],
+      "category": "Trading",
+      "status": "Merge into Hub",
+      "merge_target": "UnifiedTradingHubView",
+      "tab_name": "positions",
+      "priority": "HIGH"
+    },
+    {
+      "page_number": 10,
+      "name": "PortfolioPage",
+      "file_location": "src/views/PortfolioPage.tsx",
+      "route": "/portfolio` (redirects to `/trading-hub?tab=portfolio`)  \n**Component Name:** `PortfolioPage`\n\n**Primary Purpose:**\nPortfolio overview with holdings, risk center, and market data integration.\n\n**API Dependencies:**\n- Fetches: `/api/positions/open`, market data via DatasourceClient\n- WebSocket: None\n\n**Key Features:**\n1. Portfolio value and PnL\n2. Holdings display\n3. Risk center integration\n4. Market data for holdings\n5. Position closing interface\n\n**User Intent:**\nView overall portfolio performance and holdings. Assess portfolio risk.\n\n**Data Display Type:**\n- ✅ Real-time streaming data (market prices)\n- ✅ Historical/static data (holdings)\n\n**Interaction Model:**\n- ✅ Interactive controls (position management)\n- ✅ Form submission (close position)\n\n**Usage Frequency:**\n- ✅ Regular use (Multiple times per day)\n\n**Technical Complexity:**\n- ✅ Medium (Data aggregation, risk calculations)\n\n**Current Issues/Pain Points:**\n- Already integrated into TradingHubView as a tab\n- Overlaps with Dashboard portfolio display\n- Good as tab within trading hub\n\n---\n\n#### PAGE 11: TrainingView\n\n**File Location:** `src/views/TrainingView.tsx`  \n**Route:** `/training",
+      "component_name": "TrainingView",
+      "primary_purpose": "AI model training interface with configuration, metrics display, and training execution.",
+      "api_dependencies": [
+        "`/api/ai/train`, `/api/trainingmetrics`",
+        "WebSocket: None"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Training configuration (epochs, batch size, learning rate, optimizer)",
+        "Training execution with progress tracking",
+        "Real-time metrics display (loss, accuracy, validation metrics)",
+        "Model information display",
+        "Training history",
+        "Dataset size configuration"
+      ],
+      "user_intent": "Train and configure AI models for trading signal generation.",
+      "usage_frequency": "- ✅ Occasional use (Few times per week)",
+      "technical_complexity": "- ✅ High (ML training pipeline, real-time metrics)",
+      "current_issues": [
+        "Should be merged with EnhancedStrategyLabView (Backtest tab)",
+        "Part of AI/ML workflow"
+      ],
+      "category": "Trading",
+      "status": "Merge into Hub",
+      "merge_target": "UnifiedTradingHubView",
+      "tab_name": "portfolio",
+      "priority": "HIGH"
+    },
+    {
+      "page_number": 11,
+      "name": "TrainingView",
+      "file_location": "src/views/TrainingView.tsx",
+      "route": "/training",
+      "component_name": "TrainingView",
+      "primary_purpose": "AI model training interface with configuration, metrics display, and training execution.",
+      "api_dependencies": [
+        "`/api/ai/train`, `/api/trainingmetrics`",
+        "WebSocket: None"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Training configuration (epochs, batch size, learning rate, optimizer)",
+        "Training execution with progress tracking",
+        "Real-time metrics display (loss, accuracy, validation metrics)",
+        "Model information display",
+        "Training history",
+        "Dataset size configuration"
+      ],
+      "user_intent": "Train and configure AI models for trading signal generation.",
+      "usage_frequency": "- ✅ Occasional use (Few times per week)",
+      "technical_complexity": "- ✅ High (ML training pipeline, real-time metrics)",
+      "current_issues": [
+        "Should be merged with EnhancedStrategyLabView (Backtest tab)",
+        "Part of AI/ML workflow"
+      ],
+      "category": "AI/ML",
+      "status": "Merge into Hub",
+      "merge_target": "UnifiedAILabView",
+      "tab_name": "training",
+      "priority": "MEDIUM"
+    },
+    {
+      "page_number": 12,
+      "name": "EnhancedStrategyLabView",
+      "file_location": "src/views/EnhancedStrategyLabView.tsx",
+      "route": "/strategylab",
+      "component_name": "EnhancedStrategyLabView",
+      "primary_purpose": "Strategy development, testing, and analysis platform with multiple tabs: Lab, Builder, Insights, Backtest.",
+      "api_dependencies": [
+        "Strategy pipeline APIs, backtest APIs",
+        "WebSocket: None"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Tab-based interface (Lab, Builder, Insights, Backtest)",
+        "Strategy lab - live simulation and testing",
+        "Strategy builder - configuration editor",
+        "Pipeline insights - HTS Strategy Pipeline results",
+        "Backtest panel - historical performance testing",
+        "Performance charts and metrics",
+        "Strategy template editor"
+      ],
+      "user_intent": "Develop, test, and analyze trading strategies. Backtest strategies on historical data.",
+      "usage_frequency": "- ✅ Occasional use (Few times per week)",
+      "technical_complexity": "- ✅ Very High (Strategy pipeline, backtesting engine, complex state management)",
+      "current_issues": [
+        "TrainingView should be merged here as a \"Training\" tab",
+        "Good consolidation already, just needs Training integration"
+      ],
+      "category": "AI/ML",
+      "status": "Merge into Hub",
+      "merge_target": "UnifiedAILabView",
+      "tab_name": null,
+      "priority": "MEDIUM"
+    },
+    {
+      "page_number": 13,
+      "name": "ProfessionalRiskView",
+      "file_location": "src/views/ProfessionalRiskView.tsx",
+      "route": "/professional-risk",
+      "component_name": "ProfessionalRiskView",
+      "primary_purpose": "Advanced risk metrics and portfolio analysis with professional risk calculations.",
+      "api_dependencies": [
+        "`/api/portfolio/performance`, risk metrics APIs",
+        "WebSocket: None"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Tab-based interface (Professional Metrics, Portfolio Overview)",
+        "Professional risk metrics (liquidation risk, leverage, VaR, Sharpe ratio)",
+        "Risk gauges and visualizations",
+        "Stress testing",
+        "Risk alerts",
+        "Portfolio overview with position sizing"
+      ],
+      "user_intent": "Analyze portfolio risk using professional risk metrics. Assess liquidation risk and optimize position sizing.",
+      "usage_frequency": "- ✅ Regular use (Multiple times per day)",
+      "technical_complexity": "- ✅ High (Complex risk calculations, stress testing)",
+      "current_issues": [
+        "Overlaps conceptually with RiskManagementView",
+        "Different focus (professional metrics vs interactive calculator)",
+        "Could share components but serve different purposes"
+      ],
+      "category": "Risk Management",
+      "status": "Keep Standalone",
+      "merge_target": null,
+      "tab_name": null,
+      "priority": "MEDIUM"
+    },
+    {
+      "page_number": 14,
+      "name": "RiskManagementView",
+      "file_location": "src/views/RiskManagementView.tsx",
+      "route": "/risk-management` (used in TradingHubView)  \n**Component Name:** `RiskManagementView`\n\n**Primary Purpose:**\nInteractive risk calculator for position sizing, liquidation price calculation, and stress testing.\n\n**API Dependencies:**\n- Fetches: Market prices via DatasourceClient\n- WebSocket: None\n\n**Key Features:**\n1. Position input form (symbol, entry price, size, leverage, SL/TP)\n2. Liquidation price calculator\n3. Optimal position size calculator\n4. Risk/reward ratio calculation\n5. Stress testing scenarios\n6. Margin requirement calculation\n7. Real-time price fetching\n\n**User Intent:**\nCalculate risk parameters for a specific position before entering a trade.\n\n**Data Display Type:**\n- ✅ User input/configuration\n- ✅ Analysis/computation results (risk calculations)\n\n**Interaction Model:**\n- ✅ Interactive controls (form inputs)\n- ✅ Form submission (calculate risk)\n\n**Usage Frequency:**\n- ✅ Regular use (Before placing trades)\n\n**Technical Complexity:**\n- ✅ Medium (Risk calculations, form management)\n\n**Current Issues/Pain Points:**\n- Different from ProfessionalRiskView (calculator vs metrics dashboard)\n- Already integrated into TradingHubView as a tab\n- Good as standalone calculator tool\n\n---\n\n#### PAGE 15: TechnicalAnalysisView\n\n**File Location:** `src/views/TechnicalAnalysisView.tsx`  \n**Route:** `/technical-analysis` (used in MarketAnalysisHub and TradingHubView)  \n**Component Name:** `TechnicalAnalysisView`\n\n**Primary Purpose:**\nAdvanced pattern detection dashboard integrating SMC, Elliott Wave, Fibonacci, Harmonic patterns, Parabolic SAR, and market regime analysis.\n\n**API Dependencies:**\n- Fetches: OHLCV data via DatasourceClient\n- WebSocket: None\n\n**Key Features:**\n1. Smart Money Concepts (order blocks, liquidity zones, FVG)\n2. Elliott Wave pattern analysis\n3. Fibonacci retracement levels\n4. Harmonic pattern detection (Gartley, Bat, Butterfly, Crab)\n5. Parabolic SAR signals\n6. Market regime classification\n7. Symbol and timeframe selection\n8. Visual pattern displays\n\n**User Intent:**\nAnalyze price charts for technical patterns and market structure.\n\n**Data Display Type:**\n- ✅ Historical/static data (OHLCV)\n- ✅ Analysis/computation results (pattern detection)\n\n**Interaction Model:**\n- ✅ Interactive controls (symbol/timeframe selection)\n- ✅ Chart/visualization interaction\n\n**Usage Frequency:**\n- ✅ Regular use (Multiple times per day)\n\n**Technical Complexity:**\n- ✅ Very High (Multiple pattern detectors, complex calculations)\n\n**Current Issues/Pain Points:**\n- Used in both MarketAnalysisHub and TradingHubView (good reuse)\n- Distinct enough to warrant separate component\n- Well-designed for reuse\n\n---\n\n#### PAGE 16: SettingsView\n\n**File Location:** `src/views/SettingsView.tsx`  \n**Route:** `/settings",
+      "component_name": "SettingsView",
+      "primary_purpose": "User settings and configuration including detector weights, strategy thresholds, risk parameters, exchange settings, and data source selection.",
+      "api_dependencies": [
+        "`/api/settings`, `/api/settings/exchanges`",
+        "WebSocket: None"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Detector configuration (weights, enable/disable)",
+        "Strategy thresholds (buy/sell scores, confidence)",
+        "Risk parameters (position size, risk per trade, max drawdown)",
+        "Multi-timeframe settings",
+        "Exchange settings integration",
+        "Data source selector",
+        "Telegram settings",
+        "Auto-refresh settings"
+      ],
+      "user_intent": "Configure trading strategy parameters, risk limits, and system settings.",
+      "usage_frequency": "- ✅ Occasional use (Few times per week)",
+      "technical_complexity": "- ✅ Medium (Form management, settings persistence)",
+      "current_issues": [
+        "Exchange settings already integrated (good!)",
+        "Comprehensive settings page",
+        "No major issues"
+      ],
+      "category": "Risk Management",
+      "status": "Keep Standalone",
+      "merge_target": null,
+      "tab_name": null,
+      "priority": "MEDIUM"
+    },
+    {
+      "page_number": 15,
+      "name": "TechnicalAnalysisView",
+      "file_location": "src/views/TechnicalAnalysisView.tsx",
+      "route": "/technical-analysis` (used in MarketAnalysisHub and TradingHubView)  \n**Component Name:** `TechnicalAnalysisView`\n\n**Primary Purpose:**\nAdvanced pattern detection dashboard integrating SMC, Elliott Wave, Fibonacci, Harmonic patterns, Parabolic SAR, and market regime analysis.\n\n**API Dependencies:**\n- Fetches: OHLCV data via DatasourceClient\n- WebSocket: None\n\n**Key Features:**\n1. Smart Money Concepts (order blocks, liquidity zones, FVG)\n2. Elliott Wave pattern analysis\n3. Fibonacci retracement levels\n4. Harmonic pattern detection (Gartley, Bat, Butterfly, Crab)\n5. Parabolic SAR signals\n6. Market regime classification\n7. Symbol and timeframe selection\n8. Visual pattern displays\n\n**User Intent:**\nAnalyze price charts for technical patterns and market structure.\n\n**Data Display Type:**\n- ✅ Historical/static data (OHLCV)\n- ✅ Analysis/computation results (pattern detection)\n\n**Interaction Model:**\n- ✅ Interactive controls (symbol/timeframe selection)\n- ✅ Chart/visualization interaction\n\n**Usage Frequency:**\n- ✅ Regular use (Multiple times per day)\n\n**Technical Complexity:**\n- ✅ Very High (Multiple pattern detectors, complex calculations)\n\n**Current Issues/Pain Points:**\n- Used in both MarketAnalysisHub and TradingHubView (good reuse)\n- Distinct enough to warrant separate component\n- Well-designed for reuse\n\n---\n\n#### PAGE 16: SettingsView\n\n**File Location:** `src/views/SettingsView.tsx`  \n**Route:** `/settings",
+      "component_name": "SettingsView",
+      "primary_purpose": "User settings and configuration including detector weights, strategy thresholds, risk parameters, exchange settings, and data source selection.",
+      "api_dependencies": [
+        "`/api/settings`, `/api/settings/exchanges`",
+        "WebSocket: None"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Detector configuration (weights, enable/disable)",
+        "Strategy thresholds (buy/sell scores, confidence)",
+        "Risk parameters (position size, risk per trade, max drawdown)",
+        "Multi-timeframe settings",
+        "Exchange settings integration",
+        "Data source selector",
+        "Telegram settings",
+        "Auto-refresh settings"
+      ],
+      "user_intent": "Configure trading strategy parameters, risk limits, and system settings.",
+      "usage_frequency": "- ✅ Occasional use (Few times per week)",
+      "technical_complexity": "- ✅ Medium (Form management, settings persistence)",
+      "current_issues": [
+        "Exchange settings already integrated (good!)",
+        "Comprehensive settings page",
+        "No major issues"
+      ],
+      "category": "Market Analysis",
+      "status": "Keep Standalone",
+      "merge_target": null,
+      "tab_name": null,
+      "priority": "MEDIUM"
+    },
+    {
+      "page_number": 16,
+      "name": "SettingsView",
+      "file_location": "src/views/SettingsView.tsx",
+      "route": "/settings",
+      "component_name": "SettingsView",
+      "primary_purpose": "User settings and configuration including detector weights, strategy thresholds, risk parameters, exchange settings, and data source selection.",
+      "api_dependencies": [
+        "`/api/settings`, `/api/settings/exchanges`",
+        "WebSocket: None"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Detector configuration (weights, enable/disable)",
+        "Strategy thresholds (buy/sell scores, confidence)",
+        "Risk parameters (position size, risk per trade, max drawdown)",
+        "Multi-timeframe settings",
+        "Exchange settings integration",
+        "Data source selector",
+        "Telegram settings",
+        "Auto-refresh settings"
+      ],
+      "user_intent": "Configure trading strategy parameters, risk limits, and system settings.",
+      "usage_frequency": "- ✅ Occasional use (Few times per week)",
+      "technical_complexity": "- ✅ Medium (Form management, settings persistence)",
+      "current_issues": [
+        "Exchange settings already integrated (good!)",
+        "Comprehensive settings page",
+        "No major issues"
+      ],
+      "category": "Settings",
+      "status": "Keep Standalone",
+      "merge_target": null,
+      "tab_name": null,
+      "priority": "MEDIUM"
+    },
+    {
+      "page_number": 17,
+      "name": "HealthView",
+      "file_location": "src/views/HealthView.tsx",
+      "route": "/health",
+      "component_name": "HealthView",
+      "primary_purpose": "System health monitoring and provider diagnostics.",
+      "api_dependencies": [
+        "`/api/health`, `/api/system/status`",
+        "WebSocket: None"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Tab-based interface (System Health, Provider Diagnostics)",
+        "System health metrics (CPU, memory, disk)",
+        "Connection status (Binance, database)",
+        "Performance metrics (uptime, requests, errors)",
+        "Provider diagnostics (data source health)",
+        "Real-time health updates"
+      ],
+      "user_intent": "Monitor system health and diagnose issues with data providers.",
+      "usage_frequency": "- ✅ Rare/administrative use",
+      "technical_complexity": "- ✅ Medium (Health monitoring, metrics collection)",
+      "current_issues": [
+        "Could potentially merge with MonitoringView",
+        "Adminfocused page",
+        "Good as standalone"
+      ],
+      "category": "Admin",
+      "status": "Merge into Hub",
+      "merge_target": "UnifiedAdminView",
+      "tab_name": "health",
+      "priority": "LOW"
+    },
+    {
+      "page_number": 18,
+      "name": "MonitoringView",
+      "file_location": "src/views/MonitoringView.tsx",
+      "route": "/monitoring",
+      "component_name": "MonitoringView",
+      "primary_purpose": "Performance and error monitoring dashboard for development/admin use.",
+      "api_dependencies": [
+        "Error tracking, performance monitoring (internal)",
+        "WebSocket: None"
+      ],
+      "websocket_events": [],
+      "key_features": [
+        "Error tracking and statistics",
+        "Performance metrics visualization",
+        "Cache hit rate statistics",
+        "Request deduplication stats",
+        "Error export functionality",
+        "Performance export functionality",
+        "Auto-refresh toggle"
+      ],
+      "user_intent": "Monitor application performance and track errors for debugging.",
+      "usage_frequency": "- ✅ Rare/administrative use (Development/admin only)",
+      "technical_complexity": "- ✅ Medium (Error tracking, performance monitoring)",
+      "current_issues": [
+        "Could merge with HealthView as \"Monitoring\" tab",
+        "Development/admin focused",
+        "Similar purpose to HealthView"
+      ],
+      "category": "Admin",
+      "status": "Merge into Hub",
+      "merge_target": "UnifiedAdminView",
+      "tab_name": "monitoring",
+      "priority": "LOW"
+    }
+  ],
+  "unified_hubs": [
+    {
+      "name": "UnifiedTradingHubView",
+      "route": "/trading",
+      "component_name": "UnifiedTradingHubView",
+      "source_pages": [
+        "TradingViewDashboard",
+        "EnhancedTradingView",
+        "FuturesTradingView",
+        "TradingHubView"
+      ],
+      "tabs": [
+        {
+          "id": "charts",
+          "label": "Charts",
+          "source": "TradingViewDashboard"
+        },
+        {
+          "id": "spot",
+          "label": "Spot",
+          "source": "EnhancedTradingView"
+        },
+        {
+          "id": "futures",
+          "label": "Futures",
+          "source": "FuturesTradingView",
+          "default": true
+        },
+        {
+          "id": "positions",
+          "label": "Positions",
+          "source": "PositionsView"
+        },
+        {
+          "id": "portfolio",
+          "label": "Portfolio",
+          "source": "PortfolioPage"
+        }
+      ],
+      "priority": "HIGH",
+      "status": "PLANNED"
+    },
+    {
+      "name": "UnifiedAILabView",
+      "route": "/ai-lab",
+      "component_name": "UnifiedAILabView",
+      "source_pages": [
+        "TrainingView",
+        "EnhancedStrategyLabView",
+        "ScannerView"
+      ],
+      "tabs": [
+        {
+          "id": "scanner",
+          "label": "Scanner",
+          "source": "ScannerView",
+          "default": true
+        },
+        {
+          "id": "training",
+          "label": "Training",
+          "source": "TrainingView"
+        },
+        {
+          "id": "backtest",
+          "label": "Backtest",
+          "source": "EnhancedStrategyLabView"
+        },
+        {
+          "id": "builder",
+          "label": "Builder",
+          "source": "EnhancedStrategyLabView"
+        },
+        {
+          "id": "insights",
+          "label": "Insights",
+          "source": "EnhancedStrategyLabView"
+        }
+      ],
+      "priority": "MEDIUM",
+      "status": "PLANNED"
+    },
+    {
+      "name": "UnifiedAdminView",
+      "route": "/admin",
+      "component_name": "UnifiedAdminView",
+      "source_pages": [
+        "HealthView",
+        "MonitoringView"
+      ],
+      "tabs": [
+        {
+          "id": "health",
+          "label": "Health",
+          "source": "HealthView",
+          "default": true
+        },
+        {
+          "id": "monitoring",
+          "label": "Monitoring",
+          "source": "MonitoringView"
+        },
+        {
+          "id": "diagnostics",
+          "label": "Diagnostics",
+          "source": "HealthView"
+        }
+      ],
+      "priority": "LOW",
+      "status": "PLANNED"
+    }
+  ],
+  "summary": {
+    "total_pages": 18,
+    "pages_by_category": {
+      "Trading": 6,
+      "Market Analysis": 4,
+      "AI/ML": 2,
+      "Risk Management": 2,
+      "Admin": 2,
+      "Settings": 1,
+      "Dashboard": 1,
+      "Other": 0
+    },
+    "pages_by_status": {
+      "Keep Standalone": 6,
+      "Merge into Hub": 9,
+      "Redundant (already in hub)": 2,
+      "To be Created (new unified hub)": 1
+    }
+  }
+}

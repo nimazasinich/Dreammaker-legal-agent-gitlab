@@ -8,6 +8,7 @@ export type NavigationView =
   | 'futures'
   | 'trading'
   | 'trading-hub'
+  | 'unified-trading'
   | 'portfolio'
   | 'technical-analysis'
   | 'risk-management'
@@ -37,6 +38,7 @@ const VIEW_TO_HASH: Record<NavigationView, string> = {
   futures: '/futures',
   trading: '/trading',
   'trading-hub': '/trading-hub',
+  'unified-trading': '/trading',
   portfolio: '/portfolio',
   'technical-analysis': '/technical-analysis',
   'risk-management': '/risk-management',

@@ -68,11 +68,41 @@ const DiagnosticsView = lazyLoad(() => import('./views/DiagnosticsView'), 'Diagn
 const TechnicalAnalysisView = lazyLoad(() => import('./views/TechnicalAnalysisView'), 'TechnicalAnalysisView');
 const RiskManagementView = lazyLoad(() => import('./views/RiskManagementView'), 'RiskManagementView');
 const TradingHubView = lazyLoad(() => import('./views/TradingHubView'), 'TradingHubView');
+const UnifiedTradingHubView = lazyLoad(() => import('./views/UnifiedTradingHubView'), 'UnifiedTradingHubView');
 
 const AppContent: React.FC = () => {
-  const { currentView } = useNavigation();
+  const { currentView, setCurrentView } = useNavigation();
   const viewTheme = getViewTheme(currentView);
   const logger = Logger.getInstance();
+
+  // Handle redirects for old routes to new unified hubs
+  React.useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, '');
+    const path = hash.split('?')[0];
+    const params = new URLSearchParams(hash.split('?')[1] || '');
+
+    // Redirect old trading routes to unified trading hub
+    const tradingRedirects: Record<string, string> = {
+      '/tradingview-dashboard': '/trading?tab=charts',
+      '/enhanced-trading': '/trading?tab=spot',
+      '/futures': '/trading?tab=futures',
+      '/trading-hub': '/trading',
+      '/positions': '/trading?tab=positions',
+      '/portfolio': '/trading?tab=portfolio',
+    };
+
+    if (tradingRedirects[path]) {
+      const redirectPath = tradingRedirects[path];
+      window.location.hash = redirectPath;
+      setCurrentView('unified-trading');
+      return;
+    }
+
+    // If already on /trading, ensure unified-trading view is set
+    if (path === '/trading' && currentView !== 'unified-trading') {
+      setCurrentView('unified-trading');
+    }
+  }, [currentView, setCurrentView]);
 
   // Prefetch critical views for better user experience
   React.useEffect(() => {
@@ -103,6 +133,7 @@ const AppContent: React.FC = () => {
         case 'futures': return <FuturesTradingView />;
         case 'trading': return <UnifiedTradingView />;
         case 'trading-hub': return <TradingHubView />;
+        case 'unified-trading': return <UnifiedTradingHubView />;
         case 'portfolio': return <PortfolioPage />;
         case 'technical-analysis': return <TechnicalAnalysisView />;
         case 'risk-management': return <RiskManagementView />;

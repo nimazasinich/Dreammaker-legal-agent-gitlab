@@ -1,0 +1,127 @@
+# Complete Architecture Reorganization Implementation Prompt
+
+## Mission
+Reorganize 18 pages into 8-9 pages by merging similar functionality into unified hubs. Based on Comprehensive_Architecture_Analysis_Report.txt analysis.
+
+## PHASE 1: Unified Trading Hub (HIGHEST PRIORITY)
+
+### Create: src/views/UnifiedTradingHubView.tsx
+- Merge 5 pages into tabs: Charts (ChartingView), Spot (EnhancedTradingView), Futures (FuturesTradingView - default), Positions (PositionsView), Portfolio (PortfolioPage)
+- Implement tab navigation with URL hash support (#/trading?tab=futures)
+- Add keyboard shortcuts (Cmd/Ctrl + 1-5)
+- Lazy load Charts tab
+- Use same tab UI pattern as TradingHubView but with 5 tabs
+
+### Update: src/components/Navigation/NavigationProvider.tsx
+- Add 'unified-trading' to NavigationView type
+- Add 'unified-trading': '/trading' to VIEW_TO_HASH
+
+### Update: src/App.tsx
+- Import UnifiedTradingHubView
+- Add redirects in useEffect:
+  - '/tradingview-dashboard' → '/trading?tab=charts'
+  - '/enhanced-trading' → '/trading?tab=spot'
+  - '/futures' → '/trading?tab=futures'
+  - '/trading-hub' → '/trading'
+  - '/positions' → '/trading?tab=positions'
+  - '/portfolio' → '/trading?tab=portfolio'
+- Add case 'unified-trading': return <UnifiedTradingHubView />;
+
+### Update: src/components/Navigation/Sidebar.tsx
+- Replace NAV_ITEMS array, remove: charting, trading-hub, trading, enhanced-trading, positions, futures, portfolio
+- Add: { id: 'unified-trading', label: '⚡ Trading Hub', icon: Layers }
+
+## PHASE 2: Unified AI Lab (MEDIUM PRIORITY)
+
+### Create: src/views/UnifiedAILabView.tsx
+- Merge 5 pages into tabs: Scanner (ScannerView - default), Training (TrainingView), Backtest (BacktestView), Builder (StrategyBuilderView), Insights (StrategyInsightsView)
+- Same structure as UnifiedTradingHubView but with green theme
+- Route: /ai-lab
+
+### Update: NavigationProvider.tsx
+- Add 'unified-ai-lab' to NavigationView
+- Add 'unified-ai-lab': '/ai-lab' to VIEW_TO_HASH
+
+### Update: App.tsx
+- Import UnifiedAILabView
+- Add redirects:
+  - '/training' → '/ai-lab?tab=training'
+  - '/strategy-lab' → '/ai-lab'
+  - '/scanner' → '/ai-lab?tab=scanner'
+  - '/backtest' → '/ai-lab?tab=backtest'
+  - '/strategy-builder' → '/ai-lab?tab=builder'
+  - '/strategy-insights' → '/ai-lab?tab=insights'
+- Add case 'unified-ai-lab': return <UnifiedAILabView />;
+
+### Update: Sidebar.tsx
+- Remove: training, strategylab, backtest, strategyBuilder, strategy-insights
+- Add: { id: 'unified-ai-lab', label: '🧠 AI Lab', icon: Brain }
+
+## PHASE 3: Unified Admin Hub (LOW PRIORITY)
+
+### Create: src/views/UnifiedAdminView.tsx
+- Merge 3 pages into tabs: Health (HealthView - default), Monitoring (MonitoringView), Diagnostics (DiagnosticsView)
+- Same structure as UnifiedTradingHubView but with red theme
+- Route: /admin
+
+### Update: NavigationProvider.tsx
+- Add 'unified-admin' to NavigationView
+- Add 'unified-admin': '/admin' to VIEW_TO_HASH
+
+### Update: App.tsx
+- Import UnifiedAdminView
+- Add redirects:
+  - '/health' → '/admin?tab=health'
+  - '/monitoring' → '/admin?tab=monitoring'
+  - '/diagnostics' → '/admin?tab=diagnostics'
+- Add case 'unified-admin': return <UnifiedAdminView />;
+
+### Update: Sidebar.tsx
+- Remove: health, monitoring, diagnostics
+- Add: { id: 'unified-admin', label: '⚙️ Admin', icon: Monitor }
+
+## PHASE 4: Dashboard Cleanup (MEDIUM PRIORITY)
+
+### Update: src/views/DashboardView.tsx
+- Remove: Market statistics cards, real-time price charts, symbol ribbon
+- Keep: Portfolio value/PnL, top signals panel, health status
+- Add link: <Link to="/market-analysis">View Market Data →</Link>
+
+## Final Sidebar NAV_ITEMS (should have ~12 items):
+[
+  { id: 'dashboard', label: 'Dashboard', icon: Home },
+  { id: 'unified-trading', label: '⚡ Trading Hub', icon: Layers },
+  { id: 'market', label: 'Market', icon: Zap },
+  { id: 'scanner', label: 'Scanner', icon: Search },
+  { id: 'technical-analysis', label: 'Technical Analysis', icon: Activity },
+  { id: 'risk-management', label: 'Risk Management', icon: Shield },
+  { id: 'professional-risk', label: '🔥 Pro Risk', icon: AlertTriangle },
+  { id: 'unified-ai-lab', label: '🧠 AI Lab', icon: Brain },
+  { id: 'unified-admin', label: '⚙️ Admin', icon: Monitor },
+  { id: 'settings', label: 'Settings', icon: Settings },
+]
+
+## Key Requirements:
+1. All old routes must redirect to new unified hubs
+2. Support URL hash parameters for deep linking (#/trading?tab=futures)
+3. Maintain backward compatibility
+4. Use same UI patterns (tab navigation, styling)
+5. Lazy load heavy components (Charts tab)
+6. Test all redirects work
+7. Update navigation menu
+
+## Implementation Order:
+1. Complete Phase 1 fully (test everything)
+2. Then Phase 2
+3. Then Phase 3
+4. Then Phase 4
+
+## Success Criteria:
+- All 3 unified hubs created and working
+- All old routes redirect correctly
+- Navigation menu simplified from 18 to ~12 items
+- No broken links
+- All features accessible
+- Better UX (fewer clicks)
+
+START IMPLEMENTATION NOW. Complete Phase 1 first, test it, then proceed to Phase 2, 3, and 4.

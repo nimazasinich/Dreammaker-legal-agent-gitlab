@@ -1,0 +1,88 @@
+# AI Agent Prompt: Architecture Reorganization Implementation
+
+You are tasked with implementing the architecture reorganization for the Dreammaker Crypto Platform based on the analysis report.
+
+## Your Task
+
+Reorganize 18 pages into 8-9 pages by creating unified hubs that merge similar functionality.
+
+## Priority Order
+
+### 1. Create Unified Trading Hub (HIGHEST PRIORITY)
+
+Create `src/views/UnifiedTradingHubView.tsx` with route `/trading` that merges:
+- TradingViewDashboard → tab "charts"
+- EnhancedTradingView → tab "spot"  
+- FuturesTradingView → tab "futures" (default)
+- PositionsView → tab "positions"
+- PortfolioPage → tab "portfolio"
+
+Requirements:
+- Tab-based navigation with URL parameters (`/trading?tab=futures`)
+- Shared WebSocket connection for all tabs
+- Shared state (selected symbol) across tabs
+- Lazy load Charts tab (TradingView widgets are heavy)
+- Optimize data fetching: shared data fetched once, tab-specific data on-demand
+- Add redirects for all old routes:
+  - `/tradingview-dashboard` → `/trading?tab=charts`
+  - `/enhanced-trading` → `/trading?tab=spot`
+  - `/futures` → `/trading?tab=futures`
+  - `/trading-hub` → `/trading`
+  - `/positions` → `/trading?tab=positions`
+  - `/portfolio` → `/trading?tab=portfolio`
+
+### 2. Create Unified AI Lab (MEDIUM PRIORITY)
+
+Create `src/views/UnifiedAILabView.tsx` with route `/ai-lab` that merges:
+- ScannerView → tab "scanner" (default)
+- TrainingView → tab "training"
+- EnhancedStrategyLabView → tabs "backtest", "builder", "insights"
+
+Add redirects:
+- `/training` → `/ai-lab?tab=training`
+- `/strategylab` → `/ai-lab`
+- `/scanner` → `/ai-lab?tab=scanner`
+
+### 3. Create Unified Admin Hub (LOW PRIORITY)
+
+Create `src/views/UnifiedAdminView.tsx` with route `/admin` that merges:
+- HealthView → tabs "health" (default) and "diagnostics"
+- MonitoringView → tab "monitoring"
+
+Add redirects:
+- `/health` → `/admin?tab=health`
+- `/monitoring` → `/admin?tab=monitoring`
+
+### 4. Clean Dashboard (MEDIUM PRIORITY)
+
+Remove market data display from `EnhancedDashboardView.tsx`, keep only portfolio overview.
+
+## Implementation Guidelines
+
+1. Read existing components to understand their structure
+2. Extract reusable logic into shared hooks
+3. Create tab components that maintain original functionality
+4. Implement proper TypeScript types
+5. Add error handling and loading states
+6. Ensure backward compatibility with redirects
+7. Update navigation menu to reflect new structure
+8. Test all functionality before removing old components
+
+## Key Files to Reference
+
+- `Comprehensive_Architecture_Analysis_Report.txt` - Full analysis
+- `architecture_pages_data.json` - Structured page data
+- `ROUTE_MAPPING.md` - Route redirects needed
+- `IMPLEMENTATION_PROMPT.md` - Detailed implementation guide
+
+## Success Criteria
+
+- All tabs work correctly
+- No duplicate API calls (shared data fetched once)
+- WebSocket works across all tabs
+- All old routes redirect correctly
+- Deep linking works (URL parameters)
+- Navigation menu updated
+- Page load time < 2 seconds
+
+Start with Phase 1 (Unified Trading Hub) and complete it fully before moving to next phases.
