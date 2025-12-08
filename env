@@ -6,14 +6,19 @@ VITE_APP_MODE=online
 VITE_STRICT_REAL_DATA=true
 VITE_USE_MOCK_DATA=false
 VITE_ALLOW_FAKE_DATA=false
+USE_MOCK_DATA=false
+MOCK_MODE=false
 
 # Hugging Face API Key (توکن جدید)
 HF_TOKEN=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
 HUGGINGFACE_API_KEY=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
 
 # Server Configuration
-PORT=3001
+PORT=8001
 NODE_ENV=development
+PRIMARY_DATA_SOURCE=huggingface
+HF_ENGINE_BASE_URL=https://really-amin-datasourceforcryptocurrency.hf.space
+BINANCE_ENABLED=false
 
 # Proxy Configuration - Only for Binance (فقط برای Binance)
 # اگر نیاز به پروکسی برای دسترسی به Binance دارید، این متغیرها را تنظیم کنید
