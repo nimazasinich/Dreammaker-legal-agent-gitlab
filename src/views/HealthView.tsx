@@ -17,7 +17,8 @@ interface HealthMetrics {
         disk: number;
     };
     connections: {
-        binance: 'connected' | 'disconnected' | 'error';
+        // NOTE: Changed from 'binance' to 'dataSource' for Mixed Mode architecture
+        dataSource: 'connected' | 'disconnected' | 'error';
         database: 'connected' | 'disconnected' | 'error';
         latency: number;
     };
@@ -34,7 +35,7 @@ const logger = Logger.getInstance();
 export const HealthView: React.FC = () => {
     const [metrics, setMetrics] = useState<HealthMetrics>({
         system: { cpu: 0, memory: 0, disk: 0 },
-        connections: { binance: 'connected', database: 'connected', latency: 0 },
+        connections: { dataSource: 'connected', database: 'connected', latency: 0 },
         performance: { uptime: 0, requests: 0, errors: 0 }
     });
     const [loading, setLoading] = useState<boolean>(true);
@@ -64,11 +65,12 @@ export const HealthView: React.FC = () => {
                         disk: 0 // Would need additional monitoring for disk
                     },
                     connections: {
-                        binance: healthStatus.services.binance.status === 'healthy' ? 'connected' :
-                            (healthStatus.services.binance.status === 'unhealthy' ? 'error' : 'disconnected'),
+                        // NOTE: Changed from 'binance' to 'dataSource' for Mixed Mode
+                        dataSource: healthStatus.services.dataSource?.status === 'healthy' ? 'connected' :
+                            (healthStatus.services.dataSource?.status === 'unhealthy' ? 'error' : 'disconnected'),
                         database: healthStatus.services.database.status === 'healthy' ? 'connected' :
                             (healthStatus.services.database.status === 'unhealthy' ? 'error' : 'disconnected'),
-                        latency: healthStatus.services.binance.latency || 0
+                        latency: healthStatus.services.dataSource?.latency || 0
                     },
                     performance: {
                         uptime: healthStatus.system.uptime || performanceMetrics.system?.uptime || 0,
@@ -85,7 +87,7 @@ export const HealthView: React.FC = () => {
                     ...prev,
                     connections: {
                         ...prev.connections,
-                        binance: 'error',
+                        dataSource: 'error',  // Changed from binance
                         database: 'error'
                     }
                 }));
@@ -255,15 +257,15 @@ export const HealthView: React.FC = () => {
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {/* Exchange Connection */}
+                                {/* Data Source Connection (Mixed Mode) */}
                                 <div className="bg-background p-4 rounded-md">
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-2">
-                                            <div className={`w-2 h-2 rounded-full ${getStatusDot(data.connections.binance)}`}></div>
-                                            <span>Exchange API</span>
+                                            <div className={`w-2 h-2 rounded-full ${getStatusDot(data.connections.dataSource)}`}></div>
+                                            <span>Data Source (HF + Fallbacks)</span>
                                         </div>
-                                        <span className={getStatusColor(data.connections.binance)}>
-                                            {data.connections.binance}
+                                        <span className={getStatusColor(data.connections.dataSource)}>
+                                            {data.connections.dataSource}
                                         </span>
                                     </div>
                                 </div>

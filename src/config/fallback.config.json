@@ -1,9 +1,30 @@
 {
-  "order": ["memory","sqlite","files","hf","coingecko","binance","synthetic"],
-  "timeouts": { "hf": 1800, "coingecko": 1500, "binance": 1500 },
-  "ttlSec": { "market": 120, "hf": 180, "files": 3600, "synthetic": 60 },
+  "order": ["memory", "sqlite", "files", "hf", "coingecko", "cryptocompare", "coinpaprika", "coincap", "synthetic"],
+  "timeouts": { 
+    "hf": 10000, 
+    "coingecko": 8000, 
+    "cryptocompare": 8000,
+    "coinpaprika": 8000,
+    "coincap": 8000
+  },
+  "ttlSec": { 
+    "market": 60, 
+    "hf": 120, 
+    "files": 3600, 
+    "synthetic": 30 
+  },
   "offlineAllow": true,
   "minBars": 300,
   "defaultTF": "15m",
-  "seed": 1337
+  "seed": 1337,
+  "mixedMode": {
+    "enabled": true,
+    "primarySource": "hf",
+    "fallbackSources": ["coingecko", "cryptocompare", "coinpaprika", "coincap"],
+    "cacheEnabled": true,
+    "pollingEnabled": true,
+    "pollingIntervalMs": 30000
+  },
+  "excludedProviders": ["binance", "kucoin"],
+  "notes": "NO WebSocket, NO Binance, NO KuCoin - Mixed Mode with HuggingFace as primary"
 }
